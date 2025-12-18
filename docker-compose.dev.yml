@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Backend API Service - Development
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: sehitkamil_backend_dev
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: superapp
+      DB_USER: admin
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - db
+      - redis
+    networks:
+      - superapp_network
+    command: npm run dev

@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Şehitkamil Belediyesi",
+    "slug": "sehitkamil-belediye-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "sehitkamil",
+    "splash": {
+      "backgroundColor": "#2E7D32",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sehitkamil.belediye"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#2E7D32"
+      },
+      "package": "com.sehitkamil.belediye"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Uygulamanın konumunuzu kullanmasına izin verin."
+        }
+      ]
+    ]
+  }
+}
+

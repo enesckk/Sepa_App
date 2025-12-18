@@ -1,0 +1,27 @@
+# Development için optimize edilmiş Dockerfile
+FROM node:18-alpine
+
+# Çalışma dizinini ayarla
+WORKDIR /app
+
+# Sistem bağımlılıklarını yükle
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++
+
+# package.json ve package-lock.json'ı kopyala
+COPY package*.json ./
+
+# Tüm bağımlılıkları yükle (dev dependencies dahil)
+RUN npm install && npm cache clean --force
+
+# Tüm kaynak kodunu kopyala
+COPY . .
+
+# Port'u expose et
+EXPOSE 4000
+
+# Development modunda çalıştır (hot reload için nodemon veya benzeri)
+CMD ["npm", "run", "dev"]
+
