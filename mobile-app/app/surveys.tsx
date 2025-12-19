@@ -5,8 +5,11 @@ import {
   ScrollView,
   Text,
   Alert,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 import { SurveyCard } from '../src/components/SurveyCard';
 import { AnswerOptions } from '../src/components/AnswerOptions';
 import { ProgressBar } from '../src/components/ProgressBar';
@@ -17,6 +20,7 @@ import { Colors } from '../src/constants/colors';
 import { mockSurveys, Survey } from '../src/services/mockSurveysData';
 
 export default function SurveyScreen() {
+  const router = useRouter();
   const [surveys] = useState<Survey[]>(mockSurveys);
   const [currentSurveyIndex, setCurrentSurveyIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string[]>>({});
@@ -85,7 +89,18 @@ export default function SurveyScreen() {
 
   if (!currentSurvey) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+        <View style={styles.header}>
+          <Pressable
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={24} color={Colors.text} />
+          </Pressable>
+          <View style={styles.headerText}>
+            <Text style={styles.headerTitle}>Anketler</Text>
+          </View>
+        </View>
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>Tüm anketler tamamlandı!</Text>
         </View>
@@ -94,12 +109,20 @@ export default function SurveyScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Anketler</Text>
-        <Text style={styles.headerSubtitle}>
-          Görüşlerinizi paylaşın, puan kazanın
-        </Text>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <ArrowLeft size={24} color={Colors.text} />
+        </Pressable>
+        <View style={styles.headerText}>
+          <Text style={styles.headerTitle}>Anketler</Text>
+          <Text style={styles.headerSubtitle}>
+            Görüşlerinizi paylaşın, puan kazanın
+          </Text>
+        </View>
       </View>
 
       <ProgressBar current={completedCount} total={surveys.length} />
@@ -160,11 +183,20 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 20,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    gap: 12,
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerText: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 24,

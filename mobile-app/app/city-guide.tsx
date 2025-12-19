@@ -1,11 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   StyleSheet,
   Text,
+  Platform,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 import { TopTabBar } from '../src/components/TopTabBar';
 import { GuideList } from '../src/components/GuideList';
 import { GuideMap } from '../src/components/GuideMap';
@@ -16,12 +19,20 @@ import { mockPlaces, Place, PlaceType } from '../src/services/mockLocationsData'
 
 export default function CityGuideScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ type?: string }>();
   const [selectedTab, setSelectedTab] = useState<PlaceType>('mosque');
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+
+  // Handle query parameter for initial tab selection
+  useEffect(() => {
+    if (params.type && ['mosque', 'pharmacy', 'facility', 'wedding'].includes(params.type)) {
+      setSelectedTab(params.type as PlaceType);
+    }
+  }, [params.type]);
 
   const filteredPlaces = useMemo(() => {
     let places = mockPlaces.filter((place) => place.type === selectedTab);
@@ -106,12 +117,20 @@ export default function CityGuideScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Şehir Rehberi</Text>
-        <Text style={styles.headerSubtitle}>
-          Yakın mekânları keşfedin
-        </Text>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <ArrowLeft size={24} color={Colors.text} />
+        </Pressable>
+        <View style={styles.headerText}>
+          <Text style={styles.headerTitle}>Şehir Rehberi</Text>
+          <Text style={styles.headerSubtitle}>
+            Yakın mekânları keşfedin
+          </Text>
+        </View>
       </View>
 
       <TopTabBar selectedTab={selectedTab} onTabChange={setSelectedTab} />
@@ -158,11 +177,20 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 20,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    gap: 12,
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerText: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 24,

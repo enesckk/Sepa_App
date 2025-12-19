@@ -4,6 +4,7 @@ import {
   StyleSheet,
   ScrollView,
   Text,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RewardHeader } from '../../src/components/RewardHeader';
@@ -145,7 +146,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: Platform.OS === 'ios' ? 100 : 60,
   },
   grid: {
     flexDirection: 'row',

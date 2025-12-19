@@ -4,6 +4,7 @@ import {
   StyleSheet,
   ScrollView,
   Text,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { EventsTopBar } from '../../src/components/EventsTopBar';
@@ -136,6 +137,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingVertical: 12,
+    paddingBottom: Platform.OS === 'ios' ? 100 : 60,
   },
   emptyContainer: {
     flex: 1,

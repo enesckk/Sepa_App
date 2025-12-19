@@ -72,32 +72,13 @@ export const PrayerTimeCard: React.FC<PrayerTimeCardProps> = ({ onPress }) => {
 
       <View style={styles.content}>
         <View style={styles.nextPrayerContainer}>
-          <Clock size={16} color={Colors.primary} />
-          <Text style={styles.nextPrayerLabel}>Sıradaki:</Text>
-          <Text style={styles.nextPrayerName}>{nextPrayer.name}</Text>
-          <Text style={styles.nextPrayerTime}>{nextPrayer.time}</Text>
-        </View>
-
-        <View style={styles.prayerTimesRow}>
-          <View style={styles.prayerTimeItem}>
-            <Text style={styles.prayerTimeLabel}>İmsak</Text>
-            <Text style={styles.prayerTimeValue}>{prayerTimes.fajr}</Text>
-          </View>
-          <View style={styles.prayerTimeItem}>
-            <Text style={styles.prayerTimeLabel}>Öğle</Text>
-            <Text style={styles.prayerTimeValue}>{prayerTimes.dhuhr}</Text>
-          </View>
-          <View style={styles.prayerTimeItem}>
-            <Text style={styles.prayerTimeLabel}>İkindi</Text>
-            <Text style={styles.prayerTimeValue}>{prayerTimes.asr}</Text>
-          </View>
-          <View style={styles.prayerTimeItem}>
-            <Text style={styles.prayerTimeLabel}>Akşam</Text>
-            <Text style={styles.prayerTimeValue}>{prayerTimes.maghrib}</Text>
-          </View>
-          <View style={styles.prayerTimeItem}>
-            <Text style={styles.prayerTimeLabel}>Yatsı</Text>
-            <Text style={styles.prayerTimeValue}>{prayerTimes.isha}</Text>
+          <Clock size={20} color={Colors.primary} />
+          <View style={styles.nextPrayerInfo}>
+            <Text style={styles.nextPrayerLabel}>Sıradaki Namaz</Text>
+            <View style={styles.nextPrayerTimeRow}>
+              <Text style={styles.nextPrayerName}>{nextPrayer.name}</Text>
+              <Text style={styles.nextPrayerTime}>{nextPrayer.time}</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -163,53 +144,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    gap: 12,
+    gap: 0,
   },
   nextPrayerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 12,
     backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     borderRadius: 12,
+  },
+  nextPrayerInfo: {
+    flex: 1,
   },
   nextPrayerLabel: {
     fontSize: 12,
     color: Colors.textSecondary,
     fontWeight: '500',
+    marginBottom: 6,
+  },
+  nextPrayerTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   nextPrayerName: {
-    fontSize: 13,
+    fontSize: 18,
     color: Colors.primaryDark,
     fontWeight: '700',
-    marginLeft: 4,
   },
   nextPrayerTime: {
-    fontSize: 14,
-    color: Colors.primaryDark,
+    fontSize: 24,
+    color: Colors.primary,
     fontWeight: '700',
-    marginLeft: 'auto',
-  },
-  prayerTimesRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 4,
-  },
-  prayerTimeItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  prayerTimeLabel: {
-    fontSize: 10,
-    color: Colors.textSecondary,
-    marginBottom: 4,
-    fontWeight: '500',
-  },
-  prayerTimeValue: {
-    fontSize: 12,
-    color: Colors.text,
-    fontWeight: '600',
   },
 });
 

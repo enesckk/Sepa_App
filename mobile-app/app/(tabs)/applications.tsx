@@ -5,6 +5,7 @@ import {
   ScrollView,
   Text,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { IssueTypeSelector } from '../../src/components/IssueTypeSelector';
@@ -155,6 +156,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingVertical: 20,
+    paddingBottom: Platform.OS === 'ios' ? 100 : 80,
   },
 });
 

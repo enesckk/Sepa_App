@@ -24,8 +24,20 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
+            presentation: 'card',
+            animation: 'slide_from_right',
+            contentStyle: {
+              backgroundColor: 'transparent',
+            },
           }}
-        />
+        >
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: false,
+            }}
+          />
+        </Stack>
       </SafeAreaProvider>
     </Wrapper>
   );

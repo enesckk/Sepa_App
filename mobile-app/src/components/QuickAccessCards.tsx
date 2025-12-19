@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, Dimensions, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { CheckSquare, Trophy, FileText, ShoppingBag } from 'lucide-react-native';
+import { CheckSquare, Trophy, Receipt, ShoppingBag } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -16,6 +17,8 @@ interface QuickAccessItem {
 }
 
 export const QuickAccessCards: React.FC = () => {
+  const router = useRouter();
+
   const quickAccessItems: QuickAccessItem[] = [
     {
       id: '1',
@@ -26,6 +29,7 @@ export const QuickAccessCards: React.FC = () => {
         if (__DEV__) {
           console.log('[v0] Anketler pressed');
         }
+        router.push('/surveys');
       },
     },
     {
@@ -37,17 +41,19 @@ export const QuickAccessCards: React.FC = () => {
         if (__DEV__) {
           console.log('[v0] Oyna Kazan pressed');
         }
+        // Navigate to play and win screen
       },
     },
     {
       id: '3',
-      title: 'Başvur',
-      icon: <FileText size={32} color="white" strokeWidth={2.5} />,
-      gradient: [Colors.blue, Colors.blueDark],
+      title: 'Askıda Fatura',
+      icon: <Receipt size={32} color="white" strokeWidth={2.5} />,
+      gradient: [Colors.orange, Colors.orangeDark],
       onPress: () => {
         if (__DEV__) {
-          console.log('[v0] Başvur pressed');
+          console.log('[v0] Askıda Fatura pressed');
         }
+        router.push('/bill-support');
       },
     },
     {
@@ -59,6 +65,7 @@ export const QuickAccessCards: React.FC = () => {
         if (__DEV__) {
           console.log('[v0] Gölmarket pressed');
         }
+        router.push('/(tabs)/rewards');
       },
     },
   ];

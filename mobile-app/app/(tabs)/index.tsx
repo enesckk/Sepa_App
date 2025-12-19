@@ -3,9 +3,11 @@ import {
   View,
   ScrollView,
   StyleSheet,
-  StatusBar,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { useRouter } from 'expo-router';
 import { Header } from '../../src/components/Header';
 import { AutoPlayCarousel } from '../../src/components/AutoPlayCarousel';
 import { WeatherCard } from '../../src/components/WeatherCard';
@@ -70,46 +72,55 @@ const NEWS_DATA = [
 ];
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [userPoints, setUserPoints] = useState(320);
 
   const handleProfilePress = () => {
     if (__DEV__) {
       console.log('[v0] Profile pressed');
     }
-    // Navigate to profile screen
+    // TODO: Navigate to profile screen when created
   };
 
   const handleSettingsPress = () => {
     if (__DEV__) {
       console.log('[v0] Settings pressed');
     }
-    // Navigate to settings screen
+    router.push('/settings');
   };
 
   const handleSearchPress = () => {
     if (__DEV__) {
       console.log('[v0] Search pressed');
     }
-    // Navigate to search screen
+    // TODO: Navigate to search screen when created
   };
 
   const handleViewAllNews = () => {
     if (__DEV__) {
       console.log('[v0] View all news pressed');
     }
-    // Navigate to all news screen
+    // TODO: Navigate to all news screen when created
   };
 
   const handleNewsPress = (id: string) => {
     if (__DEV__) {
       console.log('[v0] News pressed:', id);
     }
-    // Navigate to news detail screen
+    // TODO: Navigate to news detail screen when created
+  };
+
+  const handlePrayerTimePress = () => {
+    if (__DEV__) {
+      console.log('[v0] Prayer time pressed - Navigating to city guide with mosque filter');
+    }
+    // Navigate to city guide with mosque filter
+    router.push('/city-guide?type=mosque');
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <StatusBar style="dark" />
       
       {/* Header */}
       <Header
@@ -123,6 +134,7 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         bounces={true}
         contentContainerStyle={styles.scrollContent}
+        style={styles.scrollView}
       >
         {/* Auto-Play Carousel */}
         <AutoPlayCarousel
@@ -135,12 +147,7 @@ export default function HomeScreen() {
         <View style={styles.weatherPrayerContainer}>
           <WeatherCard />
           <PrayerTimeCard
-            onPress={() => {
-              if (__DEV__) {
-                console.log('[v0] Prayer time pressed');
-              }
-              // Navigate to city guide with mosque filter
-            }}
+            onPress={handlePrayerTimePress}
           />
         </View>
 
@@ -166,8 +173,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  scrollView: {
+    flex: 1,
+  },
   scrollContent: {
-    paddingBottom: 24,
+    paddingBottom: Platform.OS === 'ios' ? 100 : 80,
   },
   weatherPrayerContainer: {
     flexDirection: 'row',
@@ -176,6 +186,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   bottomSpacer: {
-    height: 20,
+    height: Platform.OS === 'ios' ? 20 : 16,
   },
 });

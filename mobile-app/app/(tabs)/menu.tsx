@@ -5,6 +5,7 @@ import {
   ScrollView,
   Text,
   Pressable,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -45,41 +46,25 @@ export default function MenuScreen() {
       id: '4',
       title: 'Başvurularım',
       icon: <FileText size={24} color={Colors.primary} />,
-      onPress: () => {
-        if (__DEV__) {
-          console.log('My Applications');
-        }
-      },
+      onPress: () => router.push('/my-applications'),
     },
     {
       id: '5',
       title: 'Ayarlar',
       icon: <Settings size={24} color={Colors.primary} />,
-      onPress: () => {
-        if (__DEV__) {
-          console.log('Settings');
-        }
-      },
+      onPress: () => router.push('/settings'),
     },
     {
       id: '6',
       title: 'Yardım',
       icon: <HelpCircle size={24} color={Colors.primary} />,
-      onPress: () => {
-        if (__DEV__) {
-          console.log('Help');
-        }
-      },
+      onPress: () => router.push('/help'),
     },
     {
       id: '7',
       title: 'Hakkında',
       icon: <Info size={24} color={Colors.primary} />,
-      onPress: () => {
-        if (__DEV__) {
-          console.log('About');
-        }
-      },
+      onPress: () => router.push('/about'),
     },
   ];
 
@@ -136,6 +121,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingVertical: 12,
+    paddingBottom: Platform.OS === 'ios' ? 100 : 60,
   },
   menuItem: {
     flexDirection: 'row',

@@ -5,8 +5,11 @@ import {
   ScrollView,
   Text,
   Alert,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 import { TabBar, TabType } from '../src/components/TabBar';
 import { BillForm } from '../src/components/BillForm';
 import { SupportList } from '../src/components/SupportList';
@@ -18,6 +21,7 @@ import { Colors } from '../src/constants/colors';
 import { mockBills, Bill } from '../src/services/mockBillsData';
 
 export default function BillSupportScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>('leave');
   const [bills, setBills] = useState<Bill[]>(mockBills);
   const [firstName, setFirstName] = useState('');
@@ -67,12 +71,20 @@ export default function BillSupportScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Askıda Fatura</Text>
-        <Text style={styles.headerSubtitle}>
-          Faturanızı askıya bırakın veya başkalarına destek olun
-        </Text>
+        <Pressable
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <ArrowLeft size={24} color={Colors.text} />
+        </Pressable>
+        <View style={styles.headerText}>
+          <Text style={styles.headerTitle}>Askıda Fatura</Text>
+          <Text style={styles.headerSubtitle}>
+            Faturanızı askıya bırakın veya başkalarına destek olun
+          </Text>
+        </View>
       </View>
 
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
@@ -128,11 +140,20 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 20,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    gap: 12,
+  },
+  backButton: {
+    padding: 4,
+  },
+  headerText: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 24,
