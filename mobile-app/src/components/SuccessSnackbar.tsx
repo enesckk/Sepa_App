@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -24,21 +24,37 @@ export const SuccessSnackbar: React.FC<SuccessSnackbarProps> = ({
 }) => {
   const translateY = useSharedValue(100);
   const opacity = useSharedValue(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const innerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (visible) {
       translateY.value = withSpring(0, { damping: 20, stiffness: 100 });
       opacity.value = withTiming(1, { duration: 300 });
       
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         translateY.value = withSpring(100, { damping: 20, stiffness: 100 });
         opacity.value = withTiming(0, { duration: 300 });
-        setTimeout(() => {
+        innerTimeoutRef.current = setTimeout(() => {
           onComplete();
         }, 300);
       }, 3000);
+    } else {
+      translateY.value = 100;
+      opacity.value = 0;
     }
-  }, [visible]);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (innerTimeoutRef.current) {
+        clearTimeout(innerTimeoutRef.current);
+        innerTimeoutRef.current = null;
+      }
+    };
+  }, [visible, onComplete]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],

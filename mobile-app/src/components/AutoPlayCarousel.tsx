@@ -9,6 +9,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Search } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
 
@@ -71,8 +72,16 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
               style={styles.imageBackground}
               resizeMode="cover"
             >
-              {/* Dark Overlay */}
-              <View style={styles.overlay} />
+              {/* Gradient Overlay - sadece altta */}
+              <LinearGradient
+                colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.5)']}
+                style={styles.overlay}
+              />
+              {item.title && (
+                <View style={styles.titleContainer}>
+                  <Text style={styles.title}>{item.title}</Text>
+                </View>
+              )}
             </ImageBackground>
           </View>
         ))}
@@ -84,8 +93,10 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
         activeOpacity={0.8}
         style={styles.searchBar}
       >
-        <Search size={20} color={Colors.textSecondary} strokeWidth={2} />
-        <Text style={styles.searchText}>Şehitkamil'de ara...</Text>
+        <View style={styles.searchIconContainer}>
+          <Search size={20} color={Colors.primary} strokeWidth={2.5} />
+        </View>
+        <Text style={styles.searchText}>Uygulamada ara...</Text>
       </TouchableOpacity>
 
       {/* Pagination Dots */}
@@ -106,19 +117,21 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 200,
+    height: 240,
     position: 'relative',
+    marginBottom: 4,
   },
   scrollView: {
     flex: 1,
   },
   slide: {
     width: SCREEN_WIDTH,
-    height: 200,
+    height: 240,
   },
   imageBackground: {
     width: '100%',
     height: '100%',
+    justifyContent: 'flex-end',
   },
   overlay: {
     position: 'absolute',
@@ -126,35 +139,64 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  titleContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.surface,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   searchBar: {
     position: 'absolute',
-    top: 16,
-    left: 16,
-    right: 16,
-    height: 48,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 24,
+    top: 20,
+    left: 20,
+    right: 20,
+    height: 52,
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 12,
+    paddingHorizontal: 4,
+    gap: 0,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.2,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 6,
+        elevation: 8,
       },
     }),
   },
+  searchIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+  },
   searchText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    fontSize: 15,
+    color: Colors.text,
+    fontWeight: '500',
+    flex: 1,
+    marginLeft: 12,
   },
   pagination: {
     position: 'absolute',

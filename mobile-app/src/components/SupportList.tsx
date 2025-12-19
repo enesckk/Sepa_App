@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Bill } from '../services/mockBillsData';
 import { billTypes } from '../services/mockBillsData';
+import { SupportButton } from './SupportButton';
 import { Colors } from '../constants/colors';
 
 interface SupportListProps {
@@ -51,6 +52,12 @@ export const SupportList: React.FC<SupportListProps> = ({ bills, onSupport }) =>
                 {bill.supportedBy} kişi destekledi
               </Text>
             )}
+            <View style={styles.buttonContainer}>
+              <SupportButton
+                onPress={() => onSupport(bill.id)}
+                disabled={bill.status === 'supported'}
+              />
+            </View>
           </View>
         );
       })}
@@ -115,7 +122,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     marginTop: 8,
+    marginBottom: 12,
     fontStyle: 'italic',
+  },
+  buttonContainer: {
+    marginTop: 8,
   },
   emptyContainer: {
     flex: 1,

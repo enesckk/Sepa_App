@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -23,6 +23,8 @@ export const SuccessConfetti: React.FC<SuccessConfettiProps> = ({
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(0);
   const rotation = useSharedValue(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const innerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -41,9 +43,9 @@ export const SuccessConfetti: React.FC<SuccessConfettiProps> = ({
         withSpring(0, { damping: 10 })
       );
 
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         opacity.value = withTiming(0, { duration: 500 });
-        setTimeout(() => {
+        innerTimeoutRef.current = setTimeout(() => {
           onComplete();
         }, 500);
       }, 3000);
@@ -53,7 +55,18 @@ export const SuccessConfetti: React.FC<SuccessConfettiProps> = ({
       translateY.value = 0;
       rotation.value = 0;
     }
-  }, [visible]);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (innerTimeoutRef.current) {
+        clearTimeout(innerTimeoutRef.current);
+        innerTimeoutRef.current = null;
+      }
+    };
+  }, [visible, onComplete]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [

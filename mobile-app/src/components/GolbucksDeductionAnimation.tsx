@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -24,6 +24,8 @@ export const GolbucksDeductionAnimation: React.FC<GolbucksDeductionAnimationProp
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const innerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -37,9 +39,9 @@ export const GolbucksDeductionAnimation: React.FC<GolbucksDeductionAnimationProp
         withTiming(0, { duration: 400 })
       );
 
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         opacity.value = withTiming(0, { duration: 300 });
-        setTimeout(() => {
+        innerTimeoutRef.current = setTimeout(() => {
           onComplete();
         }, 300);
       }, 1500);
@@ -48,7 +50,18 @@ export const GolbucksDeductionAnimation: React.FC<GolbucksDeductionAnimationProp
       opacity.value = 0;
       translateY.value = 0;
     }
-  }, [visible]);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (innerTimeoutRef.current) {
+        clearTimeout(innerTimeoutRef.current);
+        innerTimeoutRef.current = null;
+      }
+    };
+  }, [visible, onComplete]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [

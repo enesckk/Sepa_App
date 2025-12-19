@@ -8,6 +8,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Header } from '../../src/components/Header';
 import { AutoPlayCarousel } from '../../src/components/AutoPlayCarousel';
+import { WeatherCard } from '../../src/components/WeatherCard';
+import { PrayerTimeCard } from '../../src/components/PrayerTimeCard';
 import { QuickAccessCards } from '../../src/components/QuickAccessCards';
 import { NewsSection } from '../../src/components/NewsSection';
 import { Colors } from '../../src/constants/colors';
@@ -129,6 +131,19 @@ export default function HomeScreen() {
           onSearchPress={handleSearchPress}
         />
 
+        {/* Weather and Prayer Time Cards - Side by Side */}
+        <View style={styles.weatherPrayerContainer}>
+          <WeatherCard />
+          <PrayerTimeCard
+            onPress={() => {
+              if (__DEV__) {
+                console.log('[v0] Prayer time pressed');
+              }
+              // Navigate to city guide with mosque filter
+            }}
+          />
+        </View>
+
         {/* Quick Access Panel */}
         <QuickAccessCards />
 
@@ -153,6 +168,12 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 24,
+  },
+  weatherPrayerContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 8,
   },
   bottomSpacer: {
     height: 20,

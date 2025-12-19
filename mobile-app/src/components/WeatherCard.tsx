@@ -37,11 +37,11 @@ export const WeatherCard: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     backgroundColor: Colors.surface,
-    borderRadius: 20,
-    padding: 20,
-    marginHorizontal: 20,
-    marginVertical: 12,
+    borderRadius: 16,
+    padding: 16,
+    marginHorizontal: 6,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -50,6 +50,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   header: {
     flexDirection: 'row',
@@ -63,27 +65,27 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   content: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    marginTop: 8,
   },
   mainInfo: {
-    flex: 1,
+    marginBottom: 12,
   },
   temperature: {
-    fontSize: 48,
-    fontWeight: 'bold',
+    fontSize: 42,
+    fontWeight: '700',
     color: Colors.primary,
-    lineHeight: 56,
+    lineHeight: 50,
   },
   condition: {
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.textSecondary,
     marginTop: 4,
+    fontWeight: '500',
   },
   details: {
     flexDirection: 'row',
-    gap: 20,
+    gap: 16,
+    marginTop: 4,
   },
   detailItem: {
     flexDirection: 'row',
