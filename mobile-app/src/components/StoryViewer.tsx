@@ -91,10 +91,8 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     if (visible) {
       // Hemen görünür yap, animasyon yok
       opacity.value = 1;
-      translateX.value = 0;
     } else {
       opacity.value = withTiming(0, { duration: 150 });
-      translateX.value = withSpring(SCREEN_WIDTH, { damping: 20, stiffness: 100 });
     }
   }, [visible]);
 
