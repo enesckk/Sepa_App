@@ -18,6 +18,7 @@ import {
   HelpCircle,
   Info,
   AlertTriangle,
+  Building2,
 } from 'lucide-react-native';
 import { Colors } from '../../src/constants/colors';
 
@@ -36,6 +37,12 @@ export default function MenuScreen() {
       title: 'Afet Toplanma Alanları',
       icon: <AlertTriangle size={24} color={Colors.error} />,
       onPress: () => router.push('/emergency-gathering'),
+    },
+    {
+      id: 'e-services',
+      title: 'E-Belediye Hizmetleri',
+      icon: <Building2 size={24} color={Colors.primary} />,
+      onPress: () => router.push('/e-services'),
     },
     {
       id: '2',
