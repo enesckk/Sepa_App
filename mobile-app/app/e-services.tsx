@@ -26,6 +26,7 @@ import {
   FileCheck,
   AlertCircle,
   Phone,
+  ChevronRight,
 } from 'lucide-react-native';
 import { Colors } from '../src/constants/colors';
 
@@ -308,52 +309,59 @@ export default function EServicesScreen() {
       </View>
 
       {/* Category Filter */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoryScroll}
-        contentContainerStyle={styles.categoryContent}
-      >
-        <Pressable
-          onPress={() => setSelectedCategory(null)}
-          style={[
-            styles.categoryChip,
-            !selectedCategory && styles.categoryChipActive,
-          ]}
+      <View style={styles.categoryContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryScroll}
+          contentContainerStyle={styles.categoryContent}
         >
-          <Text
-            style={[
-              styles.categoryChipText,
-              !selectedCategory && styles.categoryChipTextActive,
-            ]}
-          >
-            Tümü
-          </Text>
-        </Pressable>
-        {categories.map((category) => (
           <Pressable
-            key={category.id}
-            onPress={() => setSelectedCategory(category.id)}
-            style={[
+            onPress={() => setSelectedCategory(null)}
+            style={({ pressed }) => [
               styles.categoryChip,
-              selectedCategory === category.id && styles.categoryChipActive,
-              { borderColor: category.color },
+              !selectedCategory && styles.categoryChipActive,
+              pressed && styles.categoryChipPressed,
             ]}
           >
             <Text
               style={[
                 styles.categoryChipText,
-                selectedCategory === category.id && [
-                  styles.categoryChipTextActive,
-                  { color: category.color },
-                ],
+                !selectedCategory && styles.categoryChipTextActive,
               ]}
             >
-              {category.label}
+              Tümü
             </Text>
           </Pressable>
-        ))}
-      </ScrollView>
+          {categories.map((category) => (
+            <Pressable
+              key={category.id}
+              onPress={() => setSelectedCategory(category.id)}
+              style={({ pressed }) => [
+                styles.categoryChip,
+                selectedCategory === category.id && [
+                  styles.categoryChipActive,
+                  { borderColor: category.color, backgroundColor: category.color + '15' },
+                ],
+                { borderColor: category.color },
+                pressed && styles.categoryChipPressed,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.categoryChipText,
+                  selectedCategory === category.id && [
+                    styles.categoryChipTextActive,
+                    { color: category.color },
+                  ],
+                ]}
+              >
+                {category.label}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Services List */}
       <ScrollView
@@ -377,11 +385,7 @@ export default function EServicesScreen() {
               <Text style={styles.serviceTitle}>{service.title}</Text>
               <Text style={styles.serviceDescription}>{service.description}</Text>
             </View>
-            <ArrowLeft
-              size={20}
-              color={Colors.textSecondary}
-              style={{ transform: [{ rotate: '180deg' }] }}
-            />
+            <ChevronRight size={20} color={Colors.textSecondary} />
           </Pressable>
         ))}
       </ScrollView>
@@ -398,104 +402,152 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
-    gap: 12,
+    gap: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   backButton: {
-    padding: 4,
+    padding: 8,
+    borderRadius: 8,
   },
   headerText: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: Colors.text,
     marginBottom: 4,
+    letterSpacing: -0.3,
   },
   headerSubtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.textSecondary,
+    fontWeight: '500',
   },
-  categoryScroll: {
+  categoryContainer: {
     backgroundColor: Colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.03,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  categoryScroll: {
+    flexGrow: 0,
   },
   categoryContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 10,
   },
   categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.background,
-    marginRight: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 1.5,
+    backgroundColor: Colors.surface,
+    marginRight: 10,
+    minHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   categoryChipActive: {
-    backgroundColor: Colors.primary + '15',
     borderWidth: 2,
   },
+  categoryChipPressed: {
+    opacity: 0.7,
+  },
   categoryChipText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     color: Colors.textSecondary,
+    letterSpacing: -0.2,
   },
   categoryChipTextActive: {
-    color: Colors.primary,
     fontWeight: '700',
+    letterSpacing: -0.3,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingVertical: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
     paddingBottom: Platform.OS === 'ios' ? 100 : 80,
   },
   serviceCard: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 18,
     backgroundColor: Colors.surface,
-    marginHorizontal: 20,
-    marginVertical: 6,
-    borderRadius: 12,
+    marginBottom: 12,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: Colors.border,
     gap: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   serviceCardPressed: {
-    opacity: 0.7,
-    backgroundColor: Colors.background,
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
   },
   serviceIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: Colors.primary + '15',
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: Colors.primary + '10',
     justifyContent: 'center',
     alignItems: 'center',
   },
   serviceContent: {
     flex: 1,
+    paddingRight: 8,
   },
   serviceTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: Colors.text,
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -0.2,
   },
   serviceDescription: {
     fontSize: 13,
     color: Colors.textSecondary,
+    fontWeight: '500',
+    lineHeight: 18,
   },
 });
 
