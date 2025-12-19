@@ -72,7 +72,6 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
               source={{ uri: item.image }}
               style={styles.imageBackground}
               resizeMode="cover"
-              defaultSource={require('../../assets/placeholder-image.png')}
             >
               {/* Gradient Overlay - top and bottom for better text readability */}
               <LinearGradient
