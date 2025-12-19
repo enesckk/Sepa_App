@@ -16,16 +16,14 @@ const STORY_SIZE = 72;
 const STORY_ACTIVE_SIZE = 80;
 const STORY_SPACING = 16;
 
+import { Story } from '../services/mockData';
+
 interface StoryItemProps {
-  story: {
-    id: string;
-    image: string;
-    title: string;
-    description: string;
-  };
+  story: Story;
   index: number;
   animatedValue: SharedValue<number>;
   isSelected: boolean;
+  isViewed: boolean;
   onPress: (index: number, storyId: string) => void;
 }
 
@@ -34,6 +32,7 @@ const StoryItem: React.FC<StoryItemProps> = ({
   index,
   animatedValue,
   isSelected,
+  isViewed,
   onPress,
 }) => {
   const animatedStyle = useAnimatedStyle(() => {
@@ -55,21 +54,34 @@ const StoryItem: React.FC<StoryItemProps> = ({
     >
       <Animated.View style={[styles.storyContainer, animatedStyle]}>
         <View style={styles.storyCircleWrapper}>
-          <LinearGradient
-            colors={[Colors.primary, Colors.primaryLight]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.storyGradientBorder}
-          >
-            <View style={styles.storyCircle}>
-              <Image
-                source={{ uri: story.image }}
-                style={styles.storyImage}
-              />
+          {!isViewed ? (
+            // İzlenmemiş hikaye - renkli gradient border
+            <LinearGradient
+              colors={[Colors.primary, Colors.primaryLight]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.storyGradientBorder}
+            >
+              <View style={styles.storyCircle}>
+                <Image
+                  source={{ uri: story.image }}
+                  style={styles.storyImage}
+                />
+              </View>
+            </LinearGradient>
+          ) : (
+            // İzlenmiş hikaye - gri border
+            <View style={[styles.storyGradientBorder, styles.viewedBorder]}>
+              <View style={styles.storyCircle}>
+                <Image
+                  source={{ uri: story.image }}
+                  style={[styles.storyImage, styles.viewedImage]}
+                />
+              </View>
             </View>
-          </LinearGradient>
+          )}
         </View>
-        <Text style={styles.storyTitle} numberOfLines={1}>
+        <Text style={[styles.storyTitle, isViewed && styles.viewedTitle]} numberOfLines={1}>
           {story.title}
         </Text>
       </Animated.View>
@@ -79,12 +91,20 @@ const StoryItem: React.FC<StoryItemProps> = ({
 
 export const StoryCarousel: React.FC = () => {
   const [selectedStory, setSelectedStory] = useState<string | null>(null);
+  const [viewedStories, setViewedStories] = useState<Set<string>>(
+    new Set(mockStories.filter(s => s.isViewed).map(s => s.id))
+  );
   const animatedValues = useRef(
     mockStories.map(() => useSharedValue(0))
   ).current;
 
   const handleStoryPress = (index: number, storyId: string) => {
     const isSelected = selectedStory === storyId;
+    
+    // Hikaye tıklandığında izlenmiş olarak işaretle
+    if (!viewedStories.has(storyId)) {
+      setViewedStories(prev => new Set([...prev, storyId]));
+    }
     
     animatedValues[index].value = withSpring(isSelected ? 0 : 1, {
       damping: 20,
@@ -110,6 +130,7 @@ export const StoryCarousel: React.FC = () => {
             index={index}
             animatedValue={animatedValues[index]}
             isSelected={selectedStory === story.id}
+            isViewed={viewedStories.has(story.id)}
             onPress={handleStoryPress}
           />
         ))}
@@ -186,6 +207,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     letterSpacing: -0.2,
+  },
+  viewedBorder: {
+    borderWidth: 2.5,
+    borderColor: Colors.border,
+    backgroundColor: 'transparent',
+  },
+  viewedImage: {
+    opacity: 0.7,
+  },
+  viewedTitle: {
+    color: Colors.textSecondary,
+    fontWeight: '500',
   },
 });
 
