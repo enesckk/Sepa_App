@@ -19,47 +19,55 @@ import { Colors } from '../../src/constants/colors';
 
 // Şehitkamil Belediyesi Destek Programları ve Hizmetler
 // Carousel görselleri - Şehitkamil Belediyesi'nin sosyal destek programları
-// Placeholder görseller kullanılıyor - gerçek görseller eklendiğinde güncellenecek
+// NOT: Görselleri assets/images/ klasörüne ekledikten sonra require() ile kullanın
+// Şimdilik gradient fallback kullanılıyor, görseller eklendiğinde güncellenecek
 const CAROUSEL_DATA = [
   {
     id: '1',
-    image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=400&fit=crop',
+    // Görseli eklemek için: assets/images/emekli-mutluluk-fonu.jpg
+    image: '', // require('../../assets/images/emekli-mutluluk-fonu.jpg') - görsel eklendiğinde aktif edin
     title: 'EMEKLİ MUTLULUK FONU',
     gradient: ['#10B981', '#059669'], // Green gradient
   },
   {
     id: '2',
-    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=400&fit=crop',
+    // Görseli eklemek için: assets/images/ulasim-destegi.jpg
+    image: '', // require('../../assets/images/ulasim-destegi.jpg') - görsel eklendiğinde aktif edin
     title: 'EVDEN OKULA OKULDAN EVE',
     gradient: ['#3B82F6', '#2563EB'], // Blue gradient
   },
   {
     id: '3',
-    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&h=400&fit=crop',
+    // Görseli eklemek için: assets/images/desteklerimizle-yaninizdayiz.jpg
+    image: '', // require('../../assets/images/desteklerimizle-yaninizdayiz.jpg') - görsel eklendiğinde aktif edin
     title: 'DESTEKLERİMİZLE YANINIZDAYIZ',
     gradient: ['#8B5CF6', '#7C3AED'], // Purple gradient
   },
   {
     id: '4',
-    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop',
+    // Görseli eklemek için: assets/images/guclu-kadin-mutlu-aile.jpg
+    image: '', // require('../../assets/images/guclu-kadin-mutlu-aile.jpg') - görsel eklendiğinde aktif edin
     title: 'GÜÇLÜ KADIN MUTLU AİLE',
     gradient: ['#EC4899', '#DB2777'], // Pink gradient
   },
   {
     id: '5',
-    image: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=400&fit=crop',
+    // Görseli eklemek için: assets/images/29-ekim-ankara.jpg
+    image: '', // require('../../assets/images/29-ekim-ankara.jpg') - görsel eklendiğinde aktif edin
     title: '29 EKİM ANKARA ÇIKARMASI',
     gradient: ['#EF4444', '#DC2626'], // Red gradient
   },
   {
     id: '6',
-    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=400&fit=crop',
+    // Görseli eklemek için: assets/images/antika-pazari.jpg
+    image: '', // require('../../assets/images/antika-pazari.jpg') - görsel eklendiğinde aktif edin
     title: 'ŞEHİTKAMİL ANTİKA PAZARI',
     gradient: ['#F59E0B', '#D97706'], // Orange gradient
   },
   {
     id: '7',
-    image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=400&fit=crop',
+    // Görseli eklemek için: assets/images/daha-temiz-sehitkamil.jpg
+    image: '', // require('../../assets/images/daha-temiz-sehitkamil.jpg') - görsel eklendiğinde aktif edin
     title: 'DAHA TEMİZ ŞEHİTKAMİL',
     gradient: ['#10B981', '#059669'], // Green gradient
   },

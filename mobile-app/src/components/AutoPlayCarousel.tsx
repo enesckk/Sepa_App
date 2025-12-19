@@ -18,7 +18,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 interface CarouselItem {
   id: string;
-  image: string;
+  image: string | number; // Can be URI string or require() number
   title?: string;
   gradient?: string[]; // Optional gradient colors for fallback
 }
@@ -69,21 +69,26 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
       >
         {items.map((item) => (
           <View key={item.id} style={styles.slide}>
-            {/* Background Gradient (fallback if image fails) */}
-            {item.gradient && (
+            {/* Background Gradient (fallback if image fails or empty) */}
+            {item.gradient && item.gradient.length >= 2 && (
               <LinearGradient
-                colors={item.gradient}
+                colors={item.gradient as [string, string, ...string[]]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
             )}
-            <ImageBackground
-              source={{ uri: item.image }}
-              style={styles.imageBackground}
-              resizeMode="cover"
-              imageStyle={styles.imageStyle}
-            >
+            {item.image && (
+              <ImageBackground
+                source={
+                  typeof item.image === 'string' 
+                    ? { uri: item.image }
+                    : item.image
+                }
+                style={styles.imageBackground}
+                resizeMode="cover"
+                imageStyle={styles.imageStyle}
+              >
               {/* Gradient Overlay - top and bottom for better text readability */}
               <LinearGradient
                 colors={['rgba(0,0,0,0.3)', 'transparent', 'rgba(0,0,0,0.7)']}
@@ -97,7 +102,8 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
                   <Text style={styles.title}>{item.title}</Text>
                 </View>
               )}
-            </ImageBackground>
+              </ImageBackground>
+            )}
           </View>
         ))}
       </ScrollView>
