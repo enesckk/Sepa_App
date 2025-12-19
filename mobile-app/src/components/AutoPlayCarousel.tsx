@@ -30,7 +30,6 @@ interface AutoPlayCarouselProps {
 export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
   items,
   autoPlayInterval = 5000,
-  onSearchPress,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
