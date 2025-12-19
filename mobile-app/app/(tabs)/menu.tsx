@@ -17,7 +17,6 @@ import {
   Settings,
   HelpCircle,
   Info,
-  AlertTriangle,
   Building2,
 } from 'lucide-react-native';
 import { Colors } from '../../src/constants/colors';
