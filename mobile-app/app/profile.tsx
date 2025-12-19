@@ -98,11 +98,7 @@ export default function ProfileScreen() {
         </Pressable>
         <Text style={styles.headerTitle}>Profil</Text>
         <Pressable
-          onPress={() => {
-            if (__DEV__) {
-              console.log('Edit profile');
-            }
-          }}
+          onPress={() => router.push('/edit-profile')}
           style={({ pressed }) => [
             styles.editButton,
             pressed && styles.editButtonPressed,
