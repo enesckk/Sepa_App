@@ -17,6 +17,7 @@ import {
   Settings,
   HelpCircle,
   Info,
+  AlertTriangle,
 } from 'lucide-react-native';
 import { Colors } from '../../src/constants/colors';
 
@@ -29,6 +30,12 @@ export default function MenuScreen() {
       title: 'Şehir Rehberi',
       icon: <MapPin size={24} color={Colors.primary} />,
       onPress: () => router.push('/city-guide'),
+    },
+    {
+      id: 'emergency',
+      title: 'Afet Toplanma Alanları',
+      icon: <AlertTriangle size={24} color={Colors.error} />,
+      onPress: () => router.push('/emergency-gathering'),
     },
     {
       id: '2',
