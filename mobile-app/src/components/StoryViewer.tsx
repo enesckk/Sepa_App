@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,19 +9,16 @@ import {
   Dimensions,
   StatusBar,
   Platform,
-  PanResponder,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming,
-  withSequence,
   runOnJS,
-  interpolate,
-  Extrapolate,
+  cancelAnimation,
 } from 'react-native-reanimated';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { X } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
 import { Story, mockStories } from '../services/mockData';
 
@@ -44,15 +41,16 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const [currentIndex, setCurrentIndex] = useState(initialStoryIndex);
   const [isPaused, setIsPaused] = useState(false);
   const progress = useSharedValue(0);
-  const translateX = useSharedValue(0);
-  const opacity = useSharedValue(1); // Başlangıçta görünür
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const opacity = useSharedValue(1);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressingRef = useRef(false);
 
   // initialStoryIndex değiştiğinde currentIndex'i güncelle
   useEffect(() => {
     if (visible) {
       setCurrentIndex(initialStoryIndex);
       progress.value = 0;
+      setIsPaused(false);
     }
   }, [initialStoryIndex, visible]);
 
@@ -61,19 +59,24 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   // Progress bar animasyonu - hemen başlat
   useEffect(() => {
     if (visible && !isPaused && currentStory) {
-      // Hemen başlat, gecikme yok
+      // Önceki animasyonu iptal et
+      cancelAnimation(progress);
       progress.value = 0;
-      // Kısa bir delay sonra başlat (render tamamlansın)
-      const timer = setTimeout(() => {
-        progress.value = withTiming(1, { duration: STORY_DURATION }, (finished) => {
-          if (finished) {
-            runOnJS(handleNext)();
-          }
-        });
-      }, 50);
       
-      return () => clearTimeout(timer);
+      // Hemen başlat
+      progress.value = withTiming(1, { duration: STORY_DURATION }, (finished) => {
+        if (finished && !isPaused) {
+          runOnJS(handleNext)();
+        }
+      });
+    } else if (isPaused) {
+      // Pause durumunda animasyonu durdur
+      cancelAnimation(progress);
     }
+    
+    return () => {
+      cancelAnimation(progress);
+    };
   }, [visible, currentIndex, isPaused]);
 
   // Hikayeyi izlenmiş olarak işaretle
@@ -95,40 +98,86 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     }
   }, [visible]);
 
-  const handleNext = () => {
-    progress.value = 0; // Hemen sıfırla
+  const handleNext = useCallback(() => {
+    if (isLongPressingRef.current) return; // Long press sırasında geçiş yapma
+    
+    cancelAnimation(progress);
+    progress.value = 0;
+    
     if (currentIndex < mockStories.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex(prev => prev + 1);
     } else {
       handleClose();
     }
-  };
+  }, [currentIndex]);
 
-  const handlePrevious = () => {
-    progress.value = 0; // Hemen sıfırla
+  const handlePrevious = useCallback(() => {
+    if (isLongPressingRef.current) return; // Long press sırasında geçiş yapma
+    
+    cancelAnimation(progress);
+    progress.value = 0;
+    
     if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+      setCurrentIndex(prev => prev - 1);
     } else {
       handleClose();
     }
-  };
+  }, [currentIndex]);
 
-  const handleClose = () => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
+  const handlePause = useCallback(() => {
+    setIsPaused(true);
+    cancelAnimation(progress);
+  }, []);
+
+  const handleResume = useCallback(() => {
+    setIsPaused(false);
+    // Progress'i kaldığı yerden devam ettir
+    const currentProgress = progress.value;
+    const remaining = (1 - currentProgress) * STORY_DURATION;
+    progress.value = withTiming(1, { duration: remaining }, (finished) => {
+      if (finished) {
+        runOnJS(handleNext)();
+      }
+    });
+  }, []);
+
+  const handleClose = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
     }
+    cancelAnimation(progress);
+    setIsPaused(false);
+    isLongPressingRef.current = false;
     onClose();
-  };
+  }, [onClose]);
 
-
-  const animatedContainerStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-    opacity: opacity.value,
-  }));
 
   const progressBarStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
   }));
+
+  // Touch handlers
+  const handleLeftPress = useCallback(() => {
+    if (!isLongPressingRef.current) {
+      handlePrevious();
+    }
+  }, [handlePrevious]);
+
+  const handleRightPress = useCallback(() => {
+    if (!isLongPressingRef.current) {
+      handleNext();
+    }
+  }, [handleNext]);
+
+  const handleLongPressStart = useCallback(() => {
+    isLongPressingRef.current = true;
+    handlePause();
+  }, [handlePause]);
+
+  const handleLongPressEnd = useCallback(() => {
+    isLongPressingRef.current = false;
+    handleResume();
+  }, [handleResume]);
 
   if (!currentStory) return null;
 
@@ -144,20 +193,8 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
       <View style={styles.container}>
         <Animated.View style={[styles.backdrop, { opacity: opacity.value }]} />
         
-        <Pressable 
-          style={styles.content}
-          onPress={(e) => {
-            const { locationX } = e.nativeEvent;
-            if (locationX < SCREEN_WIDTH / 3) {
-              handlePrevious();
-            } else if (locationX > (SCREEN_WIDTH * 2) / 3) {
-              handleNext();
-            } else {
-              setIsPaused(!isPaused);
-            }
-          }}
-        >
-          <Animated.View style={[styles.contentInner, animatedContainerStyle]}>
+        <View style={styles.content}>
+          <Animated.View style={styles.contentInner}>
             {/* Progress Bars */}
             <View style={styles.progressContainer}>
               {mockStories.map((_, index) => (
@@ -185,20 +222,34 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
               <Text style={styles.storyDescription}>{currentStory.description}</Text>
             </View>
 
-            {/* Navigation Hints */}
-            <View style={styles.leftTouchArea}>
-              <ChevronLeft size={40} color="rgba(255, 255, 255, 0.3)" />
-            </View>
-            <View style={styles.rightTouchArea}>
-              <ChevronRight size={40} color="rgba(255, 255, 255, 0.3)" />
-            </View>
+            {/* Touch Areas - Instagram mantığı */}
+            <Pressable
+              style={styles.leftTouchArea}
+              onPress={handleLeftPress}
+              onLongPress={handleLongPressStart}
+              onPressOut={handleLongPressEnd}
+              delayLongPress={200}
+            />
+            <Pressable
+              style={styles.centerTouchArea}
+              onLongPress={handleLongPressStart}
+              onPressOut={handleLongPressEnd}
+              delayLongPress={200}
+            />
+            <Pressable
+              style={styles.rightTouchArea}
+              onPress={handleRightPress}
+              onLongPress={handleLongPressStart}
+              onPressOut={handleLongPressEnd}
+              delayLongPress={200}
+            />
 
             {/* Close Button */}
             <Pressable style={styles.closeButton} onPress={handleClose}>
               <X size={24} color={Colors.surface} />
             </Pressable>
           </Animated.View>
-        </Pressable>
+        </View>
       </View>
     </Modal>
   );
@@ -278,9 +329,14 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: SCREEN_WIDTH / 3,
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingLeft: 20,
+    zIndex: 2,
+  },
+  centerTouchArea: {
+    position: 'absolute',
+    left: SCREEN_WIDTH / 3,
+    top: 0,
+    bottom: 0,
+    width: SCREEN_WIDTH / 3,
     zIndex: 2,
   },
   rightTouchArea: {
@@ -289,9 +345,6 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: SCREEN_WIDTH / 3,
-    justifyContent: 'center',
-    alignItems: 'flex-end',
-    paddingRight: 20,
     zIndex: 2,
   },
   closeButton: {
