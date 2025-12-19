@@ -91,8 +91,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.surface,
     borderRadius: 16,
-    padding: 16,
+    padding: 14,
     marginHorizontal: 6,
+    minWidth: 0,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -126,6 +127,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
+    minWidth: 0,
   },
   title: {
     fontSize: 16,
@@ -137,11 +139,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    flex: 1,
+    minWidth: 0,
   },
   locationText: {
     fontSize: 11,
     color: Colors.textSecondary,
     flex: 1,
+    flexShrink: 1,
   },
   content: {
     gap: 0,
@@ -149,14 +154,17 @@ const styles = StyleSheet.create({
   nextPrayerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     borderRadius: 12,
+    flex: 1,
+    minWidth: 0,
   },
   nextPrayerInfo: {
     flex: 1,
+    minWidth: 0,
   },
   nextPrayerLabel: {
     fontSize: 12,
@@ -168,16 +176,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: 8,
+    flexWrap: 'wrap',
   },
   nextPrayerName: {
-    fontSize: 18,
+    fontSize: 16,
     color: Colors.primaryDark,
     fontWeight: '700',
+    flexShrink: 1,
   },
   nextPrayerTime: {
-    fontSize: 24,
+    fontSize: 20,
     color: Colors.primary,
     fontWeight: '700',
+    flexShrink: 0,
   },
 });
 

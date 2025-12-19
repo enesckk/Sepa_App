@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
 import { Header } from '../../src/components/Header';
 import { AutoPlayCarousel } from '../../src/components/AutoPlayCarousel';
+import { StoryCarousel } from '../../src/components/StoryCarousel';
 import { WeatherCard } from '../../src/components/WeatherCard';
 import { PrayerTimeCard } from '../../src/components/PrayerTimeCard';
 import { QuickAccessCards } from '../../src/components/QuickAccessCards';
@@ -142,6 +143,9 @@ export default function HomeScreen() {
           autoPlayInterval={3000}
           onSearchPress={handleSearchPress}
         />
+
+        {/* Story Carousel */}
+        <StoryCarousel />
 
         {/* Weather and Prayer Time Cards - Side by Side */}
         <View style={styles.weatherPrayerContainer}>
