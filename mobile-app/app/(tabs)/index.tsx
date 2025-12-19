@@ -17,27 +17,43 @@ import { QuickAccessCards } from '../../src/components/QuickAccessCards';
 import { NewsSection } from '../../src/components/NewsSection';
 import { Colors } from '../../src/constants/colors';
 
-// Mock Data - Şehitkamil Belediyesi ile ilgili görseller
+// Şehitkamil Belediyesi Destek Programları ve Hizmetler
+// Carousel görselleri - Şehitkamil Belediyesi'nin sosyal destek programları
 const CAROUSEL_DATA = [
   {
     id: '1',
-    image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
-    title: 'Şehitkamil Belediyesi',
+    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/emekli-mutluluk-fonu.jpg',
+    title: 'EMEKLİ MUTLULUK FONU',
   },
   {
     id: '2',
-    image: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800',
-    title: 'Hizmetlerimiz',
+    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/ulasim-destegi.jpg',
+    title: 'EVDEN OKULA OKULDAN EVE',
   },
   {
     id: '3',
-    image: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800',
-    title: 'Projelerimiz',
+    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/desteklerimizle-yaninizdayiz.jpg',
+    title: 'DESTEKLERİMİZLE YANINIZDAYIZ',
   },
   {
     id: '4',
-    image: 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=800',
-    title: 'Etkinliklerimiz',
+    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/guclu-kadin-mutlu-aile.jpg',
+    title: 'GÜÇLÜ KADIN MUTLU AİLE',
+  },
+  {
+    id: '5',
+    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/29-ekim-ankara.jpg',
+    title: '29 EKİM ANKARA ÇIKARMASI',
+  },
+  {
+    id: '6',
+    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/antika-pazari.jpg',
+    title: 'ŞEHİTKAMİL ANTİKA PAZARI',
+  },
+  {
+    id: '7',
+    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/daha-temiz-sehitkamil.jpg',
+    title: 'DAHA TEMİZ ŞEHİTKAMİL',
   },
 ];
 

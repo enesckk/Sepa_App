@@ -72,12 +72,14 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
               source={{ uri: item.image }}
               style={styles.imageBackground}
               resizeMode="cover"
+              defaultSource={require('../../assets/placeholder-image.png')}
             >
-              {/* Gradient Overlay - bottom to top */}
+              {/* Gradient Overlay - top and bottom for better text readability */}
               <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.6)']}
-                start={{ x: 0, y: 1 }}
-                end={{ x: 0, y: 0 }}
+                colors={['rgba(0,0,0,0.3)', 'transparent', 'rgba(0,0,0,0.7)']}
+                locations={[0, 0.5, 1]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
                 style={styles.overlay}
               />
               {item.title && (
@@ -164,15 +166,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 50,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '800',
     color: Colors.surface,
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.9)',
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 8,
+    textShadowRadius: 10,
+    letterSpacing: 0.5,
   },
   pagination: {
     position: 'absolute',
