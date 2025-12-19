@@ -19,6 +19,27 @@ import {
   EmergencyGatheringArea,
 } from '../src/services/mockEmergencyGatheringData';
 
+// Calculate distance between two coordinates (Haversine formula)
+const calculateDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
+  const R = 6371e3; // Radius of the Earth in meters
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return Math.round(R * c); // Return in meters
+};
+
 // Convert EmergencyGatheringArea to Place format for compatibility
 const convertToPlace = (area: EmergencyGatheringArea) => ({
   id: area.id,
@@ -30,7 +51,7 @@ const convertToPlace = (area: EmergencyGatheringArea) => ({
   address: area.address,
   phone: area.contactPhone,
   features: area.features,
-  distance: area.distance ? Math.round(area.distance * 1000) : undefined, // Convert km to meters
+  distance: area.distance ? Math.round(area.distance * 1000) : undefined, // Convert km to meters for display
   isFavorite: area.isFavorite,
   images: area.images,
 });
@@ -80,26 +101,6 @@ export default function EmergencyGatheringScreen() {
       isFavorite: favorites.has(area.id),
     }));
   }, [userLocation, favorites]);
-
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const R = 6371e3; // Radius of the Earth in meters
-    const φ1 = (lat1 * Math.PI) / 180;
-    const φ2 = (lat2 * Math.PI) / 180;
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return Math.round(R * c); // Return in meters
-  };
 
   const handleMarkerPress = (place: any) => {
     const area = mockEmergencyGatheringAreas.find((a) => a.id === place.id);
