@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
   interpolate,
+  SharedValue,
 } from 'react-native-reanimated';
 import { mockStories } from '../services/mockData';
 import { Colors } from '../constants/colors';
@@ -22,7 +23,7 @@ interface StoryItemProps {
     description: string;
   };
   index: number;
-  animatedValue: Animated.SharedValue<number>;
+  animatedValue: SharedValue<number>;
   isSelected: boolean;
   onPress: (index: number, storyId: string) => void;
 }
