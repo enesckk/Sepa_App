@@ -24,49 +24,49 @@ const CAROUSEL_DATA = [
   {
     id: '1',
     // Emekli Mutluluk Fonu - Yeşil gradient arka plan
-    image: require('../../assets/images/emekli-mutluluk-fonu.jpg'),
+    image: require('../../assets/images/emekli-mutluluk-fonu.png'),
     title: 'EMEKLİ MUTLULUK FONU',
     gradient: ['#10B981', '#059669'], // Green gradient (fallback)
   },
   {
     id: '2',
     // Ulaşım Desteği - Okul servisi, yeşil-mavi gradient
-    image: require('../../assets/images/ulasim-destegi.jpg'),
+    image: require('../../assets/images/ulasim-destegi.png'),
     title: 'EVDEN OKULA OKULDAN EVE',
     gradient: ['#3B82F6', '#10B981'], // Blue-Green gradient (fallback)
   },
   {
     id: '3',
     // Desteklerimizle Yanınızdayız - Çoklu destek programları
-    image: require('../../assets/images/desteklerimizle-yaninizdayiz.jpg'),
+    image: require('../../assets/images/desteklerimizle-yaninizdayiz.png'),
     title: 'DESTEKLERİMİZLE YANINIZDAYIZ',
     gradient: ['#8B5CF6', '#EC4899'], // Purple-Pink gradient (fallback)
   },
   {
     id: '4',
     // Güçlü Kadın Mutlu Aile - Grup terapileri, pembe-mor gradient
-    image: require('../../assets/images/guclu-kadin-mutlu-aile.jpg'),
+    image: require('../../assets/images/guclu-kadin-mutlu-aile.png'),
     title: 'GÜÇLÜ KADIN MUTLU AİLE',
     gradient: ['#EC4899', '#8B5CF6'], // Pink-Purple gradient (fallback)
   },
   {
     id: '5',
     // 29 Ekim Ankara Çıkarması - Cumhuriyet Bayramı, kırmızı-beyaz gradient
-    image: require('../../assets/images/29-ekim-ankara.jpg'),
+    image: require('../../assets/images/29-ekim-ankara.png'),
     title: '29 EKİM ANKARA ÇIKARMASI',
     gradient: ['#EF4444', '#DC2626'], // Red gradient (fallback)
   },
   {
     id: '6',
     // Şehitkamil Antika Pazarı - Parchment/scroll tasarım, kahverengi-turuncu gradient
-    image: require('../../assets/images/antika-pazari.jpg'),
+    image: require('../../assets/images/antika-pazari.png'),
     title: 'ŞEHİTKAMİL ANTİKA PAZARI',
     gradient: ['#D97706', '#F59E0B'], // Brown-Orange gradient (fallback)
   },
   {
     id: '7',
     // Daha Temiz Şehitkamil - Çöp toplama, yeşil gradient
-    image: require('../../assets/images/daha-temiz-sehitkamil.jpg'),
+    image: require('../../assets/images/daha-temiz-sehitkamil.png'),
     title: 'DAHA TEMİZ ŞEHİTKAMİL',
     gradient: ['#10B981', '#059669'], // Green gradient (fallback)
   },
