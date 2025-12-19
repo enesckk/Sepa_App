@@ -96,18 +96,15 @@ export const StoryCarousel: React.FC = () => {
     new Set(mockStories.filter(s => s.isViewed).map(s => s.id))
   );
   const [viewerVisible, setViewerVisible] = useState(false);
-  const [currentStory, setCurrentStory] = useState<Story | null>(null);
+  const [initialStoryIndex, setInitialStoryIndex] = useState(0);
   const animatedValues = useRef(
     mockStories.map(() => useSharedValue(0))
   ).current;
 
   const handleStoryPress = (index: number, storyId: string) => {
-    // Hikayeyi bul ve viewer'ı aç
-    const story = mockStories.find(s => s.id === storyId);
-    if (story) {
-      setCurrentStory(story);
-      setViewerVisible(true);
-    }
+    // Viewer'ı aç ve başlangıç index'ini ayarla
+    setInitialStoryIndex(index);
+    setViewerVisible(true);
     
     // Animasyon için
     animatedValues[index].value = withSpring(1, {
@@ -127,7 +124,6 @@ export const StoryCarousel: React.FC = () => {
 
   const handleCloseViewer = () => {
     setViewerVisible(false);
-    setCurrentStory(null);
   };
 
   const handleStoryViewed = (storyId: string) => {
@@ -162,7 +158,7 @@ export const StoryCarousel: React.FC = () => {
       {/* Story Viewer Modal */}
       <StoryViewer
         visible={viewerVisible}
-        story={currentStory}
+        initialStoryIndex={initialStoryIndex}
         onClose={handleCloseViewer}
         onViewed={handleStoryViewed}
       />
