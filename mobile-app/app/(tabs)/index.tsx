@@ -80,7 +80,7 @@ export default function HomeScreen() {
     if (__DEV__) {
       console.log('[v0] Profile pressed');
     }
-    // TODO: Navigate to profile screen when created
+    router.push('/profile');
   };
 
   const handleSettingsPress = () => {
