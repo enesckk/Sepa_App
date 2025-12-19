@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { User, Settings, Coins } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
 
@@ -16,65 +17,69 @@ export const Header: React.FC<HeaderProps> = ({
   onSettingsPress,
 }) => {
   return (
-    <View style={styles.container}>
-      {/* Sol: Profile + Settings */}
-      <View style={styles.leftContainer}>
-        <TouchableOpacity
-          onPress={onProfilePress}
-          activeOpacity={0.7}
-          style={styles.profileButton}
-        >
-          <View style={styles.profileIcon}>
-            <User size={20} color={Colors.primary} strokeWidth={2.5} />
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={onSettingsPress}
-          activeOpacity={0.7}
-          style={styles.settingsButton}
-        >
-          <Settings size={24} color={Colors.textSecondary} strokeWidth={2} />
-        </TouchableOpacity>
-      </View>
-
-      {/* Orta: Logo + App Name */}
-      <View style={styles.centerContainer}>
-        <View style={styles.logo}>
-          <Text style={styles.logoText}>Ş</Text>
+    <BlurView intensity={80} tint="light" style={styles.blurContainer}>
+      <View style={styles.container}>
+        {/* Sol: Profile + Settings */}
+        <View style={styles.leftContainer}>
+          <TouchableOpacity
+            onPress={onProfilePress}
+            activeOpacity={0.7}
+            style={styles.profileButton}
+          >
+            <View style={styles.profileIcon}>
+              <User size={20} color={Colors.primary} strokeWidth={2.5} />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onSettingsPress}
+            activeOpacity={0.7}
+            style={styles.settingsButton}
+          >
+            <Settings size={24} color={Colors.textSecondary} strokeWidth={2} />
+          </TouchableOpacity>
         </View>
-        <Text style={styles.appName}>Şehitkamil</Text>
-      </View>
 
-      {/* Sağ: Points */}
-      <View style={styles.rightContainer}>
-        <Coins size={20} color={Colors.secondary} strokeWidth={2.5} />
-        <Text style={styles.pointsText}>{points}</Text>
+        {/* Orta: Logo + App Name */}
+        <View style={styles.centerContainer}>
+          <View style={styles.logo}>
+            <Text style={styles.logoText}>Ş</Text>
+          </View>
+          <Text style={styles.appName}>Şehitkamil</Text>
+        </View>
+
+        {/* Sağ: Points */}
+        <View style={styles.rightContainer}>
+          <Coins size={20} color={Colors.secondary} strokeWidth={2.5} />
+          <Text style={styles.pointsText}>{points}</Text>
+        </View>
       </View>
-    </View>
+    </BlurView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: 60,
-    backgroundColor: 'white',
+  blurContainer: {
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
       },
       android: {
-        elevation: 2,
+        elevation: 4,
       },
     }),
+  },
+  container: {
+    height: 60,
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
   },
   leftContainer: {
     flexDirection: 'row',

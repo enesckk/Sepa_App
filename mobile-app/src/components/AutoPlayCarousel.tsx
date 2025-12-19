@@ -10,6 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Search } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
 
@@ -87,16 +88,20 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
         ))}
       </ScrollView>
 
-      {/* Search Bar Overlay */}
+      {/* Glassmorphism Search Bar Overlay */}
       <TouchableOpacity
         onPress={onSearchPress}
-        activeOpacity={0.8}
-        style={styles.searchBar}
+        activeOpacity={0.9}
+        style={styles.searchBarContainer}
       >
-        <View style={styles.searchIconContainer}>
-          <Search size={20} color={Colors.primary} strokeWidth={2.5} />
-        </View>
-        <Text style={styles.searchText}>Uygulamada ara...</Text>
+        <BlurView intensity={90} tint="light" style={styles.searchBarBlur}>
+          <View style={styles.searchBar}>
+            <View style={styles.searchIconContainer}>
+              <Search size={20} color={Colors.primary} strokeWidth={2.5} />
+            </View>
+            <Text style={styles.searchText}>Uygulamada ara...</Text>
+          </View>
+        </BlurView>
       </TouchableOpacity>
 
       {/* Pagination Dots */}
@@ -117,7 +122,7 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 240,
+    height: 280,
     position: 'relative',
     marginBottom: 4,
   },
@@ -126,7 +131,7 @@ const styles = StyleSheet.create({
   },
   slide: {
     width: SCREEN_WIDTH,
-    height: 240,
+    height: 280,
   },
   imageBackground: {
     width: '100%',
@@ -156,31 +161,38 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
-  searchBar: {
+  searchBarContainer: {
     position: 'absolute',
     top: 20,
     left: 20,
     right: 20,
-    height: 52,
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
+    borderRadius: 20,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  searchBarBlur: {
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  searchBar: {
+    height: 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderRadius: 20,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 4,
     gap: 0,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.2,
-        shadowRadius: 16,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
   },
   searchIconContainer: {
     width: 44,
