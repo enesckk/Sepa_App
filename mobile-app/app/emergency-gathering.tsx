@@ -288,6 +288,7 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
     backgroundColor: Colors.surface,
+    minHeight: 200,
   },
   listHeader: {
     paddingHorizontal: 20,
