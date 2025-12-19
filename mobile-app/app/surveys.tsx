@@ -31,6 +31,11 @@ export default function SurveyScreen() {
 
   const currentSurvey = surveys[currentSurveyIndex];
   const isCompleted = completedSurveys.has(currentSurvey?.id || '');
+  const isLastQuestion = currentSurveyIndex === surveys.length - 1;
+  const answeredQuestions = Object.keys(selectedAnswers).filter(
+    (surveyId) => selectedAnswers[surveyId] && selectedAnswers[surveyId].length > 0
+  ).length;
+  const currentQuestionNumber = currentSurveyIndex + 1;
 
   const handleAnswerSelect = (optionId: string) => {
     if (!currentSurvey) return;
@@ -66,23 +71,42 @@ export default function SurveyScreen() {
       return;
     }
 
-    setCompletedSurveys(new Set([...completedSurveys, currentSurvey.id]));
-    setRewardAmount(currentSurvey.reward);
-    setShowReward(true);
-    setShowSuccess(true);
+    // Mark current question as answered (but not completed yet)
+    const newSelectedAnswers = {
+      ...selectedAnswers,
+      [currentSurvey.id]: answers,
+    };
 
-    // Move to next survey
-    setTimeout(() => {
-      const nextIndex = surveys.findIndex(
-        (s) => !completedSurveys.has(s.id) && s.id !== currentSurvey.id
-      );
-      if (nextIndex !== -1) {
-        setCurrentSurveyIndex(nextIndex);
-      } else {
-        // All surveys completed
-        Alert.alert('Tebrikler!', 'Tüm anketleri tamamladınız!');
-      }
-    }, 2000);
+    // If it's the last question, complete the entire survey and show rewards
+    if (isLastQuestion) {
+      // Calculate total reward
+      const totalReward = surveys.reduce((sum, survey) => {
+        return sum + survey.reward;
+      }, 0);
+
+      // Mark all surveys as completed
+      const allSurveyIds = new Set(surveys.map((s) => s.id));
+      setCompletedSurveys(allSurveyIds);
+      setSelectedAnswers(newSelectedAnswers);
+      
+      // Show reward and success message
+      setRewardAmount(totalReward);
+      setShowReward(true);
+      setShowSuccess(true);
+
+      // Show completion message
+      setTimeout(() => {
+        Alert.alert(
+          'Tebrikler!',
+          `Tüm anketleri tamamladınız!\n+${totalReward} Gölbucks kazandınız`,
+          [{ text: 'Tamam', onPress: () => router.back() }]
+        );
+      }, 2000);
+    } else {
+      // Not the last question, just move to next
+      setSelectedAnswers(newSelectedAnswers);
+      setCurrentSurveyIndex(currentSurveyIndex + 1);
+    }
   };
 
   const completedCount = completedSurveys.size;
@@ -125,7 +149,7 @@ export default function SurveyScreen() {
         </View>
       </View>
 
-      <ProgressBar current={completedCount} total={surveys.length} />
+      <ProgressBar current={currentQuestionNumber} total={surveys.length} />
 
       <ScrollView
         style={styles.scrollView}
@@ -149,7 +173,7 @@ export default function SurveyScreen() {
             <SubmitButton
               onPress={handleSubmit}
               disabled={(selectedAnswers[currentSurvey.id] || []).length === 0}
-              text="Anketi Gönder"
+              text={isLastQuestion ? "Anketi Gönder" : "Sonraki Soru"}
             />
           </>
         ) : (
@@ -169,7 +193,7 @@ export default function SurveyScreen() {
 
       <SuccessSnackbar
         visible={showSuccess}
-        message="Anket gönderildi!"
+        message="Anket tamamlandı!"
         subMessage={`+${rewardAmount} Gölbucks kazandınız`}
         onComplete={() => setShowSuccess(false)}
       />
