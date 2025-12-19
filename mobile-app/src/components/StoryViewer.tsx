@@ -45,8 +45,16 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const progress = useSharedValue(0);
   const translateX = useSharedValue(0);
-  const opacity = useSharedValue(0);
+  const opacity = useSharedValue(1); // Başlangıçta görünür
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // initialStoryIndex değiştiğinde currentIndex'i güncelle
+  useEffect(() => {
+    if (visible) {
+      setCurrentIndex(initialStoryIndex);
+      progress.value = 0;
+    }
+  }, [initialStoryIndex, visible]);
 
   const currentStory = mockStories[currentIndex];
 
