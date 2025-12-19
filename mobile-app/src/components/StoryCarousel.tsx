@@ -10,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { mockStories } from '../services/mockData';
 import { Colors } from '../constants/colors';
+import { StoryViewer } from './StoryViewer';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const STORY_SIZE = 72;
@@ -94,48 +95,78 @@ export const StoryCarousel: React.FC = () => {
   const [viewedStories, setViewedStories] = useState<Set<string>>(
     new Set(mockStories.filter(s => s.isViewed).map(s => s.id))
   );
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [currentStory, setCurrentStory] = useState<Story | null>(null);
   const animatedValues = useRef(
     mockStories.map(() => useSharedValue(0))
   ).current;
 
   const handleStoryPress = (index: number, storyId: string) => {
-    const isSelected = selectedStory === storyId;
-    
-    // Hikaye tıklandığında izlenmiş olarak işaretle
-    if (!viewedStories.has(storyId)) {
-      setViewedStories(prev => new Set([...prev, storyId]));
+    // Hikayeyi bul ve viewer'ı aç
+    const story = mockStories.find(s => s.id === storyId);
+    if (story) {
+      setCurrentStory(story);
+      setViewerVisible(true);
     }
     
-    animatedValues[index].value = withSpring(isSelected ? 0 : 1, {
+    // Animasyon için
+    animatedValues[index].value = withSpring(1, {
       damping: 20,
       stiffness: 300,
       mass: 0.8,
     });
     
-    setSelectedStory(isSelected ? null : storyId);
+    setTimeout(() => {
+      animatedValues[index].value = withSpring(0, {
+        damping: 20,
+        stiffness: 300,
+        mass: 0.8,
+      });
+    }, 200);
+  };
+
+  const handleCloseViewer = () => {
+    setViewerVisible(false);
+    setCurrentStory(null);
+  };
+
+  const handleStoryViewed = (storyId: string) => {
+    if (!viewedStories.has(storyId)) {
+      setViewedStories(prev => new Set([...prev, storyId]));
+    }
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.carouselContent}
-        style={styles.carousel}
-      >
-        {mockStories.map((story, index) => (
-          <StoryItem
-            key={story.id}
-            story={story}
-            index={index}
-            animatedValue={animatedValues[index]}
-            isSelected={selectedStory === story.id}
-            isViewed={viewedStories.has(story.id)}
-            onPress={handleStoryPress}
-          />
-        ))}
-      </ScrollView>
-    </View>
+    <>
+      <View style={styles.container}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.carouselContent}
+          style={styles.carousel}
+        >
+          {mockStories.map((story, index) => (
+            <StoryItem
+              key={story.id}
+              story={story}
+              index={index}
+              animatedValue={animatedValues[index]}
+              isSelected={selectedStory === story.id}
+              isViewed={viewedStories.has(story.id)}
+              onPress={handleStoryPress}
+            />
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Story Viewer Modal */}
+      <StoryViewer
+        visible={viewerVisible}
+        story={currentStory}
+        onClose={handleCloseViewer}
+        onViewed={handleStoryViewed}
+      />
+    </>
   );
 };
 
