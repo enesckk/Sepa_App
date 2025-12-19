@@ -30,7 +30,7 @@ const convertToPlace = (area: EmergencyGatheringArea) => ({
   address: area.address,
   phone: area.contactPhone,
   features: area.features,
-  distance: area.distance,
+  distance: area.distance ? Math.round(area.distance * 1000) : undefined, // Convert km to meters
   isFavorite: area.isFavorite,
   images: area.images,
 });
@@ -63,13 +63,14 @@ export default function EmergencyGatheringScreen() {
     // Calculate distances if user location is available
     if (userLocation) {
       areas = areas.map((area) => {
-        const distance = calculateDistance(
+        const distanceInMeters = calculateDistance(
           userLocation.latitude,
           userLocation.longitude,
           area.latitude,
           area.longitude
         );
-        return { ...area, distance };
+        const distanceInKm = distanceInMeters / 1000; // Convert to km for display
+        return { ...area, distance: distanceInKm };
       }).sort((a, b) => (a.distance || 0) - (b.distance || 0));
     }
 
@@ -86,16 +87,18 @@ export default function EmergencyGatheringScreen() {
     lat2: number,
     lon2: number
   ): number => {
-    const R = 6371; // Radius of the Earth in km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const R = 6371e3; // Radius of the Earth in meters
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
     const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
+
+    return Math.round(R * c); // Return in meters
   };
 
   const handleMarkerPress = (place: any) => {

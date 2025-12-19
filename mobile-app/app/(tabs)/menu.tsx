@@ -35,7 +35,7 @@ export default function MenuScreen() {
     {
       id: 'emergency',
       title: 'Afet Toplanma Alanları',
-      icon: <AlertTriangle size={24} color={Colors.error} />,
+      icon: <MapPin size={24} color={Colors.primary} />,
       onPress: () => router.push('/emergency-gathering'),
     },
     {
