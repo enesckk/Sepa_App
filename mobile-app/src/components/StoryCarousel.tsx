@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, Pressable, ScrollView } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, Pressable, ScrollView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
@@ -12,9 +12,9 @@ import { mockStories } from '../services/mockData';
 import { Colors } from '../constants/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const STORY_SIZE = 64;
-const STORY_ACTIVE_SIZE = 75;
-const STORY_SPACING = 12;
+const STORY_SIZE = 72;
+const STORY_ACTIVE_SIZE = 80;
+const STORY_SPACING = 16;
 
 interface StoryItemProps {
   story: {
@@ -87,8 +87,9 @@ export const StoryCarousel: React.FC = () => {
     const isSelected = selectedStory === storyId;
     
     animatedValues[index].value = withSpring(isSelected ? 0 : 1, {
-      damping: 15,
-      stiffness: 150,
+      damping: 20,
+      stiffness: 300,
+      mass: 0.8,
     });
     
     setSelectedStory(isSelected ? null : storyId);
@@ -119,8 +120,11 @@ export const StoryCarousel: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
+    paddingVertical: 20,
+    paddingBottom: 24,
     backgroundColor: Colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
   carousel: {
     flex: 1,
@@ -135,7 +139,7 @@ const styles = StyleSheet.create({
   },
   storyContainer: {
     alignItems: 'center',
-    width: STORY_SIZE + 20,
+    width: STORY_SIZE + 24,
   },
   storyCircleWrapper: {
     width: STORY_SIZE + 4,
@@ -148,7 +152,7 @@ const styles = StyleSheet.create({
     width: STORY_SIZE + 4,
     height: STORY_SIZE + 4,
     borderRadius: (STORY_SIZE + 4) / 2,
-    padding: 2,
+    padding: 2.5,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -158,6 +162,17 @@ const styles = StyleSheet.create({
     borderRadius: STORY_SIZE / 2,
     overflow: 'hidden',
     backgroundColor: Colors.background,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   storyImage: {
     width: '100%',
@@ -165,11 +180,12 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   storyTitle: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: Colors.text,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: 10,
+    letterSpacing: -0.2,
   },
 });
 

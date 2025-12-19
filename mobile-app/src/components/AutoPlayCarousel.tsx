@@ -24,8 +24,7 @@ interface CarouselItem {
 
 interface AutoPlayCarouselProps {
   items: CarouselItem[];
-  autoPlayInterval?: number; // default: 3000ms
-  onSearchPress?: () => void;
+  autoPlayInterval?: number; // default: 5000ms
 }
 
 export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
@@ -90,19 +89,6 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
         ))}
       </ScrollView>
 
-      {/* Glassmorphism Search Bar Overlay - Floating */}
-      <TouchableOpacity
-        onPress={onSearchPress}
-        activeOpacity={0.9}
-        style={styles.searchBarContainer}
-      >
-        <BlurView intensity={90} tint="light" style={styles.searchBarBlur}>
-          <View style={styles.searchBar}>
-            <Search size={18} color={Colors.primary} strokeWidth={2} />
-            <Text style={styles.searchText}>Uygulamada ara...</Text>
-          </View>
-        </BlurView>
-      </TouchableOpacity>
 
       {/* Pagination Dots */}
       <View style={styles.pagination}>
@@ -160,45 +146,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 8,
-  },
-  searchBarContainer: {
-    position: 'absolute',
-    top: -24,
-    left: 16,
-    right: 16,
-    borderRadius: 24,
-    overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.25,
-        shadowRadius: 20,
-      },
-      android: {
-        elevation: 12,
-      },
-    }),
-  },
-  searchBarBlur: {
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  searchBar: {
-    height: 48,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  searchText: {
-    fontSize: 15,
-    color: '#9CA3AF',
-    fontWeight: '500',
-    flex: 1,
   },
   pagination: {
     position: 'absolute',

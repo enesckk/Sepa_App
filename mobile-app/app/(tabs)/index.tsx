@@ -16,6 +16,7 @@ import { PrayerTimeCard } from '../../src/components/PrayerTimeCard';
 import { QuickAccessCards } from '../../src/components/QuickAccessCards';
 import { NewsSection } from '../../src/components/NewsSection';
 import { Colors } from '../../src/constants/colors';
+import { SearchBar } from '../../src/components/SearchBar';
 
 // Mock Data
 const CAROUSEL_DATA = [
@@ -130,6 +131,9 @@ export default function HomeScreen() {
         onSettingsPress={handleSettingsPress}
       />
 
+      {/* Professional Search Bar */}
+      <SearchBar onPress={handleSearchPress} />
+
       {/* Scrollable Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -141,7 +145,6 @@ export default function HomeScreen() {
         <AutoPlayCarousel
           items={CAROUSEL_DATA}
           autoPlayInterval={5000}
-          onSearchPress={handleSearchPress}
         />
 
         {/* Story Carousel */}
