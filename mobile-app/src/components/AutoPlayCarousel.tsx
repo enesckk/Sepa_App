@@ -25,11 +25,13 @@ interface CarouselItem {
 interface AutoPlayCarouselProps {
   items: CarouselItem[];
   autoPlayInterval?: number; // default: 5000ms
+  onSearchPress?: () => void;
 }
 
 export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
   items,
   autoPlayInterval = 5000,
+  onSearchPress,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -88,6 +90,32 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
         ))}
       </ScrollView>
 
+      {/* Floating Search Bar with Şehitkamil Logo */}
+      {onSearchPress && (
+        <TouchableOpacity
+          onPress={onSearchPress}
+          activeOpacity={0.9}
+          style={styles.searchBarContainer}
+        >
+          <BlurView intensity={95} tint="light" style={styles.searchBarBlur}>
+            <View style={styles.searchBar}>
+              {/* Şehitkamil Logo */}
+              <View style={styles.logoContainer}>
+                <View style={styles.logoCircle}>
+                  <Text style={styles.logoText}>Ş</Text>
+                </View>
+                <Text style={styles.logoName}>Şehitkamil</Text>
+              </View>
+              
+              {/* Search Input */}
+              <View style={styles.searchInputContainer}>
+                <Search size={18} color={Colors.primary} strokeWidth={2.5} />
+                <Text style={styles.searchText}>Uygulamada ara...</Text>
+              </View>
+            </View>
+          </BlurView>
+        </TouchableOpacity>
+      )}
 
       {/* Pagination Dots */}
       <View style={styles.pagination}>
@@ -168,6 +196,79 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
+  },
+  searchBarContainer: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    right: 16,
+    borderRadius: 28,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 20,
+      },
+      android: {
+        elevation: 12,
+      },
+    }),
+  },
+  searchBarBlur: {
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  searchBar: {
+    height: 56,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    gap: 12,
+  },
+  logoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingRight: 12,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(0, 0, 0, 0.08)',
+  },
+  logoCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    color: Colors.surface,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  logoName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: -0.3,
+  },
+  searchInputContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingLeft: 8,
+  },
+  searchText: {
+    fontSize: 15,
+    color: '#6B7280',
+    fontWeight: '500',
+    flex: 1,
   },
 });
 

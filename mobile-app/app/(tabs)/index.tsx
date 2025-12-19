@@ -16,29 +16,28 @@ import { PrayerTimeCard } from '../../src/components/PrayerTimeCard';
 import { QuickAccessCards } from '../../src/components/QuickAccessCards';
 import { NewsSection } from '../../src/components/NewsSection';
 import { Colors } from '../../src/constants/colors';
-import { SearchBar } from '../../src/components/SearchBar';
 
-// Mock Data
+// Mock Data - Şehitkamil Belediyesi ile ilgili görseller
 const CAROUSEL_DATA = [
   {
     id: '1',
-    image: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800',
-    title: 'Park Temizliği',
+    image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
+    title: 'Şehitkamil Belediyesi',
   },
   {
     id: '2',
-    image: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800',
-    title: 'Yeni Proje',
+    image: 'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800',
+    title: 'Hizmetlerimiz',
   },
   {
     id: '3',
-    image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
-    title: 'Çevre Çalışması',
+    image: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800',
+    title: 'Projelerimiz',
   },
   {
     id: '4',
     image: 'https://images.unsplash.com/photo-1494522855154-9297ac14b55f?w=800',
-    title: 'Spor Etkinliği',
+    title: 'Etkinliklerimiz',
   },
 ];
 
@@ -131,9 +130,6 @@ export default function HomeScreen() {
         onSettingsPress={handleSettingsPress}
       />
 
-      {/* Professional Search Bar */}
-      <SearchBar onPress={handleSearchPress} />
-
       {/* Scrollable Content */}
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -141,10 +137,11 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         style={styles.scrollView}
       >
-        {/* Auto-Play Carousel */}
+        {/* Auto-Play Carousel with Integrated Search Bar */}
         <AutoPlayCarousel
           items={CAROUSEL_DATA}
           autoPlayInterval={5000}
+          onSearchPress={handleSearchPress}
         />
 
         {/* Story Carousel */}
