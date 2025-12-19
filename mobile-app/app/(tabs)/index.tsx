@@ -121,7 +121,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <StatusBar style="dark" />
+      <StatusBar style="dark" backgroundColor="#f8f9fa" />
       
       {/* Header */}
       <Header
@@ -140,7 +140,7 @@ export default function HomeScreen() {
         {/* Auto-Play Carousel */}
         <AutoPlayCarousel
           items={CAROUSEL_DATA}
-          autoPlayInterval={3000}
+          autoPlayInterval={5000}
           onSearchPress={handleSearchPress}
         />
 

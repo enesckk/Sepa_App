@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { User, Settings, Coins } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
 
@@ -26,9 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
             activeOpacity={0.7}
             style={styles.profileButton}
           >
-            <View style={styles.profileIcon}>
-              <User size={20} color={Colors.primary} strokeWidth={2.5} />
-            </View>
+            <User size={24} color={Colors.primary} strokeWidth={2} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={onSettingsPress}
@@ -47,11 +46,16 @@ export const Header: React.FC<HeaderProps> = ({
           <Text style={styles.appName}>Şehitkamil</Text>
         </View>
 
-        {/* Sağ: Points */}
-        <View style={styles.rightContainer}>
+        {/* Sağ: Points with Gradient */}
+        <LinearGradient
+          colors={['#FFF7ED', '#FFEDD5']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.pointsGradient}
+        >
           <Coins size={20} color={Colors.secondary} strokeWidth={2.5} />
           <Text style={styles.pointsText}>{points}</Text>
-        </View>
+        </LinearGradient>
       </View>
     </BlurView>
   );
@@ -74,33 +78,24 @@ const styles = StyleSheet.create({
     }),
   },
   container: {
-    height: 60,
+    minHeight: 72,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
+    paddingVertical: 20,
   },
   leftContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   profileButton: {
-    // Button wrapper
-  },
-  profileIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: Colors.primary,
-    backgroundColor: '#E8F5E9',
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 4,
   },
   settingsButton: {
-    // Button wrapper
+    padding: 4,
   },
   centerContainer: {
     flexDirection: 'row',
@@ -108,31 +103,34 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logo: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
   },
   appName: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: Colors.primary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
-  rightContainer: {
+  pointsGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   pointsText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: Colors.secondary,
   },

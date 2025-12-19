@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, Image, StyleSheet, Dimensions, Pressable } from 'react-native';
+import { View, Text, Image, StyleSheet, Dimensions, Pressable, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,8 +12,8 @@ import { mockStories } from '../services/mockData';
 import { Colors } from '../constants/colors';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const STORY_SIZE = 70;
-const STORY_ACTIVE_SIZE = 85;
+const STORY_SIZE = 64;
+const STORY_ACTIVE_SIZE = 75;
 const STORY_SPACING = 12;
 
 interface StoryItemProps {
@@ -53,25 +54,24 @@ const StoryItem: React.FC<StoryItemProps> = ({
       style={styles.storyWrapper}
     >
       <Animated.View style={[styles.storyContainer, animatedStyle]}>
-        <View style={[
-          styles.storyCircle,
-          isSelected && styles.storyCircleActive
-        ]}>
-          <Image
-            source={{ uri: story.image }}
-            style={styles.storyImage}
-          />
+        <View style={styles.storyCircleWrapper}>
+          <LinearGradient
+            colors={[Colors.primary, Colors.primaryLight]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.storyGradientBorder}
+          >
+            <View style={styles.storyCircle}>
+              <Image
+                source={{ uri: story.image }}
+                style={styles.storyImage}
+              />
+            </View>
+          </LinearGradient>
         </View>
-        {isSelected && (
-          <View style={styles.storyInfo}>
-            <Text style={styles.storyTitle} numberOfLines={1}>
-              {story.title}
-            </Text>
-            <Text style={styles.storyDescription} numberOfLines={2}>
-              {story.description}
-            </Text>
-          </View>
-        )}
+        <Text style={styles.storyTitle} numberOfLines={1}>
+          {story.title}
+        </Text>
       </Animated.View>
     </Pressable>
   );
@@ -96,8 +96,12 @@ export const StoryCarousel: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Başkan'ın Hikayeleri</Text>
-      <View style={styles.carousel}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.carouselContent}
+        style={styles.carousel}
+      >
         {mockStories.map((story, index) => (
           <StoryItem
             key={story.id}
@@ -108,67 +112,64 @@ export const StoryCarousel: React.FC = () => {
             onPress={handleStoryPress}
           />
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+    paddingVertical: 16,
     backgroundColor: Colors.surface,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 16,
-  },
   carousel: {
-    flexDirection: 'row',
+    flex: 1,
+  },
+  carouselContent: {
+    paddingHorizontal: 16,
     gap: STORY_SPACING,
   },
   storyWrapper: {
     alignItems: 'center',
+    marginRight: STORY_SPACING,
   },
   storyContainer: {
+    alignItems: 'center',
+    width: STORY_SIZE + 20,
+  },
+  storyCircleWrapper: {
+    width: STORY_SIZE + 4,
+    height: STORY_SIZE + 4,
+    borderRadius: (STORY_SIZE + 4) / 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  storyGradientBorder: {
+    width: STORY_SIZE + 4,
+    height: STORY_SIZE + 4,
+    borderRadius: (STORY_SIZE + 4) / 2,
+    padding: 2,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   storyCircle: {
     width: STORY_SIZE,
     height: STORY_SIZE,
     borderRadius: STORY_SIZE / 2,
-    borderWidth: 3,
-    borderColor: Colors.primary,
     overflow: 'hidden',
     backgroundColor: Colors.background,
-  },
-  storyCircleActive: {
-    borderColor: Colors.primaryLight,
-    borderWidth: 4,
   },
   storyImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-  storyInfo: {
-    marginTop: 8,
-    width: STORY_SIZE + 20,
-    alignItems: 'center',
-  },
   storyTitle: {
     fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     textAlign: 'center',
-    marginBottom: 4,
-  },
-  storyDescription: {
-    fontSize: 10,
-    color: Colors.textSecondary,
-    textAlign: 'center',
+    marginTop: 8,
   },
 });
 

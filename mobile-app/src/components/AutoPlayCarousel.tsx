@@ -30,7 +30,7 @@ interface AutoPlayCarouselProps {
 
 export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
   items,
-  autoPlayInterval = 3000,
+  autoPlayInterval = 5000,
   onSearchPress,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -73,9 +73,11 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
               style={styles.imageBackground}
               resizeMode="cover"
             >
-              {/* Gradient Overlay - sadece altta */}
+              {/* Gradient Overlay - bottom to top */}
               <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.2)', 'rgba(0,0,0,0.5)']}
+                colors={['transparent', 'rgba(0,0,0,0.6)']}
+                start={{ x: 0, y: 1 }}
+                end={{ x: 0, y: 0 }}
                 style={styles.overlay}
               />
               {item.title && (
@@ -88,7 +90,7 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
         ))}
       </ScrollView>
 
-      {/* Glassmorphism Search Bar Overlay */}
+      {/* Glassmorphism Search Bar Overlay - Floating */}
       <TouchableOpacity
         onPress={onSearchPress}
         activeOpacity={0.9}
@@ -96,9 +98,7 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
       >
         <BlurView intensity={90} tint="light" style={styles.searchBarBlur}>
           <View style={styles.searchBar}>
-            <View style={styles.searchIconContainer}>
-              <Search size={20} color={Colors.primary} strokeWidth={2.5} />
-            </View>
+            <Search size={18} color={Colors.primary} strokeWidth={2} />
             <Text style={styles.searchText}>Uygulamada ara...</Text>
           </View>
         </BlurView>
@@ -154,19 +154,19 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '700',
     color: Colors.surface,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
     textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    textShadowRadius: 8,
   },
   searchBarContainer: {
     position: 'absolute',
-    top: 20,
-    left: 20,
-    right: 20,
-    borderRadius: 20,
+    top: -24,
+    left: 16,
+    right: 16,
+    borderRadius: 24,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
@@ -181,34 +181,24 @@ const styles = StyleSheet.create({
     }),
   },
   searchBarBlur: {
-    borderRadius: 20,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   searchBar: {
-    height: 56,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderRadius: 20,
+    height: 48,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 4,
-    gap: 0,
-  },
-  searchIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: Colors.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 4,
+    paddingHorizontal: 16,
+    gap: 12,
   },
   searchText: {
     fontSize: 15,
-    color: Colors.text,
+    color: '#9CA3AF',
     fontWeight: '500',
     flex: 1,
-    marginLeft: 12,
   },
   pagination: {
     position: 'absolute',
@@ -226,12 +216,12 @@ const styles = StyleSheet.create({
   dotActive: {
     width: 8,
     height: 8,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.surface,
   },
   dotInactive: {
     width: 6,
     height: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
 });
 

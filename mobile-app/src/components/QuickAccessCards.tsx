@@ -82,6 +82,7 @@ export const QuickAccessCards: React.FC = () => {
               styles.card,
               {
                 transform: [{ scale: pressed ? 0.95 : 1 }],
+                opacity: pressed ? 0.9 : 1,
               },
             ]}
           >
@@ -125,19 +126,19 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    minWidth: '47%',
+    minWidth: '45%',
     aspectRatio: 1,
     borderRadius: 24,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
       },
       android: {
-        elevation: 6,
+        elevation: 8,
       },
     }),
   },

@@ -10,21 +10,33 @@ export const mockWeatherData = {
 export const mockStories = [
   {
     id: '1',
-    image: 'https://via.placeholder.com/300x400/2E7D32/FFFFFF?text=Başkan+1',
-    title: 'Yeni Proje Duyurusu',
-    description: 'Şehitkamil Belediyesi yeni park projesini açıkladı',
+    image: 'https://via.placeholder.com/300x400/2E7D32/FFFFFF?text=Başkan',
+    title: 'Başkan',
+    description: 'Başkan\'ın güncel paylaşımları',
   },
   {
     id: '2',
-    image: 'https://via.placeholder.com/300x400/4CAF50/FFFFFF?text=Başkan+2',
-    title: 'Etkinlik Haberi',
-    description: 'Kültür sanat etkinlikleri başlıyor',
+    image: 'https://via.placeholder.com/300x400/4CAF50/FFFFFF?text=Projeler',
+    title: 'Projeler',
+    description: 'Yeni projeler ve gelişmeler',
   },
   {
     id: '3',
-    image: 'https://via.placeholder.com/300x400/1B5E20/FFFFFF?text=Başkan+3',
-    title: 'Sosyal Yardım',
-    description: 'Askıda fatura kampanyası devam ediyor',
+    image: 'https://via.placeholder.com/300x400/1B5E20/FFFFFF?text=Etkinlikler',
+    title: 'Etkinlikler',
+    description: 'Yaklaşan etkinlikler',
+  },
+  {
+    id: '4',
+    image: 'https://via.placeholder.com/300x400/388E3C/FFFFFF?text=Çevre',
+    title: 'Çevre Çalışması',
+    description: 'Çevre projeleri ve faaliyetler',
+  },
+  {
+    id: '5',
+    image: 'https://via.placeholder.com/300x400/66BB6A/FFFFFF?text=Spor',
+    title: 'Spor',
+    description: 'Spor etkinlikleri ve turnuvalar',
   },
 ];
 
