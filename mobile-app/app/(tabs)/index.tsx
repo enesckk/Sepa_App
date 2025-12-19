@@ -19,41 +19,49 @@ import { Colors } from '../../src/constants/colors';
 
 // Şehitkamil Belediyesi Destek Programları ve Hizmetler
 // Carousel görselleri - Şehitkamil Belediyesi'nin sosyal destek programları
+// Placeholder görseller kullanılıyor - gerçek görseller eklendiğinde güncellenecek
 const CAROUSEL_DATA = [
   {
     id: '1',
-    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/emekli-mutluluk-fonu.jpg',
+    image: 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&h=400&fit=crop',
     title: 'EMEKLİ MUTLULUK FONU',
+    gradient: ['#10B981', '#059669'], // Green gradient
   },
   {
     id: '2',
-    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/ulasim-destegi.jpg',
+    image: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=400&fit=crop',
     title: 'EVDEN OKULA OKULDAN EVE',
+    gradient: ['#3B82F6', '#2563EB'], // Blue gradient
   },
   {
     id: '3',
-    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/desteklerimizle-yaninizdayiz.jpg',
+    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=800&h=400&fit=crop',
     title: 'DESTEKLERİMİZLE YANINIZDAYIZ',
+    gradient: ['#8B5CF6', '#7C3AED'], // Purple gradient
   },
   {
     id: '4',
-    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/guclu-kadin-mutlu-aile.jpg',
+    image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=400&fit=crop',
     title: 'GÜÇLÜ KADIN MUTLU AİLE',
+    gradient: ['#EC4899', '#DB2777'], // Pink gradient
   },
   {
     id: '5',
-    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/29-ekim-ankara.jpg',
+    image: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=400&fit=crop',
     title: '29 EKİM ANKARA ÇIKARMASI',
+    gradient: ['#EF4444', '#DC2626'], // Red gradient
   },
   {
     id: '6',
-    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/antika-pazari.jpg',
+    image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=400&fit=crop',
     title: 'ŞEHİTKAMİL ANTİKA PAZARI',
+    gradient: ['#F59E0B', '#D97706'], // Orange gradient
   },
   {
     id: '7',
-    image: 'https://www.sehitkamil.bel.tr/Uploads/Images/daha-temiz-sehitkamil.jpg',
+    image: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&h=400&fit=crop',
     title: 'DAHA TEMİZ ŞEHİTKAMİL',
+    gradient: ['#10B981', '#059669'], // Green gradient
   },
 ];
 

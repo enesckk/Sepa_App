@@ -20,6 +20,7 @@ interface CarouselItem {
   id: string;
   image: string;
   title?: string;
+  gradient?: string[]; // Optional gradient colors for fallback
 }
 
 interface AutoPlayCarouselProps {
@@ -68,10 +69,20 @@ export const AutoPlayCarousel: React.FC<AutoPlayCarouselProps> = ({
       >
         {items.map((item) => (
           <View key={item.id} style={styles.slide}>
+            {/* Background Gradient (fallback if image fails) */}
+            {item.gradient && (
+              <LinearGradient
+                colors={item.gradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+            )}
             <ImageBackground
               source={{ uri: item.image }}
               style={styles.imageBackground}
               resizeMode="cover"
+              imageStyle={styles.imageStyle}
             >
               {/* Gradient Overlay - top and bottom for better text readability */}
               <LinearGradient
@@ -151,6 +162,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     justifyContent: 'flex-end',
+  },
+  imageStyle: {
+    opacity: 0.9,
   },
   overlay: {
     position: 'absolute',
