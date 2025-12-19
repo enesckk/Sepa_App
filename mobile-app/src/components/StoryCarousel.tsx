@@ -14,6 +14,68 @@ const STORY_SIZE = 70;
 const STORY_ACTIVE_SIZE = 85;
 const STORY_SPACING = 12;
 
+interface StoryItemProps {
+  story: {
+    id: string;
+    image: string;
+    title: string;
+    description: string;
+  };
+  index: number;
+  animatedValue: Animated.SharedValue<number>;
+  isSelected: boolean;
+  onPress: (index: number, storyId: string) => void;
+}
+
+const StoryItem: React.FC<StoryItemProps> = ({
+  story,
+  index,
+  animatedValue,
+  isSelected,
+  onPress,
+}) => {
+  const animatedStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      animatedValue.value,
+      [0, 1],
+      [1, STORY_ACTIVE_SIZE / STORY_SIZE]
+    );
+    
+    return {
+      transform: [{ scale }],
+    };
+  });
+
+  return (
+    <Pressable
+      onPress={() => onPress(index, story.id)}
+      style={styles.storyWrapper}
+    >
+      <Animated.View style={[styles.storyContainer, animatedStyle]}>
+        <View style={[
+          styles.storyCircle,
+          isSelected && styles.storyCircleActive
+        ]}>
+          <Image
+            source={{ uri: story.image }}
+            style={styles.storyImage}
+          />
+        </View>
+        {isSelected && (
+          <View style={styles.storyInfo}>
+            <Text style={styles.storyTitle} numberOfLines={1}>
+              {story.title}
+            </Text>
+            <Text style={styles.storyDescription} numberOfLines={2}>
+              {story.description}
+            </Text>
+          </View>
+        )}
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export const StoryCarousel: React.FC = () => {
   const [selectedStory, setSelectedStory] = useState<string | null>(null);
   const animatedValues = useRef(
@@ -35,51 +97,16 @@ export const StoryCarousel: React.FC = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Başkan'ın Hikayeleri</Text>
       <View style={styles.carousel}>
-        {mockStories.map((story, index) => {
-          const animatedStyle = useAnimatedStyle(() => {
-            const scale = interpolate(
-              animatedValues[index].value,
-              [0, 1],
-              [1, STORY_ACTIVE_SIZE / STORY_SIZE]
-            );
-            
-            return {
-              transform: [{ scale }],
-            };
-          });
-
-          const isSelected = selectedStory === story.id;
-
-          return (
-            <Pressable
-              key={story.id}
-              onPress={() => handleStoryPress(index, story.id)}
-              style={styles.storyWrapper}
-            >
-              <Animated.View style={[styles.storyContainer, animatedStyle]}>
-                <View style={[
-                  styles.storyCircle,
-                  isSelected && styles.storyCircleActive
-                ]}>
-                  <Image
-                    source={{ uri: story.image }}
-                    style={styles.storyImage}
-                  />
-                </View>
-                {isSelected && (
-                  <View style={styles.storyInfo}>
-                    <Text style={styles.storyTitle} numberOfLines={1}>
-                      {story.title}
-                    </Text>
-                    <Text style={styles.storyDescription} numberOfLines={2}>
-                      {story.description}
-                    </Text>
-                  </View>
-                )}
-              </Animated.View>
-            </Pressable>
-          );
-        })}
+        {mockStories.map((story, index) => (
+          <StoryItem
+            key={story.id}
+            story={story}
+            index={index}
+            animatedValue={animatedValues[index]}
+            isSelected={selectedStory === story.id}
+            onPress={handleStoryPress}
+          />
+        ))}
       </View>
     </View>
   );
