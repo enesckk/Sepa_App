@@ -41,34 +41,32 @@ const CAROUSEL_DATA = [
   },
 ];
 
+// Şehitkamil Belediyesi Haberler ve Duyurular
+// Kaynak: https://www.sehitkamil.bel.tr/
 const NEWS_DATA = [
   {
     id: '1',
-    image: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400',
-    title: "Konak'ın İklim Projesi Farkındalık Yaratmaya Devam Edecek",
-    date: '05.12.2024',
-    category: 'Çevre',
+    image: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?w=800',
+    title: 'BAŞKAN YILMAZ\'DAN ANLAMLI ZİYARET',
+    date: '18.12.2025',
   },
   {
     id: '2',
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400',
-    title: 'Yeni Kültür Merkezi Hizmete Açıldı',
-    date: '1 gün önce',
-    category: 'Kültür',
+    image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800',
+    title: 'BAŞKAN YILMAZ, PAZARDA VATANDAŞ VE ESNAFLA BULUŞTU',
+    date: '16.12.2025',
   },
   {
     id: '3',
-    image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-    title: 'Belediyemizden Gençlere Moral ve Motivasyon Buluşması',
-    date: '2 gün önce',
-    category: 'Etkinlik',
+    image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800',
+    title: 'ŞEHİTKAMİL\'DE ULAŞIM AĞI GÜÇLENİYOR',
+    date: '15.12.2025',
   },
   {
     id: '4',
-    image: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=400',
-    title: 'Ücretsiz Spor Kursları Başladı',
-    date: '3 gün önce',
-    category: 'Spor',
+    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800',
+    title: 'ŞEHİTKAMİL BELEDİYESPOR\'DAN GOL ŞOV: 7-0',
+    date: '15.12.2025',
   },
 ];
 

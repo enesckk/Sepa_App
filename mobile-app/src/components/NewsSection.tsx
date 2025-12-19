@@ -32,7 +32,7 @@ export const NewsSection: React.FC<NewsSectionProps> = ({
     <View style={styles.container}>
       {/* Section Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Haberler</Text>
+        <Text style={styles.title}>Haberler ve Duyurular</Text>
         <TouchableOpacity onPress={onViewAll} activeOpacity={0.7}>
           <Text style={styles.viewAllText}>Tümünü Gör →</Text>
         </TouchableOpacity>
