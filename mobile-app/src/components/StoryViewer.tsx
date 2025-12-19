@@ -50,17 +50,21 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
 
   const currentStory = mockStories[currentIndex];
 
-  // Progress bar animasyonu
+  // Progress bar animasyonu - hemen başlat
   useEffect(() => {
     if (visible && !isPaused && currentStory) {
+      // Hemen başlat, gecikme yok
       progress.value = 0;
-      progress.value = withTiming(1, { duration: STORY_DURATION }, (finished) => {
-        if (finished) {
-          runOnJS(handleNext)();
-        }
-      });
-    } else if (isPaused) {
-      // Pause durumunda animasyonu durdur
+      // Kısa bir delay sonra başlat (render tamamlansın)
+      const timer = setTimeout(() => {
+        progress.value = withTiming(1, { duration: STORY_DURATION }, (finished) => {
+          if (finished) {
+            runOnJS(handleNext)();
+          }
+        });
+      }, 50);
+      
+      return () => clearTimeout(timer);
     }
   }, [visible, currentIndex, isPaused]);
 
@@ -71,30 +75,31 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     }
   }, [visible, currentIndex]);
 
-  // Modal açılış/kapanış animasyonu
+  // Modal açılış/kapanış animasyonu - hızlı açılış
   useEffect(() => {
     if (visible) {
-      opacity.value = withTiming(1, { duration: 200 });
-      translateX.value = withSpring(0, { damping: 20, stiffness: 100 });
+      // Hemen görünür yap, animasyon yok
+      opacity.value = 1;
+      translateX.value = 0;
     } else {
-      opacity.value = withTiming(0, { duration: 200 });
+      opacity.value = withTiming(0, { duration: 150 });
       translateX.value = withSpring(SCREEN_WIDTH, { damping: 20, stiffness: 100 });
     }
   }, [visible]);
 
   const handleNext = () => {
+    progress.value = 0; // Hemen sıfırla
     if (currentIndex < mockStories.length - 1) {
       setCurrentIndex(currentIndex + 1);
-      progress.value = 0;
     } else {
       handleClose();
     }
   };
 
   const handlePrevious = () => {
+    progress.value = 0; // Hemen sıfırla
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
-      progress.value = 0;
     } else {
       handleClose();
     }

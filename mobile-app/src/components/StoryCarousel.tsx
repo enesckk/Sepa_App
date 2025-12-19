@@ -102,24 +102,25 @@ export const StoryCarousel: React.FC = () => {
   ).current;
 
   const handleStoryPress = (index: number, storyId: string) => {
-    // Viewer'ı aç ve başlangıç index'ini ayarla
+    // Viewer'ı hemen aç - animasyon yok
     setInitialStoryIndex(index);
     setViewerVisible(true);
     
-    // Animasyon için
-    animatedValues[index].value = withSpring(1, {
-      damping: 20,
-      stiffness: 300,
-      mass: 0.8,
+    // Hızlı feedback animasyonu
+    animatedValues[index].value = withSpring(0.95, {
+      damping: 15,
+      stiffness: 400,
+      mass: 0.5,
     });
     
+    // Hemen geri dön
     setTimeout(() => {
       animatedValues[index].value = withSpring(0, {
-        damping: 20,
-        stiffness: 300,
-        mass: 0.8,
+        damping: 15,
+        stiffness: 400,
+        mass: 0.5,
       });
-    }, 200);
+    }, 100);
   };
 
   const handleCloseViewer = () => {
