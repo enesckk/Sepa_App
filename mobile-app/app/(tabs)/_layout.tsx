@@ -14,7 +14,7 @@ export default function TabsLayout() {
           borderTopWidth: 1,
           borderTopColor: Colors.border,
           paddingVertical: 8,
-          height: 70,
+          height: 64,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -38,7 +38,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="events"
         options={{
-          title: 'Etkinlik',
+          title: 'Etkinlikler',
           tabBarIcon: ({ color, size }) => (
             <Calendar size={size || 24} color={color} />
           ),
@@ -47,7 +47,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="applications"
         options={{
-          title: 'Başvuru',
+          title: 'Başvur',
           tabBarIcon: ({ color, size }) => (
             <FileText size={size || 24} color={color} />
           ),

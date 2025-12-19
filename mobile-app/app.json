@@ -3,6 +3,9 @@
     "name": "Şehitkamil Belediyesi",
     "slug": "sehitkamil-belediye-app",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "scheme": "sehitkamil",

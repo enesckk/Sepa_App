@@ -45,25 +45,41 @@ export default function MenuScreen() {
       id: '4',
       title: 'Başvurularım',
       icon: <FileText size={24} color={Colors.primary} />,
-      onPress: () => console.log('My Applications'),
+      onPress: () => {
+        if (__DEV__) {
+          console.log('My Applications');
+        }
+      },
     },
     {
       id: '5',
       title: 'Ayarlar',
       icon: <Settings size={24} color={Colors.primary} />,
-      onPress: () => console.log('Settings'),
+      onPress: () => {
+        if (__DEV__) {
+          console.log('Settings');
+        }
+      },
     },
     {
       id: '6',
       title: 'Yardım',
       icon: <HelpCircle size={24} color={Colors.primary} />,
-      onPress: () => console.log('Help'),
+      onPress: () => {
+        if (__DEV__) {
+          console.log('Help');
+        }
+      },
     },
     {
       id: '7',
       title: 'Hakkında',
       icon: <Info size={24} color={Colors.primary} />,
-      onPress: () => console.log('About'),
+      onPress: () => {
+        if (__DEV__) {
+          console.log('About');
+        }
+      },
     },
   ];
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -14,6 +14,55 @@ interface IssueTypeSelectorProps {
   types: IssueType[];
 }
 
+// Separate component for each type to fix hook violations
+interface IssueTypeItemProps {
+  type: IssueType;
+  isSelected: boolean;
+  onSelect: (typeId: string) => void;
+}
+
+const IssueTypeItem: React.FC<IssueTypeItemProps> = ({
+  type,
+  isSelected,
+  onSelect,
+}) => {
+  const scale = useSharedValue(isSelected ? 1 : 0.95);
+
+  useEffect(() => {
+    scale.value = withSpring(isSelected ? 1 : 0.95, {
+      damping: 18,
+      stiffness: 180,
+      mass: 0.8,
+    });
+  }, [isSelected, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Pressable onPress={() => onSelect(type.id)}>
+      <Animated.View
+        style={[
+          styles.chip,
+          isSelected && styles.chipActive,
+          animatedStyle,
+        ]}
+      >
+        <Text style={styles.icon}>{type.icon}</Text>
+        <Text
+          style={[
+            styles.chipLabel,
+            isSelected && styles.labelActive,
+          ]}
+        >
+          {type.label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export const IssueTypeSelector: React.FC<IssueTypeSelectorProps> = ({
   selectedType,
   onSelect,
@@ -27,46 +76,14 @@ export const IssueTypeSelector: React.FC<IssueTypeSelectorProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {types.map((type) => {
-          const isSelected = selectedType === type.id;
-          const scale = useSharedValue(isSelected ? 1 : 0.95);
-
-          React.useEffect(() => {
-            scale.value = withSpring(isSelected ? 1 : 0.95, {
-              damping: 15,
-              stiffness: 150,
-            });
-          }, [isSelected]);
-
-          const animatedStyle = useAnimatedStyle(() => ({
-            transform: [{ scale: scale.value }],
-          }));
-
-          return (
-            <Pressable
-              key={type.id}
-              onPress={() => onSelect(type.id)}
-            >
-              <Animated.View
-                style={[
-                  styles.chip,
-                  isSelected && styles.chipActive,
-                  animatedStyle,
-                ]}
-              >
-                <Text style={styles.icon}>{type.icon}</Text>
-                <Text
-                  style={[
-                    styles.chipLabel,
-                    isSelected && styles.labelActive,
-                  ]}
-                >
-                  {type.label}
-                </Text>
-              </Animated.View>
-            </Pressable>
-          );
-        })}
+        {types.map((type) => (
+          <IssueTypeItem
+            key={type.id}
+            type={type}
+            isSelected={selectedType === type.id}
+            onSelect={onSelect}
+          />
+        ))}
       </ScrollView>
     </View>
   );

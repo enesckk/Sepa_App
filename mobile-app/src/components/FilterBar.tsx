@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -21,6 +21,54 @@ const filters: { id: FilterType; label: string }[] = [
   { id: 'family', label: 'Aile Dostu' },
 ];
 
+// Separate component for each filter to fix hook violations
+interface FilterChipItemProps {
+  filter: { id: FilterType; label: string };
+  isSelected: boolean;
+  onPress: () => void;
+}
+
+const FilterChipItem: React.FC<FilterChipItemProps> = ({
+  filter,
+  isSelected,
+  onPress,
+}) => {
+  const scale = useSharedValue(isSelected ? 1 : 0.95);
+
+  useEffect(() => {
+    scale.value = withSpring(isSelected ? 1 : 0.95, {
+      damping: 18,
+      stiffness: 180,
+      mass: 0.8,
+    });
+  }, [isSelected, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Pressable onPress={onPress}>
+      <Animated.View
+        style={[
+          styles.filterChip,
+          isSelected && styles.filterChipActive,
+          animatedStyle,
+        ]}
+      >
+        <Text
+          style={[
+            styles.filterText,
+            isSelected && styles.filterTextActive,
+          ]}
+        >
+          {filter.label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export const FilterBar: React.FC<FilterBarProps> = ({
   selectedFilter,
   onFilterChange,
@@ -32,45 +80,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {filters.map((filter) => {
-          const isSelected = selectedFilter === filter.id;
-          const scale = useSharedValue(isSelected ? 1 : 0.95);
-
-          React.useEffect(() => {
-            scale.value = withSpring(isSelected ? 1 : 0.95, {
-              damping: 15,
-              stiffness: 150,
-            });
-          }, [isSelected]);
-
-          const animatedStyle = useAnimatedStyle(() => ({
-            transform: [{ scale: scale.value }],
-          }));
-
-          return (
-            <Pressable
-              key={filter.id}
-              onPress={() => onFilterChange(filter.id)}
-            >
-              <Animated.View
-                style={[
-                  styles.filterChip,
-                  isSelected && styles.filterChipActive,
-                  animatedStyle,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterText,
-                    isSelected && styles.filterTextActive,
-                  ]}
-                >
-                  {filter.label}
-                </Text>
-              </Animated.View>
-            </Pressable>
-          );
-        })}
+        {filters.map((filter) => (
+          <FilterChipItem
+            key={filter.id}
+            filter={filter}
+            isSelected={selectedFilter === filter.id}
+            onPress={() => onFilterChange(filter.id)}
+          />
+        ))}
       </ScrollView>
     </View>
   );

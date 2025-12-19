@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -15,6 +15,55 @@ interface RewardCategoryTabsProps {
   onCategoryChange: (category: RewardCategory) => void;
 }
 
+// Separate component for each tab to fix hook violations
+interface RewardTabItemProps {
+  category: { id: string; label: string; icon: string };
+  isSelected: boolean;
+  onPress: () => void;
+}
+
+const RewardTabItem: React.FC<RewardTabItemProps> = ({
+  category,
+  isSelected,
+  onPress,
+}) => {
+  const scale = useSharedValue(isSelected ? 1 : 0.95);
+
+  useEffect(() => {
+    scale.value = withSpring(isSelected ? 1 : 0.95, {
+      damping: 18,
+      stiffness: 180,
+      mass: 0.8,
+    });
+  }, [isSelected, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Pressable onPress={onPress}>
+      <Animated.View
+        style={[
+          styles.tab,
+          isSelected && styles.tabActive,
+          animatedStyle,
+        ]}
+      >
+        <Text style={styles.icon}>{category.icon}</Text>
+        <Text
+          style={[
+            styles.label,
+            isSelected && styles.labelActive,
+          ]}
+        >
+          {category.label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export const RewardCategoryTabs: React.FC<RewardCategoryTabsProps> = ({
   selectedCategory,
   onCategoryChange,
@@ -26,46 +75,14 @@ export const RewardCategoryTabs: React.FC<RewardCategoryTabsProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {rewardCategories.map((category) => {
-          const isSelected = selectedCategory === category.id;
-          const scale = useSharedValue(isSelected ? 1 : 0.95);
-
-          React.useEffect(() => {
-            scale.value = withSpring(isSelected ? 1 : 0.95, {
-              damping: 15,
-              stiffness: 150,
-            });
-          }, [isSelected]);
-
-          const animatedStyle = useAnimatedStyle(() => ({
-            transform: [{ scale: scale.value }],
-          }));
-
-          return (
-            <Pressable
-              key={category.id}
-              onPress={() => onCategoryChange(category.id as RewardCategory)}
-            >
-              <Animated.View
-                style={[
-                  styles.tab,
-                  isSelected && styles.tabActive,
-                  animatedStyle,
-                ]}
-              >
-                <Text style={styles.icon}>{category.icon}</Text>
-                <Text
-                  style={[
-                    styles.label,
-                    isSelected && styles.labelActive,
-                  ]}
-                >
-                  {category.label}
-                </Text>
-              </Animated.View>
-            </Pressable>
-          );
-        })}
+        {rewardCategories.map((category) => (
+          <RewardTabItem
+            key={category.id}
+            category={category}
+            isSelected={selectedCategory === category.id}
+            onPress={() => onCategoryChange(category.id as RewardCategory)}
+          />
+        ))}
       </ScrollView>
     </View>
   );

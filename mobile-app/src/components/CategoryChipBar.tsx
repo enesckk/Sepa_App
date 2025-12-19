@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -13,6 +13,55 @@ interface CategoryChipBarProps {
   onCategoryChange: (category: string) => void;
 }
 
+// Separate component for each chip to fix hook violations
+interface CategoryChipItemProps {
+  category: { id: string; label: string; icon: string };
+  isSelected: boolean;
+  onPress: () => void;
+}
+
+const CategoryChipItem: React.FC<CategoryChipItemProps> = ({
+  category,
+  isSelected,
+  onPress,
+}) => {
+  const scale = useSharedValue(isSelected ? 1 : 0.95);
+
+  useEffect(() => {
+    scale.value = withSpring(isSelected ? 1 : 0.95, {
+      damping: 18,
+      stiffness: 180,
+      mass: 0.8,
+    });
+  }, [isSelected, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Pressable onPress={onPress}>
+      <Animated.View
+        style={[
+          styles.chip,
+          isSelected && styles.chipActive,
+          animatedStyle,
+        ]}
+      >
+        <Text style={styles.icon}>{category.icon}</Text>
+        <Text
+          style={[
+            styles.label,
+            isSelected && styles.labelActive,
+          ]}
+        >
+          {category.label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export const CategoryChipBar: React.FC<CategoryChipBarProps> = ({
   selectedCategory,
   onCategoryChange,
@@ -24,46 +73,14 @@ export const CategoryChipBar: React.FC<CategoryChipBarProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {eventCategories.map((category) => {
-          const isSelected = selectedCategory === category.id;
-          const scale = useSharedValue(isSelected ? 1 : 0.95);
-
-          React.useEffect(() => {
-            scale.value = withSpring(isSelected ? 1 : 0.95, {
-              damping: 15,
-              stiffness: 150,
-            });
-          }, [isSelected]);
-
-          const animatedStyle = useAnimatedStyle(() => ({
-            transform: [{ scale: scale.value }],
-          }));
-
-          return (
-            <Pressable
-              key={category.id}
-              onPress={() => onCategoryChange(category.id)}
-            >
-              <Animated.View
-                style={[
-                  styles.chip,
-                  isSelected && styles.chipActive,
-                  animatedStyle,
-                ]}
-              >
-                <Text style={styles.icon}>{category.icon}</Text>
-                <Text
-                  style={[
-                    styles.label,
-                    isSelected && styles.labelActive,
-                  ]}
-                >
-                  {category.label}
-                </Text>
-              </Animated.View>
-            </Pressable>
-          );
-        })}
+        {eventCategories.map((category) => (
+          <CategoryChipItem
+            key={category.id}
+            category={category}
+            isSelected={selectedCategory === category.id}
+            onPress={() => onCategoryChange(category.id)}
+          />
+        ))}
       </ScrollView>
     </View>
   );

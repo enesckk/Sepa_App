@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
+  Easing,
 } from 'react-native-reanimated';
 import { Check } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
@@ -16,6 +17,64 @@ interface AnswerOptionsProps {
   type: 'single' | 'multiple';
 }
 
+// Separate component for each option to fix hook violations
+interface AnswerOptionItemProps {
+  option: SurveyOption;
+  isSelected: boolean;
+  onSelect: (optionId: string) => void;
+}
+
+const AnswerOptionItem: React.FC<AnswerOptionItemProps> = ({
+  option,
+  isSelected,
+  onSelect,
+}) => {
+  const scale = useSharedValue(isSelected ? 1 : 0.95);
+
+  useEffect(() => {
+    scale.value = withSpring(isSelected ? 1 : 0.95, {
+      damping: 18,
+      stiffness: 180,
+      mass: 0.8,
+    });
+  }, [isSelected, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Pressable onPress={() => onSelect(option.id)}>
+      <Animated.View
+        style={[
+          styles.option,
+          isSelected && styles.optionSelected,
+          animatedStyle,
+        ]}
+      >
+        <View style={styles.optionContent}>
+          <View
+            style={[
+              styles.checkbox,
+              isSelected && styles.checkboxSelected,
+            ]}
+          >
+            {isSelected && <Check size={16} color={Colors.surface} />}
+          </View>
+          <Text
+            style={[
+              styles.optionText,
+              isSelected && styles.optionTextSelected,
+            ]}
+          >
+            {option.text}
+          </Text>
+        </View>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export const AnswerOptions: React.FC<AnswerOptionsProps> = ({
   options,
   selectedIds,
@@ -24,55 +83,14 @@ export const AnswerOptions: React.FC<AnswerOptionsProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      {options.map((option) => {
-        const isSelected = selectedIds.includes(option.id);
-        const scale = useSharedValue(isSelected ? 1 : 0.95);
-
-        React.useEffect(() => {
-          scale.value = withSpring(isSelected ? 1 : 0.95, {
-            damping: 15,
-            stiffness: 150,
-          });
-        }, [isSelected]);
-
-        const animatedStyle = useAnimatedStyle(() => ({
-          transform: [{ scale: scale.value }],
-        }));
-
-        return (
-          <Pressable
-            key={option.id}
-            onPress={() => onSelect(option.id)}
-          >
-            <Animated.View
-              style={[
-                styles.option,
-                isSelected && styles.optionSelected,
-                animatedStyle,
-              ]}
-            >
-              <View style={styles.optionContent}>
-                <View
-                  style={[
-                    styles.checkbox,
-                    isSelected && styles.checkboxSelected,
-                  ]}
-                >
-                  {isSelected && <Check size={16} color={Colors.surface} />}
-                </View>
-                <Text
-                  style={[
-                    styles.optionText,
-                    isSelected && styles.optionTextSelected,
-                  ]}
-                >
-                  {option.text}
-                </Text>
-              </View>
-            </Animated.View>
-          </Pressable>
-        );
-      })}
+      {options.map((option) => (
+        <AnswerOptionItem
+          key={option.id}
+          option={option}
+          isSelected={selectedIds.includes(option.id)}
+          onSelect={onSelect}
+        />
+      ))}
     </View>
   );
 };

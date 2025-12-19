@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -13,6 +13,55 @@ interface TopTabBarProps {
   onTabChange: (tab: PlaceType) => void;
 }
 
+// Separate component for each tab to fix hook violations
+interface TabItemProps {
+  category: { id: string; label: string; icon: string };
+  isSelected: boolean;
+  onPress: () => void;
+}
+
+const TabItem: React.FC<TabItemProps> = ({
+  category,
+  isSelected,
+  onPress,
+}) => {
+  const scale = useSharedValue(isSelected ? 1 : 0.95);
+
+  useEffect(() => {
+    scale.value = withSpring(isSelected ? 1 : 0.95, {
+      damping: 18,
+      stiffness: 180,
+      mass: 0.8,
+    });
+  }, [isSelected, scale]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Pressable onPress={onPress}>
+      <Animated.View
+        style={[
+          styles.tab,
+          isSelected && styles.tabActive,
+          animatedStyle,
+        ]}
+      >
+        <Text style={styles.icon}>{category.icon}</Text>
+        <Text
+          style={[
+            styles.label,
+            isSelected && styles.labelActive,
+          ]}
+        >
+          {category.label}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
+};
+
 export const TopTabBar: React.FC<TopTabBarProps> = ({
   selectedTab,
   onTabChange,
@@ -24,46 +73,14 @@ export const TopTabBar: React.FC<TopTabBarProps> = ({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {placeCategories.map((category) => {
-          const isSelected = selectedTab === category.id;
-          const scale = useSharedValue(isSelected ? 1 : 0.95);
-
-          React.useEffect(() => {
-            scale.value = withSpring(isSelected ? 1 : 0.95, {
-              damping: 15,
-              stiffness: 150,
-            });
-          }, [isSelected]);
-
-          const animatedStyle = useAnimatedStyle(() => ({
-            transform: [{ scale: scale.value }],
-          }));
-
-          return (
-            <Pressable
-              key={category.id}
-              onPress={() => onTabChange(category.id as PlaceType)}
-            >
-              <Animated.View
-                style={[
-                  styles.tab,
-                  isSelected && styles.tabActive,
-                  animatedStyle,
-                ]}
-              >
-                <Text style={styles.icon}>{category.icon}</Text>
-                <Text
-                  style={[
-                    styles.label,
-                    isSelected && styles.labelActive,
-                  ]}
-                >
-                  {category.label}
-                </Text>
-              </Animated.View>
-            </Pressable>
-          );
-        })}
+        {placeCategories.map((category) => (
+          <TabItem
+            key={category.id}
+            category={category}
+            isSelected={selectedTab === category.id}
+            onPress={() => onTabChange(category.id as PlaceType)}
+          />
+        ))}
       </ScrollView>
     </View>
   );

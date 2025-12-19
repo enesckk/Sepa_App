@@ -66,12 +66,16 @@ export default function RewardMarketScreen() {
 
   const handleTaskPress = () => {
     // Navigate to tasks screen
-    console.log('Navigate to tasks');
+    if (__DEV__) {
+      console.log('Navigate to tasks');
+    }
   };
 
   const handleInvitePress = () => {
     // Share invite link
-    console.log('Share invite link');
+    if (__DEV__) {
+      console.log('Share invite link');
+    }
   };
 
   return (

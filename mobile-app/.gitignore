@@ -56,3 +56,6 @@ yarn-error.log
 .env
 .env.local
 
+# Expo
+.expo/
+.expo-shared/
