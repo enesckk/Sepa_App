@@ -19,57 +19,56 @@ import { Colors } from '../../src/constants/colors';
 
 // Şehitkamil Belediyesi Destek Programları ve Hizmetler
 // Carousel görselleri - Şehitkamil Belediyesi'nin sosyal destek programları
-// NOT: Görselleri assets/images/ klasörüne ekledikten sonra require() ile kullanın
-// Şimdilik gradient fallback kullanılıyor, görseller eklendiğinde güncellenecek
+// Görseller assets/images/ klasörüne eklendiğinde require() ile kullanılacak
 const CAROUSEL_DATA = [
   {
     id: '1',
-    // Görseli eklemek için: assets/images/emekli-mutluluk-fonu.jpg
-    image: '', // require('../../assets/images/emekli-mutluluk-fonu.jpg') - görsel eklendiğinde aktif edin
+    // Emekli Mutluluk Fonu - Yeşil gradient arka plan
+    image: require('../../assets/images/emekli-mutluluk-fonu.jpg'),
     title: 'EMEKLİ MUTLULUK FONU',
-    gradient: ['#10B981', '#059669'], // Green gradient
+    gradient: ['#10B981', '#059669'], // Green gradient (fallback)
   },
   {
     id: '2',
-    // Görseli eklemek için: assets/images/ulasim-destegi.jpg
-    image: '', // require('../../assets/images/ulasim-destegi.jpg') - görsel eklendiğinde aktif edin
+    // Ulaşım Desteği - Okul servisi, yeşil-mavi gradient
+    image: require('../../assets/images/ulasim-destegi.jpg'),
     title: 'EVDEN OKULA OKULDAN EVE',
-    gradient: ['#3B82F6', '#2563EB'], // Blue gradient
+    gradient: ['#3B82F6', '#10B981'], // Blue-Green gradient (fallback)
   },
   {
     id: '3',
-    // Görseli eklemek için: assets/images/desteklerimizle-yaninizdayiz.jpg
-    image: '', // require('../../assets/images/desteklerimizle-yaninizdayiz.jpg') - görsel eklendiğinde aktif edin
+    // Desteklerimizle Yanınızdayız - Çoklu destek programları
+    image: require('../../assets/images/desteklerimizle-yaninizdayiz.jpg'),
     title: 'DESTEKLERİMİZLE YANINIZDAYIZ',
-    gradient: ['#8B5CF6', '#7C3AED'], // Purple gradient
+    gradient: ['#8B5CF6', '#EC4899'], // Purple-Pink gradient (fallback)
   },
   {
     id: '4',
-    // Görseli eklemek için: assets/images/guclu-kadin-mutlu-aile.jpg
-    image: '', // require('../../assets/images/guclu-kadin-mutlu-aile.jpg') - görsel eklendiğinde aktif edin
+    // Güçlü Kadın Mutlu Aile - Grup terapileri, pembe-mor gradient
+    image: require('../../assets/images/guclu-kadin-mutlu-aile.jpg'),
     title: 'GÜÇLÜ KADIN MUTLU AİLE',
-    gradient: ['#EC4899', '#DB2777'], // Pink gradient
+    gradient: ['#EC4899', '#8B5CF6'], // Pink-Purple gradient (fallback)
   },
   {
     id: '5',
-    // Görseli eklemek için: assets/images/29-ekim-ankara.jpg
-    image: '', // require('../../assets/images/29-ekim-ankara.jpg') - görsel eklendiğinde aktif edin
+    // 29 Ekim Ankara Çıkarması - Cumhuriyet Bayramı, kırmızı-beyaz gradient
+    image: require('../../assets/images/29-ekim-ankara.jpg'),
     title: '29 EKİM ANKARA ÇIKARMASI',
-    gradient: ['#EF4444', '#DC2626'], // Red gradient
+    gradient: ['#EF4444', '#DC2626'], // Red gradient (fallback)
   },
   {
     id: '6',
-    // Görseli eklemek için: assets/images/antika-pazari.jpg
-    image: '', // require('../../assets/images/antika-pazari.jpg') - görsel eklendiğinde aktif edin
+    // Şehitkamil Antika Pazarı - Parchment/scroll tasarım, kahverengi-turuncu gradient
+    image: require('../../assets/images/antika-pazari.jpg'),
     title: 'ŞEHİTKAMİL ANTİKA PAZARI',
-    gradient: ['#F59E0B', '#D97706'], // Orange gradient
+    gradient: ['#D97706', '#F59E0B'], // Brown-Orange gradient (fallback)
   },
   {
     id: '7',
-    // Görseli eklemek için: assets/images/daha-temiz-sehitkamil.jpg
-    image: '', // require('../../assets/images/daha-temiz-sehitkamil.jpg') - görsel eklendiğinde aktif edin
+    // Daha Temiz Şehitkamil - Çöp toplama, yeşil gradient
+    image: require('../../assets/images/daha-temiz-sehitkamil.jpg'),
     title: 'DAHA TEMİZ ŞEHİTKAMİL',
-    gradient: ['#10B981', '#059669'], // Green gradient
+    gradient: ['#10B981', '#059669'], // Green gradient (fallback)
   },
 ];
 
