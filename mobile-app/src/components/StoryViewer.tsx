@@ -13,7 +13,6 @@ import {
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
   runOnJS,
   cancelAnimation,
@@ -44,6 +43,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const opacity = useSharedValue(1);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isLongPressingRef = useRef(false);
+  const handleNextRef = useRef<(() => void) | null>(null);
 
   // initialStoryIndex değiştiğinde currentIndex'i güncelle
   useEffect(() => {
@@ -56,45 +56,15 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
 
   const currentStory = mockStories[currentIndex];
 
-  // Progress bar animasyonu - hemen başlat
-  useEffect(() => {
-    if (visible && !isPaused && currentStory) {
-      // Önceki animasyonu iptal et
-      cancelAnimation(progress);
-      progress.value = 0;
-      
-      // Hemen başlat
-      progress.value = withTiming(1, { duration: STORY_DURATION }, (finished) => {
-        if (finished && !isPaused) {
-          runOnJS(handleNext)();
-        }
-      });
-    } else if (isPaused) {
-      // Pause durumunda animasyonu durdur
-      cancelAnimation(progress);
+  const handleClose = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
     }
-    
-    return () => {
-      cancelAnimation(progress);
-    };
-  }, [visible, currentIndex, isPaused]);
-
-  // Hikayeyi izlenmiş olarak işaretle
-  useEffect(() => {
-    if (visible && currentStory) {
-      onViewed(currentStory.id);
-    }
-  }, [visible, currentIndex]);
-
-  // Modal açılış/kapanış animasyonu - hızlı açılış
-  useEffect(() => {
-    if (visible) {
-      // Hemen görünür yap, animasyon yok
-      opacity.value = 1;
-    } else {
-      opacity.value = withTiming(0, { duration: 150 });
-    }
-  }, [visible]);
+    cancelAnimation(progress);
+    setIsPaused(false);
+    isLongPressingRef.current = false;
+    onClose();
+  }, [onClose]);
 
   const handleNext = useCallback(() => {
     if (isLongPressingRef.current) return; // Long press sırasında geçiş yapma
@@ -105,9 +75,21 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     if (currentIndex < mockStories.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      handleClose();
+      // Son hikayede kapat
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+      cancelAnimation(progress);
+      setIsPaused(false);
+      isLongPressingRef.current = false;
+      onClose();
     }
-  }, [currentIndex]);
+  }, [currentIndex, onClose, progress]);
+  
+  // Ref'i güncelle
+  useEffect(() => {
+    handleNextRef.current = handleNext;
+  }, [handleNext]);
 
   const handlePrevious = useCallback(() => {
     if (isLongPressingRef.current) return; // Long press sırasında geçiş yapma
@@ -118,9 +100,16 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     if (currentIndex > 0) {
       setCurrentIndex(prev => prev - 1);
     } else {
-      handleClose();
+      // İlk hikayede kapat
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+      cancelAnimation(progress);
+      setIsPaused(false);
+      isLongPressingRef.current = false;
+      onClose();
     }
-  }, [currentIndex]);
+  }, [currentIndex, onClose]);
 
   const handlePause = useCallback(() => {
     setIsPaused(true);
@@ -134,21 +123,56 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     const remaining = (1 - currentProgress) * STORY_DURATION;
     progress.value = withTiming(1, { duration: remaining }, (finished) => {
       if (finished) {
-        runOnJS(handleNext)();
+        const nextHandler = handleNextRef.current;
+        if (nextHandler) {
+          runOnJS(nextHandler)();
+        }
       }
     });
-  }, []);
+  }, [progress]);
 
-  const handleClose = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
+  // Progress bar animasyonu - hemen başlat
+  useEffect(() => {
+    if (visible && !isPaused && currentStory) {
+      // Önceki animasyonu iptal et
+      cancelAnimation(progress);
+      progress.value = 0;
+      
+      // Hemen başlat
+      progress.value = withTiming(1, { duration: STORY_DURATION }, (finished) => {
+        if (finished && !isPaused) {
+          const nextHandler = handleNextRef.current;
+          if (nextHandler) {
+            runOnJS(nextHandler)();
+          }
+        }
+      });
+    } else if (isPaused) {
+      // Pause durumunda animasyonu durdur
+      cancelAnimation(progress);
     }
-    cancelAnimation(progress);
-    setIsPaused(false);
-    isLongPressingRef.current = false;
-    onClose();
-  }, [onClose]);
+    
+    return () => {
+      cancelAnimation(progress);
+    };
+  }, [visible, currentIndex, isPaused, currentStory, progress]);
 
+  // Hikayeyi izlenmiş olarak işaretle
+  useEffect(() => {
+    if (visible && currentStory) {
+      onViewed(currentStory.id);
+    }
+  }, [visible, currentIndex, currentStory, onViewed]);
+
+  // Modal açılış/kapanış animasyonu - hızlı açılış
+  useEffect(() => {
+    if (visible) {
+      // Hemen görünür yap, animasyon yok
+      opacity.value = 1;
+    } else {
+      opacity.value = withTiming(0, { duration: 150 });
+    }
+  }, [visible]);
 
   const progressBarStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
