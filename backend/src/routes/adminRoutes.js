@@ -50,5 +50,35 @@ const {
 router.get('/applications', authenticate, requireAdmin, getApplications);
 router.put('/applications/:id/status', authenticate, requireAdmin, updateApplicationStatus);
 
+// Surveys
+const {
+  createSurvey,
+  updateSurvey,
+  deleteSurvey,
+  addQuestion,
+  updateQuestion,
+  deleteQuestion,
+} = require('../controllers/adminSurveyController');
+router.post('/surveys', authenticate, requireAdmin, createSurvey);
+router.put('/surveys/:id', authenticate, requireAdmin, updateSurvey);
+router.delete('/surveys/:id', authenticate, requireAdmin, deleteSurvey);
+router.post('/surveys/:id/questions', authenticate, requireAdmin, addQuestion);
+router.put('/questions/:id', authenticate, requireAdmin, updateQuestion);
+router.delete('/questions/:id', authenticate, requireAdmin, deleteQuestion);
+
+// Rewards
+const { createReward, updateReward, deleteReward } = require('../controllers/adminRewardController');
+router.post('/rewards', authenticate, requireAdmin, uploadSingle('image'), createReward);
+router.put('/rewards/:id', authenticate, requireAdmin, uploadSingle('image'), updateReward);
+router.delete('/rewards/:id', authenticate, requireAdmin, deleteReward);
+
+// Bill Supports
+const {
+  getBillSupports,
+  updateBillSupportStatus,
+} = require('../controllers/adminBillSupportController');
+router.get('/bill-supports', authenticate, requireAdmin, getBillSupports);
+router.put('/bill-supports/:id/status', authenticate, requireAdmin, updateBillSupportStatus);
+
 module.exports = router;
 
