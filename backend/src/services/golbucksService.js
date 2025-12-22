@@ -71,14 +71,16 @@ const addGolbucks = async (userId, amount, type, description = null, metadata = 
  * @param {string} type - Transaction type
  * @param {string} description - Transaction description
  * @param {object} metadata - Additional metadata
+ * @param {object} dbTransaction - Optional database transaction
  * @returns {Promise<Object>} Transaction result
  */
-const deductGolbucks = async (userId, amount, type, description = null, metadata = {}) => {
+const deductGolbucks = async (userId, amount, type, description = null, metadata = {}, dbTransaction = null) => {
   if (amount <= 0) {
     throw new ValidationError('Amount must be positive');
   }
 
-  const transaction = await sequelize.transaction();
+  const transaction = dbTransaction || await sequelize.transaction();
+  const shouldCommit = !dbTransaction;
 
   try {
     // Get user with lock
