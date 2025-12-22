@@ -83,9 +83,7 @@ export default function AboutScreen() {
       >
         {/* App Info */}
         <View style={styles.appInfo}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>Ş</Text>
-          </View>
+          <Logo width={180} height={50} />
           <Text style={styles.appName}>Şehitkamil Belediyesi</Text>
           <Text style={styles.appSubtitle}>Mobil Uygulama</Text>
           <Text style={styles.versionText}>Versiyon {appVersion}</Text>

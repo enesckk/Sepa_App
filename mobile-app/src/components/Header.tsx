@@ -4,6 +4,7 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { User, Settings, Coins } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
+import { Logo } from './Logo';
 
 interface HeaderProps {
   userName?: string;
@@ -38,12 +39,9 @@ export const Header: React.FC<HeaderProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Orta: Logo + App Name */}
+        {/* Orta: Logo */}
         <View style={styles.centerContainer}>
-          <View style={styles.logo}>
-            <Text style={styles.logoText}>Ş</Text>
-          </View>
-          <Text style={styles.appName}>Şehitkamil</Text>
+          <Logo width={140} height={32} />
         </View>
 
         {/* Sağ: Points with Gradient */}
@@ -98,28 +96,8 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   centerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logo: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  appName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: Colors.primary,
-    letterSpacing: -0.3,
   },
   pointsGradient: {
     flexDirection: 'row',
