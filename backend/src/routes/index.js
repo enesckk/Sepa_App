@@ -172,6 +172,7 @@ router.use('/places', placeRoutes);
 router.use('/surveys', surveyRoutes);
 router.use('/news', newsRoutes);
 router.use('/emergency-gathering', emergencyGatheringRoutes);
+router.use('/notifications', notificationRoutes);
 router.use('/admin', adminRoutes);
 
 module.exports = router;
