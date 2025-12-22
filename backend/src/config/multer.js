@@ -7,8 +7,9 @@ const uploadsDir = path.join(__dirname, '../../uploads');
 const applicationsDir = path.join(uploadsDir, 'applications');
 const billsDir = path.join(uploadsDir, 'bills');
 const storiesDir = path.join(uploadsDir, 'stories');
+const eventsDir = path.join(uploadsDir, 'events');
 
-[uploadsDir, applicationsDir, billsDir, storiesDir].forEach((dir) => {
+[uploadsDir, applicationsDir, billsDir, storiesDir, eventsDir].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -24,6 +25,10 @@ const storage = multer.diskStorage({
       cb(null, billsDir);
     } else if (req.path.includes('/stories')) {
       cb(null, storiesDir);
+    } else if (req.path.includes('/events') || req.path.includes('/admin/events')) {
+      cb(null, eventsDir);
+    } else if (req.path.includes('/news') || req.path.includes('/admin/news')) {
+      cb(null, newsDir);
     } else {
       cb(null, uploadsDir);
     }
@@ -87,5 +92,6 @@ module.exports = {
   applicationsDir,
   billsDir,
   storiesDir,
+  eventsDir,
 };
 

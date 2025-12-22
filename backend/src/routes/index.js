@@ -100,6 +100,34 @@ router.get('/', (req, res) => {
         nearby: 'GET /api/emergency-gathering/nearby',
         getById: 'GET /api/emergency-gathering/:id',
       },
+      admin: {
+        dashboard: 'GET /api/admin/dashboard-stats',
+        users: {
+          list: 'GET /api/admin/users',
+          update: 'PUT /api/admin/users/:id',
+          delete: 'DELETE /api/admin/users/:id',
+        },
+        events: {
+          create: 'POST /api/admin/events',
+          update: 'PUT /api/admin/events/:id',
+          delete: 'DELETE /api/admin/events/:id',
+          registrations: 'GET /api/admin/events/:id/registrations',
+        },
+        stories: {
+          create: 'POST /api/admin/stories',
+          update: 'PUT /api/admin/stories/:id',
+          delete: 'DELETE /api/admin/stories/:id',
+        },
+        news: {
+          create: 'POST /api/admin/news',
+          update: 'PUT /api/admin/news/:id',
+          delete: 'DELETE /api/admin/news/:id',
+        },
+        applications: {
+          list: 'GET /api/admin/applications',
+          updateStatus: 'PUT /api/admin/applications/:id/status',
+        },
+      },
     },
   });
 });
@@ -117,6 +145,7 @@ router.use('/places', placeRoutes);
 router.use('/surveys', surveyRoutes);
 router.use('/news', newsRoutes);
 router.use('/emergency-gathering', emergencyGatheringRoutes);
+router.use('/admin', adminRoutes);
 
 module.exports = router;
 
