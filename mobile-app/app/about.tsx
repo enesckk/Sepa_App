@@ -19,6 +19,7 @@ import {
   Youtube,
 } from 'lucide-react-native';
 import { Colors } from '../src/constants/colors';
+import { Logo } from '../src/components/Logo';
 
 export default function AboutScreen() {
   const router = useRouter();
