@@ -14,6 +14,7 @@ const Survey = require('./Survey');
 const Question = require('./Question');
 const Answer = require('./Answer');
 const News = require('./News');
+const EmergencyGathering = require('./EmergencyGathering');
 
 // Initialize all models
 const models = {
@@ -32,6 +33,7 @@ const models = {
   Question,
   Answer,
   News,
+  EmergencyGathering,
   sequelize,
 };
 
