@@ -13,6 +13,7 @@ const StoryView = require('./StoryView');
 const Survey = require('./Survey');
 const Question = require('./Question');
 const Answer = require('./Answer');
+const News = require('./News');
 
 // Initialize all models
 const models = {
@@ -30,6 +31,7 @@ const models = {
   Survey,
   Question,
   Answer,
+  News,
   sequelize,
 };
 

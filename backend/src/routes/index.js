@@ -10,6 +10,7 @@ const billSupportRoutes = require('./billSupportRoutes');
 const storyRoutes = require('./storyRoutes');
 const placeRoutes = require('./placeRoutes');
 const surveyRoutes = require('./surveyRoutes');
+const newsRoutes = require('./newsRoutes');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -89,6 +90,11 @@ router.get('/', (req, res) => {
         submit: 'POST /api/surveys/:id/submit',
         myAnswers: 'GET /api/surveys/:id/my-answers',
       },
+      news: {
+        list: 'GET /api/news',
+        categories: 'GET /api/news/categories',
+        getById: 'GET /api/news/:id',
+      },
     },
   });
 });
@@ -104,6 +110,7 @@ router.use('/bill-supports', billSupportRoutes);
 router.use('/stories', storyRoutes);
 router.use('/places', placeRoutes);
 router.use('/surveys', surveyRoutes);
+router.use('/news', newsRoutes);
 
 module.exports = router;
 
