@@ -97,5 +97,7 @@ module.exports = {
   billsDir,
   storiesDir,
   eventsDir,
+  newsDir,
+  rewardsDir,
 };
 
