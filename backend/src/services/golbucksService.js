@@ -115,7 +115,9 @@ const deductGolbucks = async (userId, amount, type, description = null, metadata
       { transaction }
     );
 
-    await transaction.commit();
+    if (shouldCommit) {
+      await transaction.commit();
+    }
 
     return {
       success: true,
@@ -123,7 +125,9 @@ const deductGolbucks = async (userId, amount, type, description = null, metadata
       newBalance: newBalance,
     };
   } catch (error) {
-    await transaction.rollback();
+    if (shouldCommit) {
+      await transaction.rollback();
+    }
     throw error;
   }
 };
