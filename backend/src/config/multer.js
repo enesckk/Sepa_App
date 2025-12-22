@@ -6,8 +6,9 @@ const fs = require('fs');
 const uploadsDir = path.join(__dirname, '../../uploads');
 const applicationsDir = path.join(uploadsDir, 'applications');
 const billsDir = path.join(uploadsDir, 'bills');
+const storiesDir = path.join(uploadsDir, 'stories');
 
-[uploadsDir, applicationsDir, billsDir].forEach((dir) => {
+[uploadsDir, applicationsDir, billsDir, storiesDir].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -21,6 +22,8 @@ const storage = multer.diskStorage({
       cb(null, applicationsDir);
     } else if (req.path.includes('/bill-supports')) {
       cb(null, billsDir);
+    } else if (req.path.includes('/stories')) {
+      cb(null, storiesDir);
     } else {
       cb(null, uploadsDir);
     }
@@ -83,5 +86,6 @@ module.exports = {
   uploadsDir,
   applicationsDir,
   billsDir,
+  storiesDir,
 };
 

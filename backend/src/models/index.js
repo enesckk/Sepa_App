@@ -8,6 +8,8 @@ const Event = require('./Event');
 const EventRegistration = require('./EventRegistration');
 const Application = require('./Application');
 const BillSupport = require('./BillSupport');
+const Story = require('./Story');
+const StoryView = require('./StoryView');
 
 // Initialize all models
 const models = {
@@ -20,6 +22,8 @@ const models = {
   EventRegistration,
   Application,
   BillSupport,
+  Story,
+  StoryView,
   sequelize,
 };
 

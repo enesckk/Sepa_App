@@ -7,6 +7,7 @@ const dailyRewardRoutes = require('./dailyRewardRoutes');
 const eventRoutes = require('./eventRoutes');
 const applicationRoutes = require('./applicationRoutes');
 const billSupportRoutes = require('./billSupportRoutes');
+const storyRoutes = require('./storyRoutes');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -66,6 +67,14 @@ router.get('/', (req, res) => {
         list: 'GET /api/bill-supports',
         getById: 'GET /api/bill-supports/:id',
       },
+      stories: {
+        list: 'GET /api/stories',
+        getById: 'GET /api/stories/:id',
+        view: 'POST /api/stories/:id/view',
+        create: 'POST /api/stories (Admin)',
+        update: 'PUT /api/stories/:id (Admin)',
+        delete: 'DELETE /api/stories/:id (Admin)',
+      },
     },
   });
 });
@@ -78,6 +87,7 @@ router.use('/rewards/daily', dailyRewardRoutes);
 router.use('/events', eventRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/bill-supports', billSupportRoutes);
+router.use('/stories', storyRoutes);
 
 module.exports = router;
 
