@@ -13,9 +13,9 @@ import { Colors } from '../constants/colors';
 import { StoryViewer } from './StoryViewer';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const STORY_SIZE = 72;
-const STORY_ACTIVE_SIZE = 80;
-const STORY_SPACING = 16;
+const STORY_SIZE = 64; // Instagram benzeri daha küçük
+const STORY_ACTIVE_SIZE = 72;
+const STORY_SPACING = 12; // Daha kompakt
 
 import { Story } from '../services/mockData';
 
@@ -169,10 +169,10 @@ export const StoryCarousel: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 20,
-    paddingBottom: 24,
+    paddingVertical: 16,
+    paddingBottom: 20,
     backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
+    borderBottomWidth: 0.5,
     borderBottomColor: Colors.border,
   },
   carousel: {
@@ -229,12 +229,13 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   storyTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.text,
     textAlign: 'center',
-    marginTop: 10,
+    marginTop: 8,
     letterSpacing: -0.2,
+    maxWidth: STORY_SIZE + 8,
   },
   viewedBorder: {
     borderWidth: 2.5,

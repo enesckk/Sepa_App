@@ -14,15 +14,20 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  withSpring,
   runOnJS,
   cancelAnimation,
+  interpolate,
+  Extrapolate,
 } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { X } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
 import { Story, mockStories } from '../services/mockData';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const STORY_DURATION = 5000; // 5 saniye
+const SWIPE_DOWN_THRESHOLD = 100; // Swipe down için minimum mesafe
 
 interface StoryViewerProps {
   visible: boolean;
@@ -41,8 +46,9 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const progress = useSharedValue(0);
   const opacity = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const scale = useSharedValue(1);
   const isLongPressingRef = useRef(false);
-  const progressAnimationRef = useRef<number | null>(null);
   const handleNextRef = useRef<(() => void) | null>(null);
   const handlePreviousRef = useRef<(() => void) | null>(null);
 
@@ -53,18 +59,24 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
       progress.value = 0;
       setIsPaused(false);
       isLongPressingRef.current = false;
+      translateY.value = 0;
+      scale.value = 1;
     }
-  }, [initialStoryIndex, visible, progress]);
+  }, [initialStoryIndex, visible, progress, translateY, scale]);
 
   const currentStory = mockStories[currentIndex];
 
   const handleClose = useCallback(() => {
     cancelAnimation(progress);
+    cancelAnimation(translateY);
+    cancelAnimation(scale);
     setIsPaused(false);
     isLongPressingRef.current = false;
     progress.value = 0;
+    translateY.value = 0;
+    scale.value = 1;
     onClose();
-  }, [onClose, progress]);
+  }, [onClose, progress, translateY, scale]);
 
   const handleNext = useCallback(() => {
     if (isLongPressingRef.current) return;
@@ -73,11 +85,15 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     progress.value = 0;
     
     if (currentIndex < mockStories.length - 1) {
-      setCurrentIndex(prev => prev + 1);
+      // Fade out animasyonu
+      opacity.value = withTiming(0, { duration: 150 }, () => {
+        runOnJS(setCurrentIndex)(prev => prev + 1);
+        opacity.value = withTiming(1, { duration: 150 });
+      });
     } else {
       handleClose();
     }
-  }, [currentIndex, handleClose, progress]);
+  }, [currentIndex, handleClose, progress, opacity]);
 
   const handlePrevious = useCallback(() => {
     if (isLongPressingRef.current) return;
@@ -86,11 +102,15 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     progress.value = 0;
     
     if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
+      // Fade out animasyonu
+      opacity.value = withTiming(0, { duration: 150 }, () => {
+        runOnJS(setCurrentIndex)(prev => prev - 1);
+        opacity.value = withTiming(1, { duration: 150 });
+      });
     } else {
       handleClose();
     }
-  }, [currentIndex, handleClose, progress]);
+  }, [currentIndex, handleClose, progress, opacity]);
 
   // Ref'leri güncelle
   useEffect(() => {
@@ -160,10 +180,12 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   useEffect(() => {
     if (visible) {
       opacity.value = withTiming(1, { duration: 200 });
+      scale.value = withSpring(1, { damping: 20, stiffness: 300 });
     } else {
       opacity.value = withTiming(0, { duration: 150 });
+      scale.value = withTiming(0.95, { duration: 150 });
     }
-  }, [visible, opacity]);
+  }, [visible, opacity, scale]);
 
   const progressBarStyle = useAnimatedStyle(() => ({
     width: `${progress.value * 100}%`,
@@ -172,6 +194,57 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
   }));
+
+  const contentStyle = useAnimatedStyle(() => {
+    const scaleValue = interpolate(
+      translateY.value,
+      [0, SCREEN_HEIGHT],
+      [1, 0.8],
+      Extrapolate.CLAMP
+    );
+
+    return {
+      transform: [
+        { translateY: translateY.value },
+        { scale: Math.min(scale.value, scaleValue) },
+      ],
+      opacity: interpolate(
+        translateY.value,
+        [0, SWIPE_DOWN_THRESHOLD],
+        [1, 0.5],
+        Extrapolate.CLAMP
+      ),
+    };
+  });
+
+  // Swipe down gesture - Instagram gibi
+  const panGesture = Gesture.Pan()
+    .onUpdate((event) => {
+      if (event.translationY > 0) {
+        // Sadece aşağı swipe
+        translateY.value = event.translationY;
+        const scaleValue = interpolate(
+          event.translationY,
+          [0, SCREEN_HEIGHT],
+          [1, 0.8],
+          Extrapolate.CLAMP
+        );
+        scale.value = scaleValue;
+      }
+    })
+    .onEnd((event) => {
+      if (event.translationY > SWIPE_DOWN_THRESHOLD) {
+        // Kapat
+        translateY.value = withTiming(SCREEN_HEIGHT, { duration: 200 }, () => {
+          runOnJS(handleClose)();
+        });
+        scale.value = withTiming(0.8, { duration: 200 });
+      } else {
+        // Geri dön
+        translateY.value = withSpring(0, { damping: 20, stiffness: 300 });
+        scale.value = withSpring(1, { damping: 20, stiffness: 300 });
+      }
+    });
 
   // Touch handlers - Instagram mantığı
   const handleLeftPress = useCallback(() => {
@@ -205,80 +278,82 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
       statusBarTranslucent
     >
       <StatusBar hidden />
-      <View style={styles.container}>
-        <Animated.View style={[styles.backdrop, backdropStyle]} />
-        
-        <View style={styles.content}>
-          {/* Progress Bars - Üstte Instagram gibi */}
-          <View style={styles.progressContainer}>
-            {mockStories.map((_, index) => (
-              <View key={index} style={styles.progressBarBackground}>
-                {index < currentIndex && (
-                  <View style={[styles.progressBar, styles.progressBarCompleted]} />
-                )}
-                {index === currentIndex && (
-                  <Animated.View style={[styles.progressBar, progressBarStyle]} />
-                )}
-              </View>
-            ))}
-          </View>
+      <GestureDetector gesture={panGesture}>
+        <View style={styles.container}>
+          <Animated.View style={[styles.backdrop, backdropStyle]} />
+          
+          <Animated.View style={[styles.content, contentStyle]}>
+            {/* Progress Bars - Üstte Instagram gibi */}
+            <View style={styles.progressContainer}>
+              {mockStories.map((_, index) => (
+                <View key={index} style={styles.progressBarBackground}>
+                  {index < currentIndex && (
+                    <View style={[styles.progressBar, styles.progressBarCompleted]} />
+                  )}
+                  {index === currentIndex && (
+                    <Animated.View style={[styles.progressBar, progressBarStyle]} />
+                  )}
+                </View>
+              ))}
+            </View>
 
-          {/* Story Image */}
-          <Image
-            source={{ uri: currentStory.image }}
-            style={styles.storyImage}
-            resizeMode="cover"
-          />
+            {/* Story Image */}
+            <Image
+              source={{ uri: currentStory.image }}
+              style={styles.storyImage}
+              resizeMode="cover"
+            />
 
-          {/* Story Info Overlay - Altta Instagram gibi */}
-          <View style={styles.infoOverlay}>
-            <View style={styles.infoContainer}>
-              <View style={styles.avatarContainer}>
-                <Image
-                  source={{ uri: currentStory.image }}
-                  style={styles.avatar}
-                />
-              </View>
-              <View style={styles.infoTextContainer}>
-                <Text style={styles.storyTitle}>{currentStory.title}</Text>
-                <Text style={styles.storyDescription}>{currentStory.description}</Text>
+            {/* Story Info Overlay - Altta Instagram gibi */}
+            <View style={styles.infoOverlay}>
+              <View style={styles.infoContainer}>
+                <View style={styles.avatarContainer}>
+                  <Image
+                    source={{ uri: currentStory.image }}
+                    style={styles.avatar}
+                  />
+                </View>
+                <View style={styles.infoTextContainer}>
+                  <Text style={styles.storyTitle}>{currentStory.title}</Text>
+                  <Text style={styles.storyTime}>Şimdi</Text>
+                </View>
               </View>
             </View>
-          </View>
 
-          {/* Touch Areas - Instagram mantığı */}
-          {/* Sol taraf: Önceki story */}
-          <Pressable
-            style={styles.leftTouchArea}
-            onPress={handleLeftPress}
-            onLongPress={handleLongPressStart}
-            onPressOut={handleLongPressEnd}
-            delayLongPress={150}
-          />
-          
-          {/* Orta taraf: Sadece long press (pause) */}
-          <Pressable
-            style={styles.centerTouchArea}
-            onLongPress={handleLongPressStart}
-            onPressOut={handleLongPressEnd}
-            delayLongPress={150}
-          />
-          
-          {/* Sağ taraf: Sonraki story */}
-          <Pressable
-            style={styles.rightTouchArea}
-            onPress={handleRightPress}
-            onLongPress={handleLongPressStart}
-            onPressOut={handleLongPressEnd}
-            delayLongPress={150}
-          />
+            {/* Touch Areas - Instagram mantığı */}
+            {/* Sol taraf: Önceki story */}
+            <Pressable
+              style={styles.leftTouchArea}
+              onPress={handleLeftPress}
+              onLongPress={handleLongPressStart}
+              onPressOut={handleLongPressEnd}
+              delayLongPress={150}
+            />
+            
+            {/* Orta taraf: Sadece long press (pause) */}
+            <Pressable
+              style={styles.centerTouchArea}
+              onLongPress={handleLongPressStart}
+              onPressOut={handleLongPressEnd}
+              delayLongPress={150}
+            />
+            
+            {/* Sağ taraf: Sonraki story */}
+            <Pressable
+              style={styles.rightTouchArea}
+              onPress={handleRightPress}
+              onLongPress={handleLongPressStart}
+              onPressOut={handleLongPressEnd}
+              delayLongPress={150}
+            />
 
-          {/* Close Button */}
-          <Pressable style={styles.closeButton} onPress={handleClose}>
-            <X size={20} color={Colors.surface} strokeWidth={2.5} />
-          </Pressable>
+            {/* Close Button */}
+            <Pressable style={styles.closeButton} onPress={handleClose}>
+              <X size={20} color={Colors.surface} strokeWidth={2.5} />
+            </Pressable>
+          </Animated.View>
         </View>
-      </View>
+      </GestureDetector>
     </Modal>
   );
 };
@@ -339,14 +414,14 @@ const styles = StyleSheet.create({
   infoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderRadius: 20,
     padding: 12,
   },
   avatarContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: Colors.surface,
@@ -366,11 +441,10 @@ const styles = StyleSheet.create({
     color: Colors.surface,
     marginBottom: 2,
   },
-  storyDescription: {
-    fontSize: 13,
+  storyTime: {
+    fontSize: 12,
     color: Colors.surface,
-    opacity: 0.9,
-    lineHeight: 18,
+    opacity: 0.7,
   },
   leftTouchArea: {
     position: 'absolute',
