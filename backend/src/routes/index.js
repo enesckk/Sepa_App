@@ -127,6 +127,23 @@ router.get('/', (req, res) => {
           list: 'GET /api/admin/applications',
           updateStatus: 'PUT /api/admin/applications/:id/status',
         },
+        surveys: {
+          create: 'POST /api/admin/surveys',
+          update: 'PUT /api/admin/surveys/:id',
+          delete: 'DELETE /api/admin/surveys/:id',
+          addQuestion: 'POST /api/admin/surveys/:id/questions',
+          updateQuestion: 'PUT /api/admin/questions/:id',
+          deleteQuestion: 'DELETE /api/admin/questions/:id',
+        },
+        rewards: {
+          create: 'POST /api/admin/rewards',
+          update: 'PUT /api/admin/rewards/:id',
+          delete: 'DELETE /api/admin/rewards/:id',
+        },
+        billSupports: {
+          list: 'GET /api/admin/bill-supports',
+          updateStatus: 'PUT /api/admin/bill-supports/:id/status',
+        },
       },
     },
   });
