@@ -9,6 +9,7 @@ const applicationRoutes = require('./applicationRoutes');
 const billSupportRoutes = require('./billSupportRoutes');
 const storyRoutes = require('./storyRoutes');
 const placeRoutes = require('./placeRoutes');
+const surveyRoutes = require('./surveyRoutes');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -82,6 +83,12 @@ router.get('/', (req, res) => {
         categories: 'GET /api/places/categories',
         getById: 'GET /api/places/:id',
       },
+      surveys: {
+        list: 'GET /api/surveys',
+        getById: 'GET /api/surveys/:id',
+        submit: 'POST /api/surveys/:id/submit',
+        myAnswers: 'GET /api/surveys/:id/my-answers',
+      },
     },
   });
 });
@@ -96,6 +103,7 @@ router.use('/applications', applicationRoutes);
 router.use('/bill-supports', billSupportRoutes);
 router.use('/stories', storyRoutes);
 router.use('/places', placeRoutes);
+router.use('/surveys', surveyRoutes);
 
 module.exports = router;
 

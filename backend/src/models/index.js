@@ -10,6 +10,9 @@ const Application = require('./Application');
 const BillSupport = require('./BillSupport');
 const Story = require('./Story');
 const StoryView = require('./StoryView');
+const Survey = require('./Survey');
+const Question = require('./Question');
+const Answer = require('./Answer');
 
 // Initialize all models
 const models = {
@@ -24,6 +27,9 @@ const models = {
   BillSupport,
   Story,
   StoryView,
+  Survey,
+  Question,
+  Answer,
   sequelize,
 };
 
