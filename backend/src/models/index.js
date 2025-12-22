@@ -6,6 +6,8 @@ const Reward = require('./Reward');
 const UserReward = require('./UserReward');
 const Event = require('./Event');
 const EventRegistration = require('./EventRegistration');
+const Application = require('./Application');
+const BillSupport = require('./BillSupport');
 
 // Initialize all models
 const models = {
@@ -16,6 +18,8 @@ const models = {
   UserReward,
   Event,
   EventRegistration,
+  Application,
+  BillSupport,
   sequelize,
 };
 
