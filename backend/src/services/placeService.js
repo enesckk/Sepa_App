@@ -1,8 +1,7 @@
-const { Place } = require('../models');
+const { Place, sequelize } = require('../models');
 const { ValidationError, NotFoundError } = require('../utils/errors');
 const { Op } = require('sequelize');
 const { calculateDistance, calculateDistanceInMeters } = require('../utils/distance');
-const { sequelize } = require('sequelize');
 
 /**
  * Get all places with filters
