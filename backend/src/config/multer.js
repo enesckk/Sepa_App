@@ -29,6 +29,8 @@ const storage = multer.diskStorage({
       cb(null, eventsDir);
     } else if (req.path.includes('/news') || req.path.includes('/admin/news')) {
       cb(null, newsDir);
+    } else if (req.path.includes('/rewards') || req.path.includes('/admin/rewards')) {
+      cb(null, rewardsDir);
     } else {
       cb(null, uploadsDir);
     }
