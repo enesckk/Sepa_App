@@ -30,6 +30,7 @@ export const Colors = {
   // Status Colors
   error: '#D32F2F',
   success: '#388E3C',
+  successDark: '#2E7D32',
   warning: '#F57C00',
   info: '#1976D2',
 };

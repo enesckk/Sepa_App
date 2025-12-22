@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -8,6 +8,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Header } from '../../src/components/Header';
 import { AutoPlayCarousel } from '../../src/components/AutoPlayCarousel';
 import { StoryCarousel } from '../../src/components/StoryCarousel';
@@ -15,7 +16,13 @@ import { WeatherCard } from '../../src/components/WeatherCard';
 import { PrayerTimeCard } from '../../src/components/PrayerTimeCard';
 import { QuickAccessCards } from '../../src/components/QuickAccessCards';
 import { NewsSection } from '../../src/components/NewsSection';
+import { DailyRewardModal } from '../../src/components/DailyRewardModal';
 import { Colors } from '../../src/constants/colors';
+import {
+  hasClaimedDailyRewardToday,
+  claimDailyReward,
+  getDailyRewardAmount,
+} from '../../src/services/dailyRewardService';
 
 // Şehitkamil Belediyesi Destek Programları ve Hizmetler
 // Carousel görselleri - Şehitkamil Belediyesi'nin sosyal destek programları
@@ -104,6 +111,36 @@ const NEWS_DATA = [
 export default function HomeScreen() {
   const router = useRouter();
   const [userPoints, setUserPoints] = useState(320);
+  const [dailyRewardVisible, setDailyRewardVisible] = useState(false);
+  const [dailyRewardAmount, setDailyRewardAmount] = useState(0);
+
+  // Günlük ödül kontrolü - sayfa her açıldığında kontrol et
+  useFocusEffect(
+    React.useCallback(() => {
+      const checkDailyReward = async () => {
+        try {
+          const hasClaimed = await hasClaimedDailyRewardToday();
+          if (!hasClaimed) {
+            // Bugün ödül alınmamış, otomatik ödül ver
+            const amount = getDailyRewardAmount();
+            await claimDailyReward();
+            setDailyRewardAmount(amount);
+            setUserPoints((prev) => prev + amount);
+            // Kısa bir gecikme ile modal göster (sayfa yüklenmesi için)
+            setTimeout(() => {
+              setDailyRewardVisible(true);
+            }, 500);
+          }
+        } catch (error) {
+          if (__DEV__) {
+            console.error('Error checking daily reward:', error);
+          }
+        }
+      };
+
+      checkDailyReward();
+    }, [])
+  );
 
   const handleProfilePress = () => {
     if (__DEV__) {
@@ -146,6 +183,10 @@ export default function HomeScreen() {
     }
     // Navigate to city guide with mosque filter
     router.push('/city-guide?type=mosque');
+  };
+
+  const handleDailyRewardClose = () => {
+    setDailyRewardVisible(false);
   };
 
   return (
@@ -197,6 +238,13 @@ export default function HomeScreen() {
         {/* Bottom Spacer for Tab Navigation */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Daily Reward Modal */}
+      <DailyRewardModal
+        visible={dailyRewardVisible}
+        amount={dailyRewardAmount}
+        onClose={handleDailyRewardClose}
+      />
     </SafeAreaView>
   );
 }
