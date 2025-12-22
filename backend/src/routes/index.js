@@ -95,6 +95,11 @@ router.get('/', (req, res) => {
         categories: 'GET /api/news/categories',
         getById: 'GET /api/news/:id',
       },
+      emergencyGathering: {
+        list: 'GET /api/emergency-gathering',
+        nearby: 'GET /api/emergency-gathering/nearby',
+        getById: 'GET /api/emergency-gathering/:id',
+      },
     },
   });
 });
@@ -111,6 +116,7 @@ router.use('/stories', storyRoutes);
 router.use('/places', placeRoutes);
 router.use('/surveys', surveyRoutes);
 router.use('/news', newsRoutes);
+router.use('/emergency-gathering', emergencyGatheringRoutes);
 
 module.exports = router;
 
