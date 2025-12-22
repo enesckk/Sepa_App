@@ -100,6 +100,13 @@ router.get('/', (req, res) => {
         nearby: 'GET /api/emergency-gathering/nearby',
         getById: 'GET /api/emergency-gathering/:id',
       },
+      notifications: {
+        list: 'GET /api/notifications',
+        markRead: 'PUT /api/notifications/:id/read',
+        markAllRead: 'PUT /api/notifications/read-all',
+        delete: 'DELETE /api/notifications/:id',
+        deleteAllRead: 'DELETE /api/notifications/read-all',
+      },
       admin: {
         dashboard: 'GET /api/admin/dashboard-stats',
         users: {
