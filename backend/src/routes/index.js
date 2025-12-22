@@ -8,6 +8,7 @@ const eventRoutes = require('./eventRoutes');
 const applicationRoutes = require('./applicationRoutes');
 const billSupportRoutes = require('./billSupportRoutes');
 const storyRoutes = require('./storyRoutes');
+const placeRoutes = require('./placeRoutes');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -75,6 +76,12 @@ router.get('/', (req, res) => {
         update: 'PUT /api/stories/:id (Admin)',
         delete: 'DELETE /api/stories/:id (Admin)',
       },
+      places: {
+        list: 'GET /api/places',
+        nearby: 'GET /api/places/nearby',
+        categories: 'GET /api/places/categories',
+        getById: 'GET /api/places/:id',
+      },
     },
   });
 });
@@ -88,6 +95,7 @@ router.use('/events', eventRoutes);
 router.use('/applications', applicationRoutes);
 router.use('/bill-supports', billSupportRoutes);
 router.use('/stories', storyRoutes);
+router.use('/places', placeRoutes);
 
 module.exports = router;
 
