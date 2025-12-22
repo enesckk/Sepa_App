@@ -11,6 +11,9 @@ const storyRoutes = require('./storyRoutes');
 const placeRoutes = require('./placeRoutes');
 const surveyRoutes = require('./surveyRoutes');
 const newsRoutes = require('./newsRoutes');
+const emergencyGatheringRoutes = require('./emergencyGatheringRoutes');
+const adminRoutes = require('./adminRoutes');
+const notificationRoutes = require('./notificationRoutes');
 
 // Health check route
 router.get('/health', (req, res) => {
