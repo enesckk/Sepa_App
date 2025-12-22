@@ -4,6 +4,7 @@ const authRoutes = require('./authRoutes');
 const userRoutes = require('./userRoutes');
 const rewardRoutes = require('./rewardRoutes');
 const dailyRewardRoutes = require('./dailyRewardRoutes');
+const eventRoutes = require('./eventRoutes');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -46,6 +47,13 @@ router.get('/', (req, res) => {
         status: 'GET /api/rewards/daily/status',
         claim: 'POST /api/rewards/daily',
       },
+      events: {
+        list: 'GET /api/events',
+        getById: 'GET /api/events/:id',
+        register: 'POST /api/events/:id/register',
+        cancel: 'DELETE /api/events/:id/register',
+        myRegistrations: 'GET /api/events/my-registrations',
+      },
     },
   });
 });
@@ -55,6 +63,7 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/rewards', rewardRoutes);
 router.use('/rewards/daily', dailyRewardRoutes);
+router.use('/events', eventRoutes);
 
 module.exports = router;
 

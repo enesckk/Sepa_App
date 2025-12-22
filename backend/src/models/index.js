@@ -4,6 +4,8 @@ const GolbucksTransaction = require('./GolbucksTransaction');
 const DailyReward = require('./DailyReward');
 const Reward = require('./Reward');
 const UserReward = require('./UserReward');
+const Event = require('./Event');
+const EventRegistration = require('./EventRegistration');
 
 // Initialize all models
 const models = {
@@ -12,14 +14,18 @@ const models = {
   DailyReward,
   Reward,
   UserReward,
+  Event,
+  EventRegistration,
   sequelize,
 };
 
 // Sync models with database (only in development)
 const syncModels = async (force = false) => {
   try {
-    await sequelize.sync({ force });
-    console.log('✅ Models synchronized with database');
+    await sequelize.sync({ alter: true }); // Use alter instead of force
+    if (process.env.NODE_ENV === 'development') {
+      console.log('✅ Models synchronized with database');
+    }
     return true;
   } catch (error) {
     console.error('❌ Error syncing models:', error.message);
