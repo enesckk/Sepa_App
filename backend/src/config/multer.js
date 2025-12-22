@@ -8,8 +8,10 @@ const applicationsDir = path.join(uploadsDir, 'applications');
 const billsDir = path.join(uploadsDir, 'bills');
 const storiesDir = path.join(uploadsDir, 'stories');
 const eventsDir = path.join(uploadsDir, 'events');
+const newsDir = path.join(uploadsDir, 'news');
+const rewardsDir = path.join(uploadsDir, 'rewards');
 
-[uploadsDir, applicationsDir, billsDir, storiesDir, eventsDir].forEach((dir) => {
+[uploadsDir, applicationsDir, billsDir, storiesDir, eventsDir, newsDir, rewardsDir].forEach((dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
