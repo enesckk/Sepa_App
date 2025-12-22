@@ -1,9 +1,17 @@
 const { sequelize } = require('../config/database');
 const User = require('./User');
+const GolbucksTransaction = require('./GolbucksTransaction');
+const DailyReward = require('./DailyReward');
+const Reward = require('./Reward');
+const UserReward = require('./UserReward');
 
 // Initialize all models
 const models = {
   User,
+  GolbucksTransaction,
+  DailyReward,
+  Reward,
+  UserReward,
   sequelize,
 };
 

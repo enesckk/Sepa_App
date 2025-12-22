@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const authRoutes = require('./authRoutes');
 const userRoutes = require('./userRoutes');
+const rewardRoutes = require('./rewardRoutes');
+const dailyRewardRoutes = require('./dailyRewardRoutes');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -30,7 +32,19 @@ router.get('/', (req, res) => {
         profile: 'GET /api/users/profile',
         updateProfile: 'PUT /api/users/profile',
         golbucks: 'GET /api/users/golbucks',
+        golbucksHistory: 'GET /api/users/golbucks/history',
         updatePassword: 'PUT /api/users/password',
+      },
+      rewards: {
+        list: 'GET /api/rewards',
+        getById: 'GET /api/rewards/:id',
+        redeem: 'POST /api/rewards/:id/redeem',
+        myRewards: 'GET /api/rewards/my',
+        useReward: 'PUT /api/rewards/my/:id/use',
+      },
+      dailyReward: {
+        status: 'GET /api/rewards/daily/status',
+        claim: 'POST /api/rewards/daily',
       },
     },
   });
@@ -39,6 +53,8 @@ router.get('/', (req, res) => {
 // Mount route modules
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
+router.use('/rewards', rewardRoutes);
+router.use('/rewards/daily', dailyRewardRoutes);
 
 module.exports = router;
 

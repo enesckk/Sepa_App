@@ -7,6 +7,10 @@ const {
   updatePassword,
   validateUpdateProfile,
 } = require('../controllers/userController');
+const {
+  getGolbucksHistory,
+  getGolbucksBalance,
+} = require('../controllers/golbucksController');
 const { authenticate } = require('../middleware/auth');
 
 /**
@@ -28,7 +32,14 @@ router.put('/profile', authenticate, validateUpdateProfile, updateProfile);
  * @desc    Get user golbucks balance
  * @access  Private
  */
-router.get('/golbucks', authenticate, getGolbucks);
+router.get('/golbucks', authenticate, getGolbucksBalance);
+
+/**
+ * @route   GET /api/users/golbucks/history
+ * @desc    Get user golbucks transaction history
+ * @access  Private
+ */
+router.get('/golbucks/history', authenticate, getGolbucksHistory);
 
 /**
  * @route   PUT /api/users/password
