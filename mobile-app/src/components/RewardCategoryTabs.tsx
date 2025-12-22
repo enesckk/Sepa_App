@@ -27,41 +27,41 @@ const RewardTabItem: React.FC<RewardTabItemProps> = ({
   isSelected,
   onPress,
 }) => {
-  const scale = useSharedValue(isSelected ? 1 : 0.95);
+          const scale = useSharedValue(isSelected ? 1 : 0.95);
 
   useEffect(() => {
-    scale.value = withSpring(isSelected ? 1 : 0.95, {
+            scale.value = withSpring(isSelected ? 1 : 0.95, {
       damping: 18,
       stiffness: 180,
       mass: 0.8,
-    });
+            });
   }, [isSelected, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+          const animatedStyle = useAnimatedStyle(() => ({
+            transform: [{ scale: scale.value }],
+          }));
 
-  return (
+          return (
     <Pressable onPress={onPress}>
-      <Animated.View
-        style={[
-          styles.tab,
-          isSelected && styles.tabActive,
-          animatedStyle,
-        ]}
-      >
-        <Text style={styles.icon}>{category.icon}</Text>
-        <Text
-          style={[
-            styles.label,
-            isSelected && styles.labelActive,
-          ]}
-        >
-          {category.label}
-        </Text>
-      </Animated.View>
-    </Pressable>
-  );
+              <Animated.View
+                style={[
+                  styles.tab,
+                  isSelected && styles.tabActive,
+                  animatedStyle,
+                ]}
+              >
+                <Text style={styles.icon}>{category.icon}</Text>
+                <Text
+                  style={[
+                    styles.label,
+                    isSelected && styles.labelActive,
+                  ]}
+                >
+                  {category.label}
+                </Text>
+              </Animated.View>
+            </Pressable>
+          );
 };
 
 export const RewardCategoryTabs: React.FC<RewardCategoryTabsProps> = ({

@@ -806,3 +806,4 @@ Bu dokümantasyon **sürüm numaraları içermez** çünkü:
 
 **Bu dokümantasyon, Şehitkamil Belediyesi mobil uygulamasının teknik ve tasarım detaylarını içerir. Sürüm numaraları olmadan teknoloji stack'i ve tasarım sistemini açıklar.**
 
+

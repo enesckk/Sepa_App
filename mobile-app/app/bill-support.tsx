@@ -80,10 +80,10 @@ export default function BillSupportScreen() {
           <ArrowLeft size={24} color={Colors.text} />
         </Pressable>
         <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>Askıda Fatura</Text>
-          <Text style={styles.headerSubtitle}>
-            Faturanızı askıya bırakın veya başkalarına destek olun
-          </Text>
+        <Text style={styles.headerTitle}>Askıda Fatura</Text>
+        <Text style={styles.headerSubtitle}>
+          Faturanızı askıya bırakın veya başkalarına destek olun
+        </Text>
         </View>
       </View>
 
