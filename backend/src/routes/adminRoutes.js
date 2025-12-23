@@ -52,6 +52,7 @@ router.put('/applications/:id/status', authenticate, requireAdmin, updateApplica
 
 // Surveys
 const {
+  getSurveys,
   createSurvey,
   updateSurvey,
   deleteSurvey,
@@ -59,6 +60,7 @@ const {
   updateQuestion,
   deleteQuestion,
 } = require('../controllers/adminSurveyController');
+router.get('/surveys', authenticate, requireAdmin, getSurveys);
 router.post('/surveys', authenticate, requireAdmin, createSurvey);
 router.put('/surveys/:id', authenticate, requireAdmin, updateSurvey);
 router.delete('/surveys/:id', authenticate, requireAdmin, deleteSurvey);
@@ -79,6 +81,10 @@ const {
 } = require('../controllers/adminBillSupportController');
 router.get('/bill-supports', authenticate, requireAdmin, getBillSupports);
 router.put('/bill-supports/:id/status', authenticate, requireAdmin, updateBillSupportStatus);
+
+// Notifications
+const { createNotificationAdmin } = require('../controllers/adminNotificationController');
+router.post('/notifications', authenticate, requireAdmin, createNotificationAdmin);
 
 module.exports = router;
 

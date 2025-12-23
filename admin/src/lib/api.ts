@@ -119,20 +119,29 @@ export const api = {
     return axiosInstance.delete<T>(url, config).then((res) => res as T);
   },
 
-  upload: <T>(url: string, formData: FormData, onUploadProgress?: (progress: number) => void): Promise<T> => {
-    return axiosInstance
-      .post<T>(url, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          if (onUploadProgress && progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            onUploadProgress(progress);
-          }
-        },
-      })
-      .then((res) => res as T);
+  upload: <T>(
+    url: string,
+    formData: FormData,
+    onUploadProgress?: (progress: number) => void,
+    method: 'POST' | 'PUT' = 'POST'
+  ): Promise<T> => {
+    const config = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent: any) => {
+        if (onUploadProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onUploadProgress(progress);
+        }
+      },
+    };
+
+    if (method === 'PUT') {
+      return axiosInstance.put<T>(url, formData, config).then((res) => res as T);
+    }
+
+    return axiosInstance.post<T>(url, formData, config).then((res) => res as T);
   },
 };
 

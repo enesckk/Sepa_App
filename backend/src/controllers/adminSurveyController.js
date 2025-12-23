@@ -1,5 +1,6 @@
 const { Survey, Question } = require('../models');
 const { NotFoundError, ValidationError } = require('../utils/errors');
+const { Op } = require('sequelize');
 
 /**
  * Create survey (Admin)
@@ -94,6 +95,53 @@ const updateSurvey = async (req, res, next) => {
       success: true,
       message: 'Survey updated successfully',
       data: { survey },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Get all surveys (Admin)
+ * GET /api/admin/surveys
+ */
+const getSurveys = async (req, res, next) => {
+  try {
+    const { search, status, limit, offset } = req.query;
+
+    const where = {};
+    if (status) {
+      where.status = status;
+    }
+    if (search) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
+      ];
+    }
+
+    const surveys = await Survey.findAndCountAll({
+      where,
+      include: [
+        {
+          model: Question,
+          as: 'questions',
+          attributes: ['id', 'text', 'type', 'options', 'is_required', 'order'],
+          order: [['order', 'ASC']],
+          required: false,
+        },
+      ],
+      order: [['created_at', 'DESC']],
+      limit: limit ? parseInt(limit) : undefined,
+      offset: offset ? parseInt(offset) : undefined,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        surveys: surveys.rows.map((s) => s.toJSON()),
+        total: surveys.count,
+      },
     });
   } catch (error) {
     next(error);
@@ -217,6 +265,7 @@ const deleteQuestion = async (req, res, next) => {
 };
 
 module.exports = {
+  getSurveys,
   createSurvey,
   updateSurvey,
   deleteSurvey,

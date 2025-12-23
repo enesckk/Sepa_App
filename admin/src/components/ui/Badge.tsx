@@ -6,7 +6,9 @@ type BadgeVariant =
   | 'warning'
   | 'error'
   | 'info'
-  | 'primary';
+  | 'primary'
+  | 'purple'
+  | 'blue';
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -21,6 +23,8 @@ const variantClasses: Record<BadgeVariant, string> = {
   warning: 'bg-orange-100 text-orange-800 border border-orange-200',
   error: 'bg-red-100 text-red-800 border border-red-200',
   info: 'bg-blue-100 text-blue-800 border border-blue-200',
+  purple: 'bg-purple-100 text-purple-800 border border-purple-200',
+  blue: 'bg-blue-100 text-blue-800 border border-blue-200',
 };
 
 export const Badge: React.FC<BadgeProps> = ({

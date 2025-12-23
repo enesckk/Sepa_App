@@ -5,12 +5,14 @@ interface Option {
   value: string | number;
 }
 
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   label?: string;
   options: Option[];
   error?: string;
   helperText?: string;
   fullWidth?: boolean;
+  onValueChange?: (value: string) => void;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 }
 
 export const Select: React.FC<SelectProps> = ({
@@ -20,8 +22,19 @@ export const Select: React.FC<SelectProps> = ({
   helperText,
   fullWidth = true,
   className = '',
+  onValueChange,
+  onChange,
   ...rest
 }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (onValueChange) {
+      onValueChange(e.target.value);
+    }
+    if (onChange) {
+      onChange(e);
+    }
+  };
+
   return (
     <div className={fullWidth ? 'w-full' : ''}>
       {label && (
@@ -31,6 +44,7 @@ export const Select: React.FC<SelectProps> = ({
         className={`w-full px-4 py-2 border rounded-input focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
           error ? 'border-error focus:ring-error' : 'border-border'
         } ${className}`}
+        onChange={handleChange}
         {...rest}
       >
         {options.map((opt) => (

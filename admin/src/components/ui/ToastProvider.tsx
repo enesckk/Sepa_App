@@ -14,7 +14,11 @@ interface Toast {
 }
 
 interface ToastContextValue {
-  showToast: (toast: Omit<Toast, 'id'>) => void;
+  showToast: (
+    variantOrToast: ToastVariant | Omit<Toast, 'id'>,
+    message?: string,
+    title?: string
+  ) => void;
 }
 
 const ToastContext = createContext<ToastContextValue | undefined>(undefined);
@@ -22,8 +26,25 @@ const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (toast: Omit<Toast, 'id'>) => {
+  const showToast = (
+    variantOrToast: ToastVariant | Omit<Toast, 'id'>,
+    message?: string,
+    title?: string
+  ) => {
     const id = crypto.randomUUID();
+    let toast: Omit<Toast, 'id'>;
+
+    // Support both object and separate parameters
+    if (typeof variantOrToast === 'string') {
+      toast = {
+        variant: variantOrToast,
+        message: message || '',
+        title,
+      };
+    } else {
+      toast = variantOrToast;
+    }
+
     const duration = toast.duration ?? 4000;
     const newToast: Toast = { id, ...toast };
     setToasts((prev) => [...prev, newToast]);

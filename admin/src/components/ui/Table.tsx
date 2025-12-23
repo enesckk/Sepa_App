@@ -7,14 +7,21 @@ export interface TableColumn<T> {
   className?: string;
 }
 
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
 interface TableProps<T> {
   columns: TableColumn<T>[];
   data: T[];
   loading?: boolean;
   emptyState?: React.ReactNode;
+  pagination?: PaginationProps;
 }
 
-export function Table<T>({ columns, data, loading, emptyState }: TableProps<T>) {
+export function Table<T>({ columns, data, loading, emptyState, pagination }: TableProps<T>) {
   if (loading) {
     return (
       <div className="py-6 text-center text-text-secondary">Yükleniyor...</div>
@@ -61,6 +68,29 @@ export function Table<T>({ columns, data, loading, emptyState }: TableProps<T>) 
           </tbody>
         </table>
       </div>
+      {pagination && pagination.totalPages > 1 && (
+        <div className="px-6 py-4 border-t border-border flex items-center justify-between">
+          <div className="text-sm text-text-secondary">
+            Sayfa {pagination.currentPage} / {pagination.totalPages}
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+              disabled={pagination.currentPage === 1}
+              className="px-3 py-1 text-sm border border-border rounded-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-background"
+            >
+              Önceki
+            </button>
+            <button
+              onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+              disabled={pagination.currentPage === pagination.totalPages}
+              className="px-3 py-1 text-sm border border-border rounded-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-background"
+            >
+              Sonraki
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,41 +1,125 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/Button';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/Input';
 import { Table, TableColumn } from '@/components/ui/Table';
-import { Modal } from '@/components/ui/Modal';
-import { FileUpload } from '@/components/ui/FileUpload';
-import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
-import { EmptyState } from '@/components/ui/EmptyState';
 import { Badge } from '@/components/ui/Badge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useToast } from '@/components/ui/ToastProvider';
+import { adminService, PlacesResponse } from '@/lib/services/admin';
 
-interface PlaceItem {
+interface Place {
   id: string;
   name: string;
   type: string;
+  category?: string;
   address: string;
-  is_active: boolean;
+  phone?: string;
+  image_url?: string;
+  created_at: string;
 }
 
-const mockData: PlaceItem[] = [];
-
 export default function PlacesPage() {
-  const [open, setOpen] = useState(false);
+  const { showToast } = useToast();
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
 
-  const columns: TableColumn<PlaceItem>[] = [
-    { key: 'name', header: 'Ad' },
-    { key: 'type', header: 'Tür' },
-    { key: 'address', header: 'Adres' },
+  const {
+    data: placesData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<PlacesResponse, Error>({
+    queryKey: ['adminPlaces', search, typeFilter],
+    queryFn: () =>
+      adminService.getPlaces({
+        search: search || undefined,
+        type: typeFilter || undefined,
+      }),
+  });
+
+  const places = placesData?.places || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (isError) {
+    showToast('error', 'Mekanlar yüklenirken bir hata oluştu.', error.message);
+    return (
+      <EmptyState
+        title="Veriler Yüklenemedi"
+        description="Mekan listesi alınamadı. Lütfen daha sonra tekrar deneyin."
+      />
+    );
+  }
+
+  const columns: TableColumn<Place>[] = [
     {
-      key: 'is_active',
-      header: 'Durum',
+      key: 'name',
+      header: 'Mekan',
       render: (row) => (
-        <Badge variant={row.is_active ? 'success' : 'error'}>
-          {row.is_active ? 'Aktif' : 'Pasif'}
+        <div className="flex items-center">
+          {row.image_url && (
+            <img
+              src={row.image_url}
+              alt={row.name}
+              className="w-12 h-12 rounded-lg object-cover mr-3"
+            />
+          )}
+          <div>
+            <div className="font-medium">{row.name}</div>
+            {row.category && (
+              <div className="text-sm text-text-secondary">{row.category}</div>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'type',
+      header: 'Tür',
+      render: (row) => (
+        <Badge variant="blue">
+          {row.type === 'mosque'
+            ? 'Cami'
+            : row.type === 'pharmacy'
+            ? 'Eczane'
+            : row.type === 'facility'
+            ? 'Tesis'
+            : row.type === 'wedding'
+            ? 'Nikah Salonu'
+            : row.type === 'park'
+            ? 'Park'
+            : row.type === 'library'
+            ? 'Kütüphane'
+            : row.type === 'sports'
+            ? 'Spor Tesisi'
+            : row.type === 'cultural'
+            ? 'Kültür Merkezi'
+            : row.type === 'health'
+            ? 'Sağlık Tesisi'
+            : row.type === 'education'
+            ? 'Eğitim Tesisi'
+            : 'Diğer'}
         </Badge>
       ),
+    },
+    {
+      key: 'address',
+      header: 'Adres',
+    },
+    {
+      key: 'phone',
+      header: 'Telefon',
+      render: (row) => <div>{row.phone || '-'}</div>,
     },
   ];
 
@@ -45,89 +129,44 @@ export default function PlacesPage() {
         <div>
           <h1 className="text-3xl font-bold text-text">Şehir Rehberi</h1>
           <p className="text-text-secondary text-sm mt-1">
-            Mekanları yönetin, konum ve görselleri ekleyin.
+            Mekanları görüntüleyin ve yönetin.
           </p>
         </div>
-        <Button onClick={() => setOpen(true)}>Yeni Mekan</Button>
       </div>
 
       <div className="bg-surface rounded-card shadow-card p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Input placeholder="Ara..." />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            placeholder="Ara..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
           <Select
+            value={typeFilter}
+            onValueChange={setTypeFilter}
             options={[
               { label: 'Tür: Tümü', value: '' },
               { label: 'Cami', value: 'mosque' },
+              { label: 'Eczane', value: 'pharmacy' },
+              { label: 'Tesis', value: 'facility' },
+              { label: 'Nikah Salonu', value: 'wedding' },
               { label: 'Park', value: 'park' },
-              { label: 'Hastane', value: 'hospital' },
-              { label: 'Okul', value: 'school' },
-              { label: 'Restoran', value: 'restaurant' },
-            ]}
-          />
-          <Select
-            options={[
-              { label: 'Durum: Tümü', value: '' },
-              { label: 'Aktif', value: 'true' },
-              { label: 'Pasif', value: 'false' },
+              { label: 'Kütüphane', value: 'library' },
+              { label: 'Spor Tesisi', value: 'sports' },
+              { label: 'Kültür Merkezi', value: 'cultural' },
+              { label: 'Sağlık Tesisi', value: 'health' },
+              { label: 'Eğitim Tesisi', value: 'education' },
             ]}
           />
         </div>
       </div>
 
-      <Table<PlaceItem>
+      <Table<Place>
         columns={columns}
-        data={mockData}
-        loading={false}
+        data={places}
+        loading={isLoading}
         emptyState={<EmptyState description="Henüz mekan eklenmedi." />}
       />
-
-      <Modal
-        open={open}
-        onClose={() => setOpen(false)}
-        title="Yeni Mekan"
-        footer={
-          <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={() => setOpen(false)}>
-              İptal
-            </Button>
-            <Button>Kaydet</Button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          <Input label="Ad" placeholder="Mekan adı" />
-          <Textarea label="Açıklama" placeholder="Kısa açıklama" rows={3} />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select
-              label="Tür"
-              options={[
-                { label: 'Cami', value: 'mosque' },
-                { label: 'Park', value: 'park' },
-                { label: 'Hastane', value: 'hospital' },
-                { label: 'Okul', value: 'school' },
-                { label: 'Restoran', value: 'restaurant' },
-                { label: 'Diğer', value: 'other' },
-              ]}
-            />
-            <Input label="Telefon" placeholder="+90 342 ..." />
-            <Input label="Web" placeholder="https://..." />
-            <Input label="E-posta" type="email" placeholder="info@example.com" />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Enlem" placeholder="37.0662" />
-            <Input label="Boylam" placeholder="37.3833" />
-            <Input label="Adres" placeholder="Açık adres" />
-            <Input label="Çalışma Saatleri" placeholder="08:00 - 18:00" />
-          </div>
-          <FileUpload
-            label="Kapak Görseli"
-            accept="image/*"
-            onFilesSelected={() => {}}
-            helperText="Maks 5MB, JPG/PNG"
-          />
-        </div>
-      </Modal>
     </div>
   );
 }
-
