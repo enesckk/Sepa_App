@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { useEffect } from 'react';
 import {
   Users,
   Calendar,
@@ -10,6 +9,11 @@ import {
   TrendingUp,
   Activity,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { adminService } from '@/lib/services/admin';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface DashboardStats {
   users: {
@@ -39,31 +43,32 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
+
+  const { data, isLoading, isError } = useQuery<DashboardStats>({
+    queryKey: ['admin', 'dashboard-stats'],
+    queryFn: () => adminService.getDashboardStats(),
+  });
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const data = await api.get<DashboardStats>('/admin/dashboard-stats');
-        setStats(data);
-      } catch (error) {
-        console.error('Failed to fetch stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (isError) {
+      showToast({
+        variant: 'error',
+        title: 'Hata',
+        message: 'Dashboard verileri alınamadı',
+      });
+    }
+  }, [isError, showToast]);
 
-    fetchStats();
-  }, []);
-
-  if (loading) {
-    return <div className="text-text-secondary">Yükleniyor...</div>;
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
 
-  if (!stats) {
-    return <div className="text-error">Veriler yüklenemedi</div>;
+  if (!data) {
+    return <EmptyState title="Veri yok" description="Dashboard verisi alınamadı." />;
   }
+
+  const stats = data;
 
   const statCards = [
     {
