@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import { QueryClientProvider } from '@/lib/react-query-provider';
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Şehitkamil Belediyesi - Admin Panel",
@@ -13,8 +17,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body>{children}</body>
+      <body className={inter.className}>
+        <QueryClientProvider>
+          {children}
+        </QueryClientProvider>
+      </body>
     </html>
   );
 }
-
