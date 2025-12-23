@@ -7,6 +7,7 @@ require('dotenv').config();
 // Import configs
 const { testConnection } = require('./config/database');
 const { connectRedis } = require('./config/redis');
+const { initializeFirebase } = require('./config/firebase');
 
 // Import routes
 const apiRoutes = require('./routes');
@@ -38,8 +39,9 @@ app.get('/', (req, res) => {
       root: '/',
       health: '/health',
       api: '/api',
+      docs: '/api-docs',
     },
-    documentation: 'API dokümantasyonu için /api endpoint\'ini ziyaret edin',
+    documentation: 'API dokümantasyonu için /api-docs endpoint\'ini ziyaret edin',
   });
 });
 
@@ -52,6 +54,9 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development',
   });
 });
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
 // API Routes
 app.use('/api', apiRoutes);
@@ -82,6 +87,12 @@ const initializeConnections = async () => {
     if (!redisConnected) {
       console.warn('⚠️  Redis connection failed, but server will continue...');
     }
+
+    // Initialize Firebase (optional)
+    const firebaseConnected = await initializeFirebase();
+    if (!firebaseConnected) {
+      console.warn('⚠️  Firebase initialization failed, push notifications will be disabled...');
+    }
   } catch (error) {
     console.error('❌ Error initializing connections:', error.message);
   }
@@ -98,7 +109,7 @@ const startServer = async () => {
       console.log('🚀 Server running on port', PORT);
       console.log('📦 Environment:', process.env.NODE_ENV || 'development');
       console.log('🔗 Health check: http://localhost:' + PORT + '/health');
-      console.log('📚 API docs: http://localhost:' + PORT + '/api');
+      console.log('📚 API docs: http://localhost:' + PORT + '/api-docs');
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);

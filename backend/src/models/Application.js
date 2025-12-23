@@ -77,6 +77,14 @@ const Application = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    user_comment: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    user_comment_date: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     reference_number: {
       type: DataTypes.STRING(50),
       allowNull: true,

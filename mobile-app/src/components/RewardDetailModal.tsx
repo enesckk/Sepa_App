@@ -16,9 +16,10 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { X, Gift, Calendar, QrCode, Hash } from 'lucide-react-native';
+import { X, Gift, Calendar } from 'lucide-react-native';
+import { ActivityIndicator } from 'react-native';
 import { Colors } from '../constants/colors';
-import { Reward } from '../services/mockRewardsData';
+import { Reward } from '../services/api/types';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MODAL_HEIGHT = SCREEN_HEIGHT * 0.85;
@@ -29,6 +30,7 @@ interface RewardDetailModalProps {
   onClose: () => void;
   onConfirm: (rewardId: string) => void;
   userGolbucks: number;
+  redeeming?: boolean;
 }
 
 export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
@@ -37,6 +39,7 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
   onClose,
   onConfirm,
   userGolbucks,
+  redeeming = false,
 }) => {
   const translateY = useSharedValue(MODAL_HEIGHT);
   const opacity = useSharedValue(0);
@@ -76,9 +79,9 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
 
   if (!reward) return null;
 
-  const canAfford = userGolbucks >= reward.price;
-  const validityDate = reward.validityDays
-    ? new Date(Date.now() + reward.validityDays * 24 * 60 * 60 * 1000)
+  const canAfford = userGolbucks >= reward.points;
+  const validityDate = reward.validity_days
+    ? new Date(Date.now() + reward.validity_days * 24 * 60 * 60 * 1000)
     : null;
 
   const formatDate = (date: Date) => {
@@ -112,12 +115,18 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Image source={{ uri: reward.image }} style={styles.image} />
+          {reward.image_url ? (
+            <Image source={{ uri: reward.image_url }} style={styles.image} />
+          ) : (
+            <View style={[styles.image, styles.imagePlaceholder]}>
+              <Gift size={60} color={Colors.textSecondary} />
+            </View>
+          )}
 
           <View style={styles.content}>
             <View style={styles.priceBadge}>
               <Gift size={20} color="#FFD700" />
-              <Text style={styles.priceText}>{reward.price} Gölbucks</Text>
+              <Text style={styles.priceText}>{reward.points} Gölbucks</Text>
             </View>
 
             <Text style={styles.title}>{reward.title}</Text>
@@ -137,10 +146,10 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
               </View>
             )}
 
-            {reward.partnerName && (
+            {reward.partner_name && (
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>Anlaşmalı İşletme:</Text>
-                <Text style={styles.infoValue}>{reward.partnerName}</Text>
+                <Text style={styles.infoValue}>{reward.partner_name}</Text>
               </View>
             )}
 
@@ -151,28 +160,7 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
               </View>
             )}
 
-            {(reward.qrCode || reward.referenceCode) && (
-              <View style={styles.codeSection}>
-                <Text style={styles.sectionTitle}>
-                  {reward.qrCode ? 'QR Kod' : 'Referans Kod'}
-                </Text>
-                <View style={styles.codeContainer}>
-                  {reward.qrCode ? (
-                    <QrCode size={80} color={Colors.text} />
-                  ) : (
-                    <Hash size={40} color={Colors.text} />
-                  )}
-                  <Text style={styles.codeText}>
-                    {reward.qrCode || reward.referenceCode}
-                  </Text>
-                  <Text style={styles.codeSubtext}>
-                    {reward.qrCode
-                      ? 'Ödülü kullanırken bu QR kodu gösterin'
-                      : 'Ödülü kullanırken bu kodu belirtin'}
-                  </Text>
-                </View>
-              </View>
-            )}
+            {/* QR code and reference code will be shown after purchase in my-rewards screen */}
           </View>
         </ScrollView>
 
@@ -180,7 +168,7 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
           {!canAfford && (
             <View style={styles.insufficientContainer}>
               <Text style={styles.insufficientText}>
-                Yetersiz puan! {reward.price - userGolbucks} Gölbucks daha gerekli.
+                Yetersiz puan! {reward.points - userGolbucks} Gölbucks daha gerekli.
               </Text>
             </View>
           )}
@@ -188,13 +176,19 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
             <TouchableOpacity
               style={styles.confirmButton}
               onPress={handleConfirm}
-              disabled={!canAfford}
+              disabled={!canAfford || redeeming}
             >
               <Animated.View style={[styles.confirmButtonInner, buttonAnimatedStyle]}>
-                <Gift size={20} color={Colors.surface} />
-                <Text style={styles.confirmButtonText}>
-                  Onayla ve Harca ({reward.price} Gölbucks)
-                </Text>
+                {redeeming ? (
+                  <ActivityIndicator size="small" color={Colors.surface} />
+                ) : (
+                  <>
+                    <Gift size={20} color={Colors.surface} />
+                    <Text style={styles.confirmButtonText}>
+                      Onayla ve Harca ({reward.points} Gölbucks)
+                    </Text>
+                  </>
+                )}
               </Animated.View>
             </TouchableOpacity>
           )}
@@ -263,6 +257,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 250,
     resizeMode: 'cover',
+  },
+  imagePlaceholder: {
+    backgroundColor: Colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     padding: 20,

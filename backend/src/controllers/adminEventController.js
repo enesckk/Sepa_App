@@ -2,6 +2,7 @@ const { Event, EventRegistration } = require('../models');
 const { NotFoundError, ValidationError } = require('../utils/errors');
 const { Op } = require('sequelize');
 const path = require('path');
+const pushNotificationService = require('../services/pushNotificationService');
 
 /**
  * Create event (Admin)
@@ -48,6 +49,23 @@ const createEvent = async (req, res, next) => {
       is_active: true,
       registered: 0,
     });
+
+    // Send push notification to all users about new event
+    try {
+      await pushNotificationService.sendToAllUsers(
+        {
+          title: 'Yeni Etkinlik! 🎉',
+          body: `${event.title} - ${new Date(event.date).toLocaleDateString('tr-TR')}`,
+        },
+        {
+          type: 'event',
+          event_id: event.id,
+          action_url: `/events/${event.id}`,
+        }
+      );
+    } catch (error) {
+      console.error('Push notification error for new event:', error.message);
+    }
 
     res.status(201).json({
       success: true,

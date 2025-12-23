@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,90 +6,109 @@ import {
   Text,
   Pressable,
   Platform,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Search, Filter } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { ArrowLeft, Search, Plus } from 'lucide-react-native';
 import { Colors } from '../src/constants/colors';
+import { getMyApplications, Application, GetApplicationsParams } from '../src/services/api';
+import { parseApiError } from '../src/utils/errorHandler';
 
-type ApplicationStatus = 'all' | 'pending' | 'in-progress' | 'completed';
+type ApplicationStatus = 'all' | 'pending' | 'in_progress' | 'resolved' | 'rejected';
 
-interface Application {
-  id: string;
-  type: string;
-  description: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  createdAt: string;
-  location?: string;
-}
+const getStatusFilter = (status: ApplicationStatus): GetApplicationsParams['status'] | undefined => {
+  if (status === 'all') return undefined;
+  return status as GetApplicationsParams['status'];
+};
+
+const getStatusDisplay = (status: string): { text: string; color: string } => {
+  switch (status) {
+    case 'pending':
+      return { text: 'Beklemede', color: Colors.orange };
+    case 'in_progress':
+      return { text: 'İşlemde', color: Colors.blue };
+    case 'resolved':
+      return { text: 'Çözüldü', color: Colors.green };
+    case 'rejected':
+      return { text: 'Reddedildi', color: '#EF4444' };
+    case 'closed':
+      return { text: 'Kapandı', color: Colors.textSecondary };
+    default:
+      return { text: status, color: Colors.textSecondary };
+  }
+};
+
+const getTypeDisplay = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    complaint: 'Şikayet',
+    request: 'Talep',
+    marriage: 'Nikah Başvurusu',
+    muhtar_message: 'Muhtara Mesaj',
+    other: 'Diğer',
+  };
+  return typeMap[type] || type;
+};
 
 export default function MyApplicationsScreen() {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<ApplicationStatus>('all');
-  const [applications] = useState<Application[]>([
-    {
-      id: 'APP-001',
-      type: 'Çevre',
-      description: 'Park alanında çöp birikmesi var',
-      status: 'pending',
-      createdAt: '2024-12-15',
-      location: 'Merkez Mahallesi',
-    },
-    {
-      id: 'APP-002',
-      type: 'Altyapı',
-      description: 'Yol çukuru var, düzeltilmesi gerekiyor',
-      status: 'in-progress',
-      createdAt: '2024-12-10',
-      location: 'Yenişehir Mahallesi',
-    },
-    {
-      id: 'APP-003',
-      type: 'Çevre',
-      description: 'Ağaç budama talebi',
-      status: 'completed',
-      createdAt: '2024-12-05',
-      location: 'Güney Mahallesi',
-    },
-  ]);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredApplications = applications.filter((app) => {
-    if (selectedFilter === 'all') return true;
-    return app.status === selectedFilter;
-  });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return Colors.orange;
-      case 'in-progress':
-        return Colors.blue;
-      case 'completed':
-        return Colors.green;
-      default:
-        return Colors.textSecondary;
+  const loadApplications = async () => {
+    try {
+      setError(null);
+      const status = getStatusFilter(selectedFilter);
+      const response = await getMyApplications({
+        status,
+        limit: 50,
+        offset: 0,
+        sort: 'created_at',
+        order: 'DESC',
+      });
+      setApplications(response.applications);
+    } catch (err) {
+      const apiError = parseApiError(err);
+      setError(apiError.message || 'Başvurular yüklenirken bir hata oluştu');
+      if (__DEV__) {
+        console.error('[MyApplicationsScreen] Load error:', apiError);
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Beklemede';
-      case 'in-progress':
-        return 'İşlemde';
-      case 'completed':
-        return 'Tamamlandı';
-      default:
-        return status;
-    }
+  useFocusEffect(
+    React.useCallback(() => {
+      setLoading(true);
+      loadApplications();
+    }, [selectedFilter])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadApplications();
   };
+
+  const filteredApplications = applications;
 
   const filters: { id: ApplicationStatus; label: string }[] = [
     { id: 'all', label: 'Tümü' },
     { id: 'pending', label: 'Beklemede' },
-    { id: 'in-progress', label: 'İşlemde' },
-    { id: 'completed', label: 'Tamamlandı' },
+    { id: 'in_progress', label: 'İşlemde' },
+    { id: 'resolved', label: 'Çözüldü' },
+    { id: 'rejected', label: 'Reddedildi' },
   ];
+
+  const handleApplicationPress = (application: Application) => {
+    router.push(`/application-detail?id=${application.id}`);
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -103,8 +122,11 @@ export default function MyApplicationsScreen() {
         </Pressable>
         <Text style={styles.headerTitle}>Başvurularım</Text>
         <View style={styles.headerActions}>
-          <Pressable style={styles.iconButton}>
-            <Search size={20} color={Colors.text} />
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => router.push('/create-application')}
+          >
+            <Plus size={24} color={Colors.primary} />
           </Pressable>
         </View>
       </View>
@@ -142,8 +164,30 @@ export default function MyApplicationsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        {filteredApplications.length === 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.loadingText}>Yükleniyor...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Hata</Text>
+            <Text style={styles.emptySubtext}>{error}</Text>
+            <Pressable
+              style={styles.retryButton}
+              onPress={() => {
+                setLoading(true);
+                loadApplications();
+              }}
+            >
+              <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+            </Pressable>
+          </View>
+        ) : filteredApplications.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>Başvuru bulunamadı</Text>
             <Text style={styles.emptySubtext}>
@@ -153,44 +197,59 @@ export default function MyApplicationsScreen() {
             </Text>
           </View>
         ) : (
-          filteredApplications.map((app) => (
-            <Pressable
-              key={app.id}
-              style={styles.applicationCard}
-            >
-              <View style={styles.cardHeader}>
-                <View style={styles.cardHeaderLeft}>
-                  <Text style={styles.applicationId}>{app.id}</Text>
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      { backgroundColor: getStatusColor(app.status) + '20' },
-                    ]}
-                  >
-                    <Text
+          filteredApplications.map((app) => {
+            const statusDisplay = getStatusDisplay(app.status);
+            const formattedDate = new Date(app.created_at).toLocaleDateString('tr-TR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+            });
+            
+            return (
+              <Pressable
+                key={app.id}
+                style={styles.applicationCard}
+                onPress={() => handleApplicationPress(app)}
+              >
+                <View style={styles.cardHeader}>
+                  <View style={styles.cardHeaderLeft}>
+                    <Text style={styles.applicationId}>
+                      {app.reference_number || app.id}
+                    </Text>
+                    <View
                       style={[
-                        styles.statusText,
-                        { color: getStatusColor(app.status) },
+                        styles.statusBadge,
+                        { backgroundColor: statusDisplay.color + '20' },
                       ]}
                     >
-                      {getStatusText(app.status)}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.statusText,
+                          { color: statusDisplay.color },
+                        ]}
+                      >
+                        {statusDisplay.text}
+                      </Text>
+                    </View>
                   </View>
+                  <Text style={styles.dateText}>{formattedDate}</Text>
                 </View>
-                <Text style={styles.dateText}>{app.createdAt}</Text>
-              </View>
 
-              <View style={styles.cardBody}>
-                <Text style={styles.typeText}>{app.type}</Text>
-                <Text style={styles.descriptionText} numberOfLines={2}>
-                  {app.description}
-                </Text>
-                {app.location && (
-                  <Text style={styles.locationText}>📍 {app.location}</Text>
-                )}
-              </View>
-            </Pressable>
-          ))
+                <View style={styles.cardBody}>
+                  <Text style={styles.typeText}>{getTypeDisplay(app.type)}</Text>
+                  <Text style={styles.subjectText} numberOfLines={1}>
+                    {app.subject}
+                  </Text>
+                  <Text style={styles.descriptionText} numberOfLines={2}>
+                    {app.description}
+                  </Text>
+                  {app.location && (
+                    <Text style={styles.locationText}>📍 {app.location}</Text>
+                  )}
+                </View>
+              </Pressable>
+            );
+          })
         )}
       </ScrollView>
     </SafeAreaView>
@@ -283,6 +342,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textSecondary,
     textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 12,
+  },
+  retryButton: {
+    marginTop: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: Colors.surface,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  subjectText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
+    marginTop: 4,
+    marginBottom: 4,
   },
   applicationCard: {
     backgroundColor: Colors.surface,

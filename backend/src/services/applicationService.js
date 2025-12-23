@@ -186,10 +186,53 @@ const getApplicationById = async (applicationId, userId = null) => {
   return application;
 };
 
+/**
+ * Add comment to application (by user)
+ * @param {string} applicationId - Application ID
+ * @param {string} userId - User ID
+ * @param {string} comment - Comment text
+ * @returns {Promise<Object>} Updated application
+ */
+const addComment = async (applicationId, userId, comment) => {
+  if (!comment || !comment.trim()) {
+    throw new ValidationError('Comment is required');
+  }
+
+  const application = await Application.findOne({
+    where: {
+      id: applicationId,
+      user_id: userId, // Ensure user owns the application
+    },
+  });
+
+  if (!application) {
+    throw new NotFoundError('Application');
+  }
+
+  // Update user comment
+  application.user_comment = comment.trim();
+  application.user_comment_date = new Date();
+  await application.save();
+
+  // Reload with user association
+  await application.reload({
+    include: [
+      {
+        model: require('../models').User,
+        as: 'user',
+        attributes: ['id', 'name', 'email', 'phone', 'mahalle'],
+      },
+    ],
+  });
+
+  return application;
+};
+
 module.exports = {
   createApplication,
   getUserApplications,
   getApplicationById,
+  addComment,
   generateReferenceNumber,
 };
 

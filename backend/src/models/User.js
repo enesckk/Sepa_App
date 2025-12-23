@@ -67,6 +67,11 @@ const User = sequelize.define(
       defaultValue: true,
       allowNull: false,
     },
+    fcm_token: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      comment: 'Firebase Cloud Messaging token for push notifications',
+    },
   },
   {
     tableName: 'users',

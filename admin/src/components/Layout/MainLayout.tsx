@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
+import { GlobalSearch } from './GlobalSearch';
 import { authService } from '@/lib/auth';
 
 export default function MainLayout({
@@ -70,6 +71,11 @@ export default function MainLayout({
     <div className="flex h-screen bg-background">
       <Sidebar />
       <main className="flex-1 ml-64 overflow-y-auto">
+        <div className="sticky top-0 z-40 bg-surface border-b border-border p-4">
+          <div className="max-w-7xl mx-auto">
+            <GlobalSearch />
+          </div>
+        </div>
         <div className="p-6 max-w-7xl mx-auto">{children}</div>
       </main>
     </div>

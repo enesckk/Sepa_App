@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { Platform, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { initializeTokenManager } from '../src/services/api';
 
 // NativeWind CSS import'u kaldırıldı - mobil uygulama StyleSheet kullanıyor
 
 export default function RootLayout() {
+  // Initialize token manager on app start
+  useEffect(() => {
+    initializeTokenManager().catch((error) => {
+      if (__DEV__) {
+        console.error('[RootLayout] Error initializing token manager:', error);
+      }
+    });
+  }, []);
   // Web için basit wrapper, native için full wrapper
   const Wrapper = Platform.OS === 'web' 
     ? View

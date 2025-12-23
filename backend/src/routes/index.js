@@ -44,6 +44,7 @@ router.get('/', (req, res) => {
         golbucks: 'GET /api/users/golbucks',
         golbucksHistory: 'GET /api/users/golbucks/history',
         updatePassword: 'PUT /api/users/password',
+        saveFcmToken: 'POST /api/users/fcm-token',
       },
       rewards: {
         list: 'GET /api/rewards',
@@ -67,6 +68,7 @@ router.get('/', (req, res) => {
         create: 'POST /api/applications',
         list: 'GET /api/applications',
         getById: 'GET /api/applications/:id',
+        addComment: 'POST /api/applications/:id/comment',
       },
       billSupports: {
         create: 'POST /api/bill-supports',

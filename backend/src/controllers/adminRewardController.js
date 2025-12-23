@@ -1,6 +1,7 @@
 const { Reward } = require('../models');
 const { NotFoundError } = require('../utils/errors');
 const path = require('path');
+const pushNotificationService = require('../services/pushNotificationService');
 
 /**
  * Create reward (Admin)
@@ -36,6 +37,23 @@ const createReward = async (req, res, next) => {
       image_url,
       is_active: true,
     });
+
+    // Send push notification to all users about new reward
+    try {
+      await pushNotificationService.sendToAllUsers(
+        {
+          title: 'Yeni Ödül! 🎁',
+          body: `${reward.title} - ${reward.points} Gölbucks`,
+        },
+        {
+          type: 'reward',
+          reward_id: reward.id,
+          action_url: `/rewards/${reward.id}`,
+        }
+      );
+    } catch (error) {
+      console.error('Push notification error for new reward:', error.message);
+    }
 
     res.status(201).json({
       success: true,

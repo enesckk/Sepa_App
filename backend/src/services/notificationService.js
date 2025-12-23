@@ -1,6 +1,7 @@
 const { Notification, User } = require('../models');
 const { NotFoundError, ValidationError } = require('../utils/errors');
 const { Op } = require('sequelize');
+const pushNotificationService = require('./pushNotificationService');
 
 /**
  * Create a notification
@@ -23,6 +24,26 @@ const createNotification = async (notificationData) => {
     action_url: action_url || null,
     is_read: false,
   });
+
+  // Send push notification if user has FCM token
+  try {
+    const user = await User.findByPk(user_id, { attributes: ['fcm_token'] });
+    if (user && user.fcm_token) {
+      await pushNotificationService.sendToDevice(
+        user.fcm_token,
+        { title, body: message },
+        {
+          notification_id: notification.id,
+          type: type || 'info',
+          action_url: action_url || '',
+          ...(data || {}),
+        }
+      );
+    }
+  } catch (error) {
+    // Log error but don't fail notification creation
+    console.error('Push notification error:', error.message);
+  }
 
   return notification.toJSON();
 };
@@ -55,6 +76,35 @@ const createBulkNotifications = async (user_ids, notificationData) => {
   }));
 
   const created = await Notification.bulkCreate(notifications);
+
+  // Send push notifications to users with FCM tokens
+  try {
+    const users = await User.findAll({
+      where: {
+        id: user_ids,
+        fcm_token: { [Op.ne]: null },
+      },
+      attributes: ['id', 'fcm_token'],
+    });
+
+    if (users.length > 0) {
+      const fcmTokens = users.map((u) => u.fcm_token).filter((t) => t);
+      if (fcmTokens.length > 0) {
+        await pushNotificationService.sendToMultipleDevices(
+          fcmTokens,
+          { title, body: message },
+          {
+            type: type || 'info',
+            action_url: action_url || '',
+            ...(data || {}),
+          }
+        );
+      }
+    }
+  } catch (error) {
+    // Log error but don't fail notification creation
+    console.error('Push notification error:', error.message);
+  }
 
   return created.map((n) => n.toJSON());
 };

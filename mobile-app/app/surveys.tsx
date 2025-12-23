@@ -1,139 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
   Text,
-  Alert,
   Pressable,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
-import { SurveyCard } from '../src/components/SurveyCard';
-import { AnswerOptions } from '../src/components/AnswerOptions';
-import { ProgressBar } from '../src/components/ProgressBar';
-import { SubmitButton } from '../src/components/SubmitButton';
-import { RewardBadge } from '../src/components/RewardBadge';
-import { SuccessSnackbar } from '../src/components/SuccessSnackbar';
+import { useFocusEffect } from '@react-navigation/native';
+import { ArrowLeft, Check } from 'lucide-react-native';
 import { Colors } from '../src/constants/colors';
-import { mockSurveys, Survey } from '../src/services/mockSurveysData';
+import { getSurveys, Survey } from '../src/services/api';
+import { parseApiError } from '../src/utils/errorHandler';
 
 export default function SurveyScreen() {
   const router = useRouter();
-  const [surveys] = useState<Survey[]>(mockSurveys);
-  const [currentSurveyIndex, setCurrentSurveyIndex] = useState(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string[]>>({});
-  const [completedSurveys, setCompletedSurveys] = useState<Set<string>>(new Set());
-  const [showReward, setShowReward] = useState(false);
-  const [rewardAmount, setRewardAmount] = useState(0);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [surveys, setSurveys] = useState<Survey[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const currentSurvey = surveys[currentSurveyIndex];
-  const isCompleted = completedSurveys.has(currentSurvey?.id || '');
-  const isLastQuestion = currentSurveyIndex === surveys.length - 1;
-  const answeredQuestions = Object.keys(selectedAnswers).filter(
-    (surveyId) => selectedAnswers[surveyId] && selectedAnswers[surveyId].length > 0
-  ).length;
-  const currentQuestionNumber = currentSurveyIndex + 1;
-
-  const handleAnswerSelect = (optionId: string) => {
-    if (!currentSurvey) return;
-
-    const currentAnswers = selectedAnswers[currentSurvey.id] || [];
-
-    if (currentSurvey.type === 'single') {
-      setSelectedAnswers({
-        ...selectedAnswers,
-        [currentSurvey.id]: [optionId],
-      });
-    } else {
-      if (currentAnswers.includes(optionId)) {
-        setSelectedAnswers({
-          ...selectedAnswers,
-          [currentSurvey.id]: currentAnswers.filter((id) => id !== optionId),
-        });
-      } else {
-        setSelectedAnswers({
-          ...selectedAnswers,
-          [currentSurvey.id]: [...currentAnswers, optionId],
-        });
+  const loadSurveys = async () => {
+    try {
+      setError(null);
+      const response = await getSurveys();
+      setSurveys(response.surveys);
+    } catch (err) {
+      const apiError = parseApiError(err);
+      setError(apiError.message || 'Anketler yüklenirken bir hata oluştu');
+      if (__DEV__) {
+        console.error('[SurveyScreen] Load error:', apiError);
       }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const handleSubmit = () => {
-    if (!currentSurvey) return;
+  useFocusEffect(
+    React.useCallback(() => {
+      setLoading(true);
+      loadSurveys();
+    }, [])
+  );
 
-    const answers = selectedAnswers[currentSurvey.id] || [];
-    if (answers.length === 0) {
-      Alert.alert('Uyarı', 'Lütfen en az bir seçenek seçin');
-      return;
-    }
-
-    // Mark current question as answered (but not completed yet)
-    const newSelectedAnswers = {
-      ...selectedAnswers,
-      [currentSurvey.id]: answers,
-    };
-
-    // If it's the last question, complete the entire survey and show rewards
-    if (isLastQuestion) {
-      // Calculate total reward
-      const totalReward = surveys.reduce((sum, survey) => {
-        return sum + survey.reward;
-      }, 0);
-
-      // Mark all surveys as completed
-      const allSurveyIds = new Set(surveys.map((s) => s.id));
-      setCompletedSurveys(allSurveyIds);
-      setSelectedAnswers(newSelectedAnswers);
-      
-      // Show reward and success message
-      setRewardAmount(totalReward);
-      setShowReward(true);
-      setShowSuccess(true);
-
-      // Show completion message
-      setTimeout(() => {
-        Alert.alert(
-          'Tebrikler!',
-          `Tüm anketleri tamamladınız!\n+${totalReward} Gölbucks kazandınız`,
-          [{ text: 'Tamam', onPress: () => router.back() }]
-        );
-      }, 2000);
-    } else {
-      // Not the last question, just move to next
-      setSelectedAnswers(newSelectedAnswers);
-      setCurrentSurveyIndex(currentSurveyIndex + 1);
-    }
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadSurveys();
   };
 
-  const completedCount = completedSurveys.size;
-
-  if (!currentSurvey) {
-    return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <Pressable
-            onPress={() => router.back()}
-            style={styles.backButton}
-          >
-            <ArrowLeft size={24} color={Colors.text} />
-          </Pressable>
-          <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>Anketler</Text>
-          </View>
-        </View>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Tüm anketler tamamlandı!</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const handleSurveyPress = (survey: Survey) => {
+    router.push(`/survey-detail?id=${survey.id}`);
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      {/* Header */}
       <View style={styles.header}>
         <Pressable
           onPress={() => router.back()}
@@ -149,54 +74,88 @@ export default function SurveyScreen() {
         </View>
       </View>
 
-      <ProgressBar current={currentQuestionNumber} total={surveys.length} />
-
+      {/* Surveys List */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        <SurveyCard survey={currentSurvey} />
-
-        {!isCompleted ? (
-          <>
-            <View style={styles.answersSection}>
-              <Text style={styles.sectionTitle}>Seçenekler</Text>
-              <AnswerOptions
-                options={currentSurvey.options}
-                selectedIds={selectedAnswers[currentSurvey.id] || []}
-                onSelect={handleAnswerSelect}
-                type={currentSurvey.type}
-              />
-            </View>
-
-            <SubmitButton
-              onPress={handleSubmit}
-              disabled={(selectedAnswers[currentSurvey.id] || []).length === 0}
-              text={isLastQuestion ? "Anketi Gönder" : "Sonraki Soru"}
-            />
-          </>
-        ) : (
-          <View style={styles.completedContainer}>
-            <Text style={styles.completedText}>
-              ✓ Bu anketi tamamladınız
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.loadingText}>Yükleniyor...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Hata</Text>
+            <Text style={styles.emptySubtext}>{error}</Text>
+            <Pressable
+              style={styles.retryButton}
+              onPress={() => {
+                setLoading(true);
+                loadSurveys();
+              }}
+            >
+              <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+            </Pressable>
+          </View>
+        ) : surveys.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Aktif anket bulunmuyor</Text>
+            <Text style={styles.emptySubtext}>
+              Yeni anketler eklendiğinde burada görünecek
             </Text>
           </View>
+        ) : (
+          surveys.map((survey) => {
+            const isCompleted = survey.isCompleted || false;
+            const questionCount = survey.questions?.length || 0;
+
+            return (
+              <Pressable
+                key={survey.id}
+                style={styles.surveyCard}
+                onPress={() => handleSurveyPress(survey)}
+              >
+                <View style={styles.surveyHeader}>
+                  <View style={styles.surveyHeaderLeft}>
+                    <Text style={styles.surveyTitle}>{survey.title}</Text>
+                    {isCompleted && (
+                      <View style={styles.completedBadge}>
+                        <Check size={14} color={Colors.success} />
+                        <Text style={styles.completedText}>Tamamlandı</Text>
+                      </View>
+                    )}
+                  </View>
+                  {survey.golbucks_reward > 0 && (
+                    <View style={styles.rewardBadge}>
+                      <Text style={styles.rewardText}>+{survey.golbucks_reward}</Text>
+                    </View>
+                  )}
+                </View>
+                {survey.description && (
+                  <Text style={styles.surveyDescription} numberOfLines={2}>
+                    {survey.description}
+                  </Text>
+                )}
+                <View style={styles.surveyFooter}>
+                  <Text style={styles.questionCount}>
+                    {questionCount} {questionCount === 1 ? 'soru' : 'soru'}
+                  </Text>
+                  {survey.expires_at && (
+                    <Text style={styles.expiresText}>
+                      Bitiş: {new Date(survey.expires_at).toLocaleDateString('tr-TR')}
+                    </Text>
+                  )}
+                </View>
+              </Pressable>
+            );
+          })
         )}
       </ScrollView>
-
-      <RewardBadge
-        visible={showReward}
-        amount={rewardAmount}
-        onComplete={() => setShowReward(false)}
-      />
-
-      <SuccessSnackbar
-        visible={showSuccess}
-        message="Anket tamamlandı!"
-        subMessage={`+${rewardAmount} Gölbucks kazandınız`}
-        onComplete={() => setShowSuccess(false)}
-      />
     </SafeAreaView>
   );
 }
@@ -236,39 +195,129 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingVertical: 20,
-  },
-  answersSection: {
-    marginTop: 8,
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 16,
-    paddingHorizontal: 20,
-  },
-  completedContainer: {
-    marginHorizontal: 20,
-    marginTop: 20,
     padding: 20,
-    backgroundColor: Colors.success + '20',
-    borderRadius: 12,
-    alignItems: 'center',
+    paddingBottom: 40,
   },
-  completedText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.success,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 12,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 60,
   },
   emptyText: {
     fontSize: 18,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    marginTop: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: Colors.primary,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: Colors.surface,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  surveyCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  surveyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  surveyHeaderLeft: {
+    flex: 1,
+    marginRight: 12,
+  },
+  surveyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  completedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.success + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  completedText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.success,
+  },
+  rewardBadge: {
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  rewardText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.primaryDark,
+  },
+  surveyDescription: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  surveyFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+  },
+  questionCount: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  expiresText: {
+    fontSize: 12,
     color: Colors.textSecondary,
   },
 });

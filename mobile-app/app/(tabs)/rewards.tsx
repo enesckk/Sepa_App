@@ -1,60 +1,130 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
   Text,
   Platform,
+  ActivityIndicator,
+  RefreshControl,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { RewardHeader } from '../../src/components/RewardHeader';
 import { RewardCategoryTabs, RewardCategory } from '../../src/components/RewardCategoryTabs';
 import { RewardItemCard } from '../../src/components/RewardItemCard';
-import { RewardDetailModal } from '../../src/components/RewardDetailModal';
 import { SuccessConfetti } from '../../src/components/SuccessConfetti';
 import { InviteBanner } from '../../src/components/InviteBanner';
 import { GolbucksDeductionAnimation } from '../../src/components/GolbucksDeductionAnimation';
 import { Colors } from '../../src/constants/colors';
-import { mockRewards, Reward } from '../../src/services/mockRewardsData';
+import { getRewards, redeemReward, Reward } from '../../src/services/api';
+import { getGolbucksBalance } from '../../src/services/api';
+import { parseApiError } from '../../src/utils/errorHandler';
 
 export default function RewardMarketScreen() {
-  const [golbucks, setGolbucks] = useState(450);
+  const router = useRouter();
+  const [golbucks, setGolbucks] = useState(0);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<RewardCategory>('all');
-  const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showDeduction, setShowDeduction] = useState(false);
   const [deductionAmount, setDeductionAmount] = useState(0);
+  const [redeeming, setRedeeming] = useState(false);
+
+  const loadData = async () => {
+    try {
+      // Load rewards and golbucks balance in parallel
+      const [rewardsResponse, balance] = await Promise.all([
+        getRewards({ limit: 100, offset: 0 }),
+        getGolbucksBalance(),
+      ]);
+      
+      setRewards(rewardsResponse.rewards);
+      setGolbucks(balance);
+    } catch (err) {
+      const apiError = parseApiError(err);
+      Alert.alert('Hata', apiError.message || 'Veriler yüklenirken bir hata oluştu');
+      if (__DEV__) {
+        console.error('[RewardMarketScreen] Load error:', apiError);
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setLoading(true);
+      loadData();
+    }, [])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
 
   const filteredRewards = useMemo(() => {
     if (selectedCategory === 'all') {
-      return mockRewards;
+      return rewards;
     }
-    return mockRewards.filter((reward) => reward.category === selectedCategory);
-  }, [selectedCategory]);
+    return rewards.filter((reward) => reward.category === selectedCategory);
+  }, [rewards, selectedCategory]);
 
   const handleRewardPress = (reward: Reward) => {
-    setSelectedReward(reward);
-    setModalVisible(true);
+    router.push(`/reward-detail?id=${reward.id}`);
   };
 
-  const handleBuy = (rewardId: string) => {
-    const reward = mockRewards.find((r) => r.id === rewardId);
-    if (reward && golbucks >= reward.price) {
-      setDeductionAmount(reward.price);
-      setGolbucks((prev) => prev - reward.price);
+  const handleBuy = async (rewardId: string) => {
+    const reward = rewards.find((r) => r.id === rewardId);
+    if (!reward) return;
+
+    if (golbucks < reward.points) {
+      Alert.alert('Yetersiz Puan', `${reward.points - golbucks} Gölbucks daha gerekli`);
+      return;
+    }
+
+    try {
+      setRedeeming(true);
+      const result = await redeemReward(rewardId);
+      
+      setDeductionAmount(reward.points);
+      setGolbucks(result.newBalance);
       setShowDeduction(true);
-      setModalVisible(false);
+      
+      // Reload rewards to update stock
+      await loadData();
       
       setTimeout(() => {
         setShowConfetti(true);
+        Alert.alert(
+          'Başarılı!',
+          'Ödül satın alındı. "Ödüllerim" sayfasından QR kodunu görebilirsiniz.',
+          [
+            {
+              text: 'Ödüllerim',
+              onPress: () => router.push('/my-rewards'),
+            },
+            {
+              text: 'Tamam',
+            },
+          ]
+        );
       }, 500);
+    } catch (err) {
+      const apiError = parseApiError(err);
+      Alert.alert('Hata', apiError.message || 'Ödül satın alınırken bir hata oluştu');
+      if (__DEV__) {
+        console.error('[RewardMarketScreen] Redeem error:', apiError);
+      }
+    } finally {
+      setRedeeming(false);
     }
-  };
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
-    setSelectedReward(null);
   };
 
   const handleConfettiComplete = () => {
@@ -66,7 +136,7 @@ export default function RewardMarketScreen() {
   };
 
   const handleTaskPress = () => {
-    // Navigate to tasks screen
+    // Navigate to tasks screen or show tasks modal
     if (__DEV__) {
       console.log('Navigate to tasks');
     }
@@ -81,7 +151,11 @@ export default function RewardMarketScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <RewardHeader golbucks={golbucks} onTaskPress={handleTaskPress} />
+      <RewardHeader 
+        golbucks={golbucks} 
+        onTaskPress={handleTaskPress}
+        onMyRewardsPress={() => router.push('/my-rewards')}
+      />
       <RewardCategoryTabs
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}
@@ -91,13 +165,23 @@ export default function RewardMarketScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         <InviteBanner onInvitePress={handleInvitePress} />
 
-        {filteredRewards.length === 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={styles.loadingText}>Yükleniyor...</Text>
+          </View>
+        ) : filteredRewards.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
-              Bu kategoride ödül bulunamadı
+              {selectedCategory === 'all'
+                ? 'Henüz ödül bulunmuyor'
+                : 'Bu kategoride ödül bulunamadı'}
             </Text>
           </View>
         ) : (
@@ -115,13 +199,6 @@ export default function RewardMarketScreen() {
         )}
       </ScrollView>
 
-      <RewardDetailModal
-        visible={modalVisible}
-        reward={selectedReward}
-        onClose={handleCloseModal}
-        onConfirm={handleBuy}
-        userGolbucks={golbucks}
-      />
 
       <SuccessConfetti
         visible={showConfetti}
@@ -153,6 +230,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginTop: 12,
   },
   emptyContainer: {
     flex: 1,

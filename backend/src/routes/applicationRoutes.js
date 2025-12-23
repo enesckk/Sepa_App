@@ -4,6 +4,7 @@ const {
   createApplication,
   getUserApplications,
   getApplicationById,
+  addComment,
 } = require('../controllers/applicationController');
 const { authenticate } = require('../middleware/auth');
 const { uploadSingle } = require('../config/multer');
@@ -36,6 +37,14 @@ router.get('/', authenticate, getUserApplications);
  * @access  Private
  */
 router.get('/:id', authenticate, getApplicationById);
+
+/**
+ * @route   POST /api/applications/:id/comment
+ * @desc    Add comment to application (by user)
+ * @access  Private
+ * @body    comment
+ */
+router.post('/:id/comment', authenticate, addComment);
 
 module.exports = router;
 

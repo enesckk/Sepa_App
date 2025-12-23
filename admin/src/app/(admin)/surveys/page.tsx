@@ -115,10 +115,20 @@ export default function SurveysPage() {
   const addQuestionMutation = useMutation({
     mutationFn: ({ surveyId, data }: { surveyId: string; data: any }) =>
       adminService.addQuestion(surveyId, data),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['adminSurveys'] });
       showToast('success', 'Soru başarıyla eklendi.');
       setEditingQuestion(null);
+      // Refresh questions list
+      if (selectedSurvey) {
+        try {
+          const response = await adminService.getSurveyById(selectedSurvey.id);
+          const fullSurvey = (response as any).survey || response;
+          setQuestions(fullSurvey?.questions || []);
+        } catch (error) {
+          // Ignore refresh error
+        }
+      }
     },
     onError: (error: any) => {
       showToast('error', 'Soru eklenirken bir hata oluştu.', error.message);
@@ -128,10 +138,20 @@ export default function SurveysPage() {
   const updateQuestionMutation = useMutation({
     mutationFn: ({ questionId, data }: { questionId: string; data: any }) =>
       adminService.updateQuestion(questionId, data),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['adminSurveys'] });
       showToast('success', 'Soru başarıyla güncellendi.');
       setEditingQuestion(null);
+      // Refresh questions list
+      if (selectedSurvey) {
+        try {
+          const response = await adminService.getSurveyById(selectedSurvey.id);
+          const fullSurvey = (response as any).survey || response;
+          setQuestions(fullSurvey?.questions || []);
+        } catch (error) {
+          // Ignore refresh error
+        }
+      }
     },
     onError: (error: any) => {
       showToast('error', 'Soru güncellenirken bir hata oluştu.', error.message);
@@ -140,9 +160,19 @@ export default function SurveysPage() {
 
   const deleteQuestionMutation = useMutation({
     mutationFn: (questionId: string) => adminService.deleteQuestion(questionId),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['adminSurveys'] });
       showToast('success', 'Soru başarıyla silindi.');
+      // Refresh questions list
+      if (selectedSurvey) {
+        try {
+          const response = await adminService.getSurveyById(selectedSurvey.id);
+          const fullSurvey = (response as any).survey || response;
+          setQuestions(fullSurvey?.questions || []);
+        } catch (error) {
+          // Ignore refresh error
+        }
+      }
     },
     onError: (error: any) => {
       showToast('error', 'Soru silinirken bir hata oluştu.', error.message);
@@ -185,9 +215,10 @@ export default function SurveysPage() {
   const handleOpenQuestionsModal = async (survey: Survey) => {
     // Fetch full survey with questions
     try {
-      const fullSurvey = await adminService.getSurveyById(survey.id);
-      setSelectedSurvey(fullSurvey.survey || survey);
-      setQuestions(fullSurvey.survey?.questions || survey.questions || []);
+      const response = await adminService.getSurveyById(survey.id);
+      const fullSurvey = (response as any).survey || response;
+      setSelectedSurvey(fullSurvey || survey);
+      setQuestions(fullSurvey?.questions || survey.questions || []);
       setQuestionsModalOpen(true);
     } catch (error) {
       // Fallback to provided survey data

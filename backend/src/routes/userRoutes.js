@@ -6,6 +6,7 @@ const {
   getGolbucks,
   updatePassword,
   validateUpdateProfile,
+  saveFcmToken,
 } = require('../controllers/userController');
 const {
   getGolbucksHistory,
@@ -47,6 +48,13 @@ router.get('/golbucks/history', authenticate, getGolbucksHistory);
  * @access  Private
  */
 router.put('/password', authenticate, updatePassword);
+
+/**
+ * @route   POST /api/users/fcm-token
+ * @desc    Save FCM token for push notifications
+ * @access  Private
+ */
+router.post('/fcm-token', authenticate, saveFcmToken);
 
 module.exports = router;
 

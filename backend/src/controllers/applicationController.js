@@ -2,6 +2,7 @@ const {
   createApplication,
   getUserApplications,
   getApplicationById,
+  addComment,
 } = require('../services/applicationService');
 const { ValidationError } = require('../utils/errors');
 const path = require('path');
@@ -104,9 +105,41 @@ const getApplicationByIdEndpoint = async (req, res, next) => {
   }
 };
 
+/**
+ * Add comment to application
+ * POST /api/applications/:id/comment
+ */
+const addCommentEndpoint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+    const { comment } = req.body;
+
+    if (!comment || !comment.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Comment is required',
+      });
+    }
+
+    const application = await addComment(id, userId, comment);
+
+    res.status(200).json({
+      success: true,
+      message: 'Comment added successfully',
+      data: {
+        application,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createApplication: createApplicationEndpoint,
   getUserApplications: getUserApplicationsEndpoint,
   getApplicationById: getApplicationByIdEndpoint,
+  addComment: addCommentEndpoint,
 };
 

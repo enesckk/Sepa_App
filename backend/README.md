@@ -15,10 +15,12 @@ Node.js, Express.js ve PostgreSQL kullanılarak geliştirilmiş RESTful API.
 - ✅ Askıda Fatura
 - ✅ Şehir Rehberi
 - ✅ Afet Toplanma Alanları
-- ✅ Bildirimler Sistemi
+- ✅ Bildirimler Sistemi (In-app + Push Notifications)
+- ✅ Push Notifications (Firebase Cloud Messaging)
 - ✅ Redis Cache
 - ✅ File Upload (Multer)
 - ✅ Admin Panel API'leri
+- ✅ Swagger API Dokümantasyonu
 - ✅ Comprehensive Testing
 
 ## Teknolojiler
@@ -32,6 +34,8 @@ Node.js, Express.js ve PostgreSQL kullanılarak geliştirilmiş RESTful API.
 - **File Upload**: Multer
 - **Testing**: Jest, Supertest
 - **Validation**: express-validator
+- **Push Notifications**: Firebase Admin SDK
+- **API Docs**: Swagger/OpenAPI
 
 ## Kurulum
 
@@ -79,6 +83,11 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
 
+# Firebase (optional, for push notifications)
+FIREBASE_SERVICE_ACCOUNT_KEY=path/to/serviceAccountKey.json
+# OR as JSON string:
+# FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"..."}
+
 # File Upload
 MAX_FILE_SIZE=5242880
 UPLOAD_DIR=./uploads
@@ -110,7 +119,15 @@ npm start
 
 ## API Dokümantasyonu
 
-Detaylı API dokümantasyonu için [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) dosyasına bakın.
+### Swagger UI
+API dokümantasyonunu görüntülemek için:
+- Development: http://localhost:4000/api-docs
+- Production: https://api.sehitkamil.bel.tr/api-docs
+
+### Postman Collection
+Postman collection dosyası: `docs/postman/collection.json`
+
+Detaylı dokümantasyon için: [docs/README.md](./docs/README.md)
 
 ## Proje Yapısı
 
@@ -257,11 +274,15 @@ Tüm hatalar merkezi error handler middleware tarafından yönetilir:
 
 ## Production Deployment
 
+Detaylı deployment rehberi için: [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md)
+
+Kısa özet:
 1. Environment variables'ı production değerleriyle ayarlayın
 2. `NODE_ENV=production` olarak ayarlayın
 3. Database migration'ları çalıştırın
 4. Redis'i yapılandırın
-5. PM2 veya benzeri process manager kullanın
+5. Firebase service account key'i ayarlayın (push notifications için)
+6. PM2 veya benzeri process manager kullanın
 
 ## License
 

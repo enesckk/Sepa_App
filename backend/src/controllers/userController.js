@@ -140,11 +140,40 @@ const validateUpdateProfile = [
     .withMessage('Mahalle must be maximum 100 characters'),
 ];
 
+/**
+ * Save FCM token
+ * POST /api/users/fcm-token
+ */
+const saveFcmToken = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { fcm_token } = req.body;
+
+    if (!fcm_token) {
+      throw new ValidationError('FCM token is required');
+    }
+
+    // Update user FCM token
+    await user.update({ fcm_token });
+
+    res.status(200).json({
+      success: true,
+      message: 'FCM token saved successfully',
+      data: {
+        user: user.toJSON(),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfile,
   getGolbucks,
   updatePassword,
   validateUpdateProfile,
+  saveFcmToken,
 };
 

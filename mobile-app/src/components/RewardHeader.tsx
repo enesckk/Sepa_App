@@ -5,17 +5,19 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-import { Gift, Plus } from 'lucide-react-native';
+import { Gift, Plus, Package } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
 
 interface RewardHeaderProps {
   golbucks: number;
   onTaskPress?: () => void;
+  onMyRewardsPress?: () => void;
 }
 
 export const RewardHeader: React.FC<RewardHeaderProps> = ({
   golbucks,
   onTaskPress,
+  onMyRewardsPress,
 }) => {
   const scale = useSharedValue(1);
 
@@ -41,16 +43,26 @@ export const RewardHeader: React.FC<RewardHeaderProps> = ({
         </View>
       </View>
 
-      <Pressable
-        onPress={onTaskPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-      >
-        <Animated.View style={[styles.taskButton, animatedStyle]}>
-          <Plus size={18} color={Colors.surface} />
-          <Text style={styles.taskButtonText}>Görev Yap, Puan Kazan</Text>
-        </Animated.View>
-      </Pressable>
+      <View style={styles.buttonsContainer}>
+        {onMyRewardsPress && (
+          <Pressable
+            onPress={onMyRewardsPress}
+            style={styles.myRewardsButton}
+          >
+            <Package size={18} color={Colors.primary} />
+          </Pressable>
+        )}
+        <Pressable
+          onPress={onTaskPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+        >
+          <Animated.View style={[styles.taskButton, animatedStyle]}>
+            <Plus size={18} color={Colors.surface} />
+            <Text style={styles.taskButtonText}>Görev Yap, Puan Kazan</Text>
+          </Animated.View>
+        </Pressable>
+      </View>
     </View>
   );
 };
@@ -105,6 +117,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: Colors.surface,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  myRewardsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Colors.primary,
   },
 });
 

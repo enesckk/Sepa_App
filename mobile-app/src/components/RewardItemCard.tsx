@@ -7,7 +7,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gift, ShoppingBag } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
-import { Reward } from '../services/mockRewardsData';
+import { Reward } from '../services/api/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = (SCREEN_WIDTH - 60) / 2; // 2 columns with margins
@@ -45,7 +45,7 @@ export const RewardItemCard: React.FC<RewardItemCardProps> = ({
   };
 
   const handleBuyPress = () => {
-    if (userGolbucks >= reward.price) {
+    if (userGolbucks >= reward.points) {
       buttonScale.value = withSpring(0.95, { damping: 10, stiffness: 200 });
       setTimeout(() => {
         buttonScale.value = withSpring(1, { damping: 10, stiffness: 200 });
@@ -54,7 +54,7 @@ export const RewardItemCard: React.FC<RewardItemCardProps> = ({
     }
   };
 
-  const canAfford = userGolbucks >= reward.price;
+  const canAfford = userGolbucks >= reward.points;
   const isOutOfStock = reward.stock !== undefined && reward.stock === 0;
 
   return (
@@ -73,7 +73,13 @@ export const RewardItemCard: React.FC<RewardItemCardProps> = ({
         ]}
       >
         <View style={styles.imageContainer}>
-          <Image source={{ uri: reward.image }} style={styles.image} />
+          {reward.image_url ? (
+            <Image source={{ uri: reward.image_url }} style={styles.image} />
+          ) : (
+            <View style={[styles.image, styles.imagePlaceholder]}>
+              <Gift size={40} color={Colors.textSecondary} />
+            </View>
+          )}
           {isOutOfStock && (
             <View style={styles.outOfStockOverlay}>
               <Text style={styles.outOfStockText}>Stokta Yok</Text>
@@ -93,7 +99,7 @@ export const RewardItemCard: React.FC<RewardItemCardProps> = ({
 
           <View style={styles.priceContainer}>
             <Gift size={16} color="#FFD700" />
-            <Text style={styles.price}>{reward.price} Gölbucks</Text>
+            <Text style={styles.price}>{reward.points} Gölbucks</Text>
           </View>
 
           {reward.stock !== undefined && reward.stock > 0 && (
@@ -158,6 +164,11 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  imagePlaceholder: {
+    backgroundColor: Colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   outOfStockOverlay: {
     ...StyleSheet.absoluteFillObject,

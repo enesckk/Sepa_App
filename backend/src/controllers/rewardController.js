@@ -1,6 +1,7 @@
 const { Reward, UserReward } = require('../models');
 const { deductGolbucks } = require('../services/golbucksService');
 const { ValidationError, NotFoundError } = require('../utils/errors');
+const { Op } = require('sequelize');
 const { v4: uuidv4 } = require('uuid');
 
 /**

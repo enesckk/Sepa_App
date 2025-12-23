@@ -59,7 +59,7 @@ export default function EServicesScreen() {
       description: 'Şikayet, öneri ve talepleriniz',
       icon: <Phone size={24} color={Colors.primary} />,
       category: 'general',
-      route: '/e-services/public-desk',
+      route: '/create-application',
     },
     {
       id: '3',

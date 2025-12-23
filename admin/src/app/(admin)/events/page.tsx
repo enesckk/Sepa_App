@@ -14,7 +14,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/ToastProvider';
 import { adminService, EventsResponse } from '@/lib/services/admin';
-import { Calendar, Users, Edit, Trash2, Eye } from 'lucide-react';
+import { Calendar, Users, Edit, Trash2, Eye, Download, FileSpreadsheet } from 'lucide-react';
+import { exportToCSV, exportToExcel, prepareTableData } from '@/lib/utils/export';
 
 interface Event {
   id: string;
@@ -331,7 +332,15 @@ export default function EventsPage() {
             Etkinlikleri yönetin, yeni etkinlik ekleyin.
           </p>
         </div>
-        <Button onClick={() => handleOpenModal()}>Yeni Etkinlik</Button>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={handleExportCSV} leftIcon={<Download size={16} />}>
+            CSV
+          </Button>
+          <Button variant="secondary" onClick={handleExportExcel} leftIcon={<FileSpreadsheet size={16} />}>
+            Excel
+          </Button>
+          <Button onClick={() => handleOpenModal()}>Yeni Etkinlik</Button>
+        </div>
       </div>
 
       {/* Filters */}

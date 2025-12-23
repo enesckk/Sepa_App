@@ -95,6 +95,33 @@ export default function ApplicationsPage() {
     });
   };
 
+  // Export functions
+  const handleExportCSV = () => {
+    const exportColumns = columns.filter((col) => col.key !== 'actions');
+    const { headers, rows } = prepareTableData(applications, exportColumns);
+    exportToCSV({
+      filename: 'basvurular',
+      headers,
+      data: rows,
+    });
+    showToast('success', 'CSV dosyası indirildi.');
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const exportColumns = columns.filter((col) => col.key !== 'actions');
+      const { headers, rows } = prepareTableData(applications, exportColumns);
+      await exportToExcel({
+        filename: 'basvurular',
+        headers,
+        data: rows,
+      });
+      showToast('success', 'Excel dosyası indirildi.');
+    } catch (error: any) {
+      showToast('error', 'Excel export hatası:', error.message);
+    }
+  };
+
   const handleSubmit = () => {
     if (!selectedApplication || !formData.status) {
       showToast('error', 'Lütfen durum seçin.');

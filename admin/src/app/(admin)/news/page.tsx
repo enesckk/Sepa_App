@@ -14,7 +14,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/ToastProvider';
 import { adminService, NewsResponse } from '@/lib/services/admin';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Download, FileSpreadsheet } from 'lucide-react';
+import { exportToCSV, exportToExcel, prepareTableData } from '@/lib/utils/export';
 
 interface News {
   id: string;
@@ -173,6 +174,33 @@ export default function NewsPage() {
   const handleDelete = (id: string) => {
     if (confirm('Bu haberi silmek istediğinize emin misiniz?')) {
       deleteMutation.mutate(id);
+    }
+  };
+
+  // Export functions
+  const handleExportCSV = () => {
+    const exportColumns = columns.filter((col) => col.key !== 'actions');
+    const { headers, rows } = prepareTableData(news, exportColumns);
+    exportToCSV({
+      filename: 'haberler',
+      headers,
+      data: rows,
+    });
+    showToast('success', 'CSV dosyası indirildi.');
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const exportColumns = columns.filter((col) => col.key !== 'actions');
+      const { headers, rows } = prepareTableData(news, exportColumns);
+      await exportToExcel({
+        filename: 'haberler',
+        headers,
+        data: rows,
+      });
+      showToast('success', 'Excel dosyası indirildi.');
+    } catch (error: any) {
+      showToast('error', 'Excel export hatası:', error.message);
     }
   };
 

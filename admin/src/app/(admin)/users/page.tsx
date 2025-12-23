@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Users as UsersIcon, Search, Edit, Trash2 } from 'lucide-react';
+import { Users as UsersIcon, Search, Edit, Trash2, Download, FileSpreadsheet } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminService, UsersResponse } from '@/lib/services/admin';
 import { Table, TableColumn } from '@/components/ui/Table';
@@ -13,6 +13,9 @@ import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/ToastProvider';
+import { exportToCSV, exportToExcel, prepareTableData } from '@/lib/utils/export';
+import { BulkActions, type BulkAction } from '@/components/ui/BulkActions';
+import { AdvancedFilters, type FilterOption } from '@/components/ui/AdvancedFilters';
 
 interface User {
   id: string;
@@ -32,6 +35,10 @@ export default function UsersPage() {
   const [status, setStatus] = useState<string>('');
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, any>>({});
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
@@ -81,13 +88,79 @@ export default function UsersPage() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await Promise.all(ids.map((id) => adminService.deleteUser(id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      showToast('success', `${selectedIds.length} kullanıcı başarıyla silindi.`);
+      setSelectedIds([]);
+    },
+    onError: (error: any) => {
+      showToast('error', 'Kullanıcılar silinirken bir hata oluştu.', error.message);
+    },
+  });
+
+  const bulkActions: BulkAction[] = [
+    {
+      label: 'Seçilenleri Sil',
+      icon: <Trash2 size={16} />,
+      variant: 'danger',
+      confirmMessage: '{count} kullanıcıyı silmek istediğinize emin misiniz?',
+      action: async (ids: string[]) => {
+        bulkDeleteMutation.mutate(ids);
+      },
+    },
+  ];
+
   useEffect(() => {
     if (isError) {
       showToast('error', 'Kullanıcı listesi alınamadı');
     }
   }, [isError, showToast]);
 
-  const filteredUsers = useMemo(() => (data?.users as User[]) || [], [data]);
+  const filteredUsers = useMemo(() => {
+    let users = (data?.users as User[]) || [];
+    
+    // Apply advanced filters
+    if (advancedFilters.golbucks_min) {
+      users = users.filter((u) => u.golbucks >= Number(advancedFilters.golbucks_min));
+    }
+    if (advancedFilters.golbucks_max) {
+      users = users.filter((u) => u.golbucks <= Number(advancedFilters.golbucks_max));
+    }
+    if (advancedFilters.created_at_start) {
+      users = users.filter((u) => new Date(u.created_at) >= new Date(advancedFilters.created_at_start));
+    }
+    if (advancedFilters.created_at_end) {
+      users = users.filter((u) => new Date(u.created_at) <= new Date(advancedFilters.created_at_end));
+    }
+    if (advancedFilters.mahalle) {
+      users = users.filter((u) => u.mahalle?.toLowerCase().includes(advancedFilters.mahalle.toLowerCase()));
+    }
+    
+    return users;
+  }, [data, advancedFilters]);
+
+  const filterOptions: FilterOption[] = [
+    {
+      key: 'mahalle',
+      label: 'Mahalle',
+      type: 'text',
+      placeholder: 'Mahalle ara...',
+    },
+    {
+      key: 'golbucks',
+      label: 'Gölbucks',
+      type: 'numberRange',
+    },
+    {
+      key: 'created_at',
+      label: 'Kayıt Tarihi',
+      type: 'dateRange',
+    },
+  ];
 
   const handleOpenModal = (user: User) => {
     setSelectedUser(user);
@@ -141,12 +214,42 @@ export default function UsersPage() {
   };
 
   const handleDelete = (user: User) => {
-    if (
-      confirm(
-        `"${user.name}" adlı kullanıcıyı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.`
-      )
-    ) {
-      deleteMutation.mutate(user.id);
+    setUserToDelete(user);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (userToDelete) {
+      deleteMutation.mutate(userToDelete.id);
+      setDeleteConfirmOpen(false);
+      setUserToDelete(null);
+    }
+  };
+
+  // Export functions
+  const handleExportCSV = () => {
+    const exportColumns = columns.filter((col) => col.key !== 'actions');
+    const { headers, rows } = prepareTableData(filteredUsers, exportColumns);
+    exportToCSV({
+      filename: 'kullanicilar',
+      headers,
+      data: rows,
+    });
+    showToast('success', 'CSV dosyası indirildi.');
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const exportColumns = columns.filter((col) => col.key !== 'actions');
+      const { headers, rows } = prepareTableData(filteredUsers, exportColumns);
+      await exportToExcel({
+        filename: 'kullanicilar',
+        headers,
+        data: rows,
+      });
+      showToast('success', 'Excel dosyası indirildi.');
+    } catch (error: any) {
+      showToast('error', 'Excel export hatası:', error.message);
     }
   };
 
@@ -230,6 +333,14 @@ export default function UsersPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-text">Kullanıcılar</h1>
+        <div className="flex gap-2">
+          <Button variant="secondary" onClick={handleExportCSV} leftIcon={<Download size={16} />}>
+            CSV İndir
+          </Button>
+          <Button variant="secondary" onClick={handleExportExcel} leftIcon={<FileSpreadsheet size={16} />}>
+            Excel İndir
+          </Button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -267,12 +378,33 @@ export default function UsersPage() {
         </div>
       </div>
 
+      {/* Advanced Filters */}
+      <div className="mb-6">
+        <AdvancedFilters
+          filters={filterOptions}
+          values={advancedFilters}
+          onChange={setAdvancedFilters}
+          onReset={() => setAdvancedFilters({})}
+        />
+      </div>
+
       {/* Users Table */}
       <Table<User>
         columns={columns}
         data={filteredUsers}
         loading={isLoading}
         emptyState={<EmptyState description="Kullanıcı bulunamadı" />}
+        selectable
+        selectedIds={selectedIds}
+        onSelectionChange={setSelectedIds}
+      />
+
+      {/* Bulk Actions */}
+      <BulkActions
+        selectedIds={selectedIds}
+        actions={bulkActions}
+        onClearSelection={() => setSelectedIds([])}
+        totalCount={filteredUsers.length}
       />
 
       {/* Edit Modal */}

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { QueryClientProvider } from '@/lib/react-query-provider';
 import { ToastProvider } from '@/components/ui/ToastProvider';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,11 +20,13 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={inter.className}>
-        <QueryClientProvider>
-          <ToastProvider>
-            {children}
-          </ToastProvider>
-        </QueryClientProvider>
+        <ErrorBoundary>
+          <QueryClientProvider>
+            <ToastProvider>
+              {children}
+            </ToastProvider>
+          </QueryClientProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 const { News } = require('../models');
 const { NotFoundError } = require('../utils/errors');
 const path = require('path');
+const pushNotificationService = require('../services/pushNotificationService');
 
 /**
  * Create news (Admin)
@@ -28,6 +29,23 @@ const createNews = async (req, res, next) => {
       is_active: true,
       view_count: 0,
     });
+
+    // Send push notification to all users about new news
+    try {
+      await pushNotificationService.sendToAllUsers(
+        {
+          title: 'Yeni Haber! 📰',
+          body: news.title,
+        },
+        {
+          type: 'news',
+          news_id: news.id,
+          action_url: `/news/${news.id}`,
+        }
+      );
+    } catch (error) {
+      console.error('Push notification error for new news:', error.message);
+    }
 
     res.status(201).json({
       success: true,

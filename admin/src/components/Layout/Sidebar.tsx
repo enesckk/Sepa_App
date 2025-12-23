@@ -46,7 +46,7 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-surface border-r border-border h-screen fixed left-0 top-0 flex flex-col">
+    <div className="w-64 bg-surface border-r border-border h-screen fixed left-0 top-0 flex flex-col z-30 hidden md:flex">
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
