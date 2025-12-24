@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { storage, StorageKeys } from '../utils/storage';
 import { getProfile } from '../services/api/users';
+import { logout as authLogout } from '../services/api/auth';
 import type { User } from '../services/api/types';
 
 interface AppState {
@@ -103,10 +104,20 @@ export function AppProvider({ children }: AppProviderProps) {
             user: freshUser,
             golbucks: freshUser.golbucks || 0,
           }));
-        } catch (error) {
-          // If refresh fails, user might be logged out
-          if (__DEV__) {
-            console.error('[AppContext] Error refreshing user:', error);
+        } catch (error: any) {
+          // If refresh fails with 401, user is logged out - clear state
+          const statusCode = error?.response?.status || error?.statusCode;
+          if (statusCode === 401) {
+            if (__DEV__) {
+              console.log('[AppContext] 401 error refreshing user, logging out');
+            }
+            // Token refresh failed, user needs to login again
+            await logout();
+          } else {
+            // Other errors - just log
+            if (__DEV__) {
+              console.error('[AppContext] Error refreshing user:', error);
+            }
           }
         }
       }
@@ -149,11 +160,24 @@ export function AppProvider({ children }: AppProviderProps) {
   };
 
   const logout = async () => {
-    await storage.multiRemove([
-      StorageKeys.ACCESS_TOKEN,
-      StorageKeys.REFRESH_TOKEN,
-      StorageKeys.USER_DATA,
-    ]);
+    try {
+      // Use auth service logout which clears tokens properly
+      await authLogout();
+    } catch (error) {
+      if (__DEV__) {
+        console.error('[AppContext] Logout error:', error);
+      }
+      // Even if logout fails, clear local state
+    }
+    
+    // Clear user data from storage
+    try {
+      await storage.remove(StorageKeys.USER_DATA);
+    } catch (error) {
+      if (__DEV__) {
+        console.error('[AppContext] Error removing user data:', error);
+      }
+    }
     
     setState((prev) => ({
       ...prev,
@@ -217,7 +241,16 @@ export function AppProvider({ children }: AppProviderProps) {
     try {
       const user = await getProfile();
       setUser(user);
-    } catch (error) {
+    } catch (error: any) {
+      // If 401 error, user is logged out - clear state
+      const statusCode = error?.response?.status || error?.statusCode;
+      if (statusCode === 401) {
+        if (__DEV__) {
+          console.log('[AppContext] 401 error refreshing user, logging out');
+        }
+        // Token refresh failed, user needs to login again
+        await logout();
+      }
       if (__DEV__) {
         console.error('[AppContext] Error refreshing user:', error);
       }

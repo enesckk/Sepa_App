@@ -27,24 +27,49 @@ class AuthService {
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await api.post<AuthResponse>('/auth/login', credentials);
+      const response = await api.post<any>('/auth/login', credentials);
+      
+      // API interceptor returns: { user: {...}, tokens: { accessToken, refreshToken } }
+      const user = response.user;
+      const accessToken = response.tokens?.accessToken;
+      const refreshToken = response.tokens?.refreshToken;
+      
+      if (!user || !accessToken || !refreshToken) {
+        console.error('API Response:', response);
+        throw new Error('Geçersiz API yanıtı. Lütfen backend bağlantısını kontrol edin.');
+      }
       
       // Check if user is admin
-      if (response.user.role !== 'admin' && response.user.role !== 'super_admin') {
+      if (user.role !== 'admin' && user.role !== 'super_admin') {
         throw new Error('Admin yetkisi gerekli');
       }
 
       // Store tokens
       if (typeof window !== 'undefined') {
-        localStorage.setItem('admin_token', response.accessToken);
-        localStorage.setItem('admin_refresh_token', response.refreshToken);
-        localStorage.setItem('admin_user', JSON.stringify(response.user));
+        localStorage.setItem('admin_token', accessToken);
+        localStorage.setItem('admin_refresh_token', refreshToken);
+        localStorage.setItem('admin_user', JSON.stringify(user));
       }
 
-      this.currentUser = response.user;
-      return response;
+      this.currentUser = user;
+      return {
+        user,
+        accessToken,
+        refreshToken,
+      };
     } catch (error: any) {
-      throw new Error(error.message || 'Giriş başarısız');
+      // Network error veya bağlantı hatası
+      if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error') || error.message?.includes('fetch')) {
+        throw new Error('Backend sunucusuna bağlanılamıyor. Lütfen backend\'in çalıştığından emin olun.');
+      }
+      
+      // API error
+      if (error.response) {
+        const message = error.response.data?.message || error.message || 'Giriş başarısız';
+        throw new Error(message);
+      }
+      
+      throw new Error(error.message || 'Giriş başarısız. Lütfen tekrar deneyin.');
     }
   }
 

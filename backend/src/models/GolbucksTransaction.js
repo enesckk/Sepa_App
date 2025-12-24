@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./User');
 
 const GolbucksTransaction = sequelize.define(
   'GolbucksTransaction',
@@ -73,7 +74,16 @@ const GolbucksTransaction = sequelize.define(
   }
 );
 
-// Associations will be set up in models/index.js to avoid circular dependencies
+// Associations
+GolbucksTransaction.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
+
+User.hasMany(GolbucksTransaction, {
+  foreignKey: 'user_id',
+  as: 'transactions',
+});
 
 module.exports = GolbucksTransaction;
 

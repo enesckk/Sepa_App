@@ -1,12 +1,20 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { Colors } from '../constants/colors';
+import { View, Image, StyleSheet, ImageStyle, ViewStyle, Text } from 'react-native';
 
 interface LogoProps {
   width?: number;
   height?: number;
   style?: ViewStyle;
-  imageStyle?: ViewStyle;
+  imageStyle?: ImageStyle;
+}
+
+// Logo dosyasını güvenli bir şekilde yükle
+let logoSource: any = null;
+try {
+  logoSource = require('../../assets/images/sehitkamil-logo.png');
+} catch (error) {
+  // Logo dosyası bulunamazsa null kalır
+  console.warn('Logo dosyası bulunamadı. Placeholder kullanılıyor.');
 }
 
 export const Logo: React.FC<LogoProps> = ({
@@ -15,13 +23,19 @@ export const Logo: React.FC<LogoProps> = ({
   style,
   imageStyle,
 }) => {
-  // Logo dosyası henüz eklenmediği için text placeholder kullanıyoruz
-  // Logo dosyası eklendiğinde bu kısım güncellenebilir
   return (
     <View style={[styles.container, { width, height }, style]}>
-      <View style={[styles.placeholder, { width, height }, imageStyle]}>
-        <Text style={styles.placeholderText}>Şehitkamil</Text>
-      </View>
+      {logoSource ? (
+        <Image
+          source={logoSource}
+          style={[styles.image, { width, height }, imageStyle]}
+          resizeMode="contain"
+        />
+      ) : (
+        <View style={[styles.placeholder, { width, height }]}>
+          <Text style={styles.placeholderText}>Şehitkamil</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -38,16 +52,13 @@ const styles = StyleSheet.create({
   placeholder: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 4,
   },
   placeholderText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: Colors.primaryDark,
-    letterSpacing: 0.5,
+    fontWeight: 'bold',
+    color: '#666',
   },
 });
 

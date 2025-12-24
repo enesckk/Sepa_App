@@ -16,7 +16,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { ArrowLeft, Search, Plus } from 'lucide-react-native';
 import { Colors } from '../src/constants/colors';
 import { getMyApplications, Application, GetApplicationsParams } from '../src/services/api';
-import { parseApiError } from '../src/utils/errorHandler';
+import { parseApiError, isAuthError } from '../src/utils/errorHandler';
+import { useApp } from '../src/contexts/AppContext';
 
 type ApplicationStatus = 'all' | 'pending' | 'in_progress' | 'resolved' | 'rejected';
 
@@ -55,6 +56,7 @@ const getTypeDisplay = (type: string): string => {
 
 export default function MyApplicationsScreen() {
   const router = useRouter();
+  const { logout } = useApp();
   const [selectedFilter, setSelectedFilter] = useState<ApplicationStatus>('all');
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,6 +77,31 @@ export default function MyApplicationsScreen() {
       setApplications(response.applications);
     } catch (err) {
       const apiError = parseApiError(err);
+      
+      // If authentication error (401), logout and redirect to login
+      // API client interceptor already tried to refresh token, so if we get 401 here,
+      // it means refresh failed or refresh token is missing
+      if (isAuthError(apiError) && apiError.statusCode === 401) {
+        if (__DEV__) {
+          console.log('[MyApplicationsScreen] 401 error, logging out and redirecting to login');
+        }
+        // Logout and redirect to login (don't show error message)
+        try {
+          await logout();
+        } catch (logoutError) {
+          if (__DEV__) {
+            console.error('[MyApplicationsScreen] Logout error:', logoutError);
+          }
+        }
+        // Navigate to login - use replace to clear navigation stack
+        // Use setTimeout to ensure logout state is updated before navigation
+        setTimeout(() => {
+          router.replace('/login');
+        }, 0);
+        return;
+      }
+      
+      // For other errors, show error message
       setError(apiError.message || 'Başvurular yüklenirken bir hata oluştu');
       if (__DEV__) {
         console.error('[MyApplicationsScreen] Load error:', apiError);

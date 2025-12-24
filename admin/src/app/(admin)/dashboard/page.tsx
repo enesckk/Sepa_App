@@ -10,37 +10,10 @@ import {
   Activity,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { adminService } from '@/lib/services/admin';
+import { adminService, DashboardStats } from '@/lib/services/admin';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useToast } from '@/components/ui/ToastProvider';
-
-interface DashboardStats {
-  users: {
-    total: number;
-    active: number;
-    newToday: number;
-    newThisWeek: number;
-    newThisMonth: number;
-  };
-  events: {
-    total: number;
-    active: number;
-    totalRegistrations: number;
-    eventsToday: number;
-  };
-  applications: {
-    total: number;
-    pending: number;
-    resolved: number;
-    newToday: number;
-  };
-  golbucks: {
-    totalTransactions: number;
-    totalDistributed: number;
-    totalRedeemed: number;
-  };
-}
 
 export default function DashboardPage() {
   const { showToast } = useToast();
@@ -102,69 +75,85 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-text mb-6">Dashboard</h1>
+    <div className="w-full">
+      {/* Header Section */}
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-slate-900 mb-3">Dashboard</h1>
+        <p className="text-slate-600 text-lg">Yönetim paneli genel bakış</p>
+      </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
         {statCards.map((card) => {
           const Icon = card.icon;
           const colorClasses = {
-            blue: 'bg-blue-500',
-            green: 'bg-green-500',
-            orange: 'bg-orange-500',
-            purple: 'bg-purple-500',
+            blue: 'bg-gradient-to-br from-blue-500 to-blue-600',
+            green: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+            orange: 'bg-gradient-to-br from-orange-500 to-orange-600',
+            purple: 'bg-gradient-to-br from-purple-500 to-purple-600',
           };
           return (
             <div
               key={card.title}
-              className="bg-surface rounded-card shadow-card p-6"
+              className="bg-white rounded-xl shadow-md border border-slate-200 p-8 hover:shadow-xl hover:border-slate-300 transition-all duration-300"
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-start justify-between mb-8">
                 <div
-                  className={`w-12 h-12 ${colorClasses[card.color as keyof typeof colorClasses]} rounded-button flex items-center justify-center`}
+                  className={`w-20 h-20 ${colorClasses[card.color as keyof typeof colorClasses]} rounded-xl flex items-center justify-center shadow-md`}
                 >
-                  <Icon className="text-white" size={24} />
+                  <Icon className="text-white" size={28} />
                 </div>
               </div>
-              <h3 className="text-text-secondary text-sm mb-1">{card.title}</h3>
-              <p className="text-3xl font-bold text-text mb-2">{card.value}</p>
-              <p className="text-sm text-text-secondary">{card.change}</p>
+              <div className="space-y-3">
+                <h3 className="text-slate-600 text-sm font-medium uppercase tracking-wide">{card.title}</h3>
+                <p className="text-4xl font-bold text-slate-900">{card.value.toLocaleString()}</p>
+                <p className="text-sm text-emerald-600 font-medium">{card.change}</p>
+              </div>
             </div>
           );
         })}
       </div>
 
       {/* Additional Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-surface rounded-card shadow-card p-6">
-          <h2 className="text-xl font-bold text-text mb-4">Kullanıcı İstatistikleri</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Aktif Kullanıcılar</span>
-              <span className="font-semibold">{stats.users.active}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-white rounded-xl shadow-md border border-slate-200 p-10 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-5 mb-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+              <Users className="text-white" size={24} />
             </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Bu Hafta Yeni</span>
-              <span className="font-semibold">{stats.users.newThisWeek}</span>
+            <h2 className="text-2xl font-bold text-slate-900">Kullanıcı İstatistikleri</h2>
+          </div>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center py-5 border-b border-slate-100">
+              <span className="text-slate-600 font-medium text-base">Aktif Kullanıcılar</span>
+              <span className="font-bold text-slate-900 text-2xl">{stats.users.active.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Bu Ay Yeni</span>
-              <span className="font-semibold">{stats.users.newThisMonth}</span>
+            <div className="flex justify-between items-center py-5 border-b border-slate-100">
+              <span className="text-slate-600 font-medium text-base">Bu Hafta Yeni</span>
+              <span className="font-bold text-emerald-600 text-2xl">{stats.users.newThisWeek.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center py-5">
+              <span className="text-slate-600 font-medium text-base">Bu Ay Yeni</span>
+              <span className="font-bold text-emerald-600 text-2xl">{stats.users.newThisMonth.toLocaleString()}</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-surface rounded-card shadow-card p-6">
-          <h2 className="text-xl font-bold text-text mb-4">Etkinlik İstatistikleri</h2>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Toplam Etkinlik</span>
-              <span className="font-semibold">{stats.events.total}</span>
+        <div className="bg-white rounded-xl shadow-md border border-slate-200 p-10 hover:shadow-lg transition-all duration-300">
+          <div className="flex items-center gap-5 mb-10">
+            <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+              <Calendar className="text-white" size={24} />
             </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Toplam Kayıt</span>
-              <span className="font-semibold">{stats.events.totalRegistrations}</span>
+            <h2 className="text-2xl font-bold text-slate-900">Etkinlik İstatistikleri</h2>
+          </div>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center py-5 border-b border-slate-100">
+              <span className="text-slate-600 font-medium text-base">Toplam Etkinlik</span>
+              <span className="font-bold text-slate-900 text-2xl">{stats.events.total.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between items-center py-5">
+              <span className="text-slate-600 font-medium text-base">Toplam Kayıt</span>
+              <span className="font-bold text-emerald-600 text-2xl">{stats.events.totalRegistrations.toLocaleString()}</span>
             </div>
           </div>
         </div>

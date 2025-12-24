@@ -30,6 +30,7 @@ const getDashboardStatsEndpoint = async (req, res, next) => {
       data: stats,
     });
   } catch (error) {
+    console.error('Error in getDashboardStatsEndpoint:', error);
     next(error);
   }
 };

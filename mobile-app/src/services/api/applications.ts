@@ -151,7 +151,8 @@ export const getApplications = async (params?: GetApplicationsParams): Promise<G
     return response;
   } catch (error) {
     const apiError = parseApiError(error);
-    if (__DEV__) {
+    // Don't log 401 errors - they're handled by the component with logout
+    if (__DEV__ && apiError.statusCode !== 401) {
       console.error('[ApplicationsService] Get applications error:', apiError);
     }
     throw apiError;

@@ -9,6 +9,7 @@ const { testConnection } = require('./config/database');
 const { connectRedis } = require('./config/redis');
 const { initializeFirebase } = require('./config/firebase');
 const { swaggerSpec, swaggerUi, swaggerOptions } = require('./config/swagger');
+const { syncModels } = require('./models');
 
 // Import routes
 const apiRoutes = require('./routes');
@@ -20,8 +21,15 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // Middleware
-app.use(helmet());
-app.use(cors());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+app.use(cors({
+  origin: true, // Tüm origin'lere izin ver (development için)
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -81,7 +89,13 @@ const initializeConnections = async () => {
     const dbConnected = await testConnection();
     if (!dbConnected) {
       console.warn('⚠️  Database connection failed, but server will continue...');
+      return;
     }
+
+    // Sync models with database (create missing tables)
+    console.log('🔄 Syncing database models...');
+    await syncModels();
+    console.log('✅ Database models synced');
 
     // Connect to Redis (optional)
     const redisConnected = await connectRedis();

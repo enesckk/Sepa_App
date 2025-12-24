@@ -104,10 +104,37 @@ export interface EmergencyGatheringResponse {
   total: number;
 }
 
+export interface DashboardStats {
+  users: {
+    total: number;
+    active: number;
+    newToday: number;
+    newThisWeek: number;
+    newThisMonth: number;
+  };
+  events: {
+    total: number;
+    active: number;
+    totalRegistrations: number;
+    eventsToday: number;
+  };
+  applications: {
+    total: number;
+    pending: number;
+    resolved: number;
+    newToday: number;
+  };
+  golbucks: {
+    totalTransactions: number;
+    totalDistributed: number;
+    totalRedeemed: number;
+  };
+}
+
 // Admin Service
 export const adminService = {
   // Dashboard
-  getDashboardStats: () => api.get('/admin/dashboard-stats'),
+  getDashboardStats: () => api.get<DashboardStats>('/admin/dashboard-stats'),
 
   // Users
   getUsers: (params?: UsersParams) =>

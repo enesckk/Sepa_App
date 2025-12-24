@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./User');
+const Story = require('./Story');
 
 const StoryView = sequelize.define(
   'StoryView',
@@ -52,7 +54,26 @@ const StoryView = sequelize.define(
   }
 );
 
-// Associations will be set up in models/index.js to avoid circular dependencies
+// Associations
+StoryView.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
+
+StoryView.belongsTo(Story, {
+  foreignKey: 'story_id',
+  as: 'story',
+});
+
+User.hasMany(StoryView, {
+  foreignKey: 'user_id',
+  as: 'storyViews',
+});
+
+Story.hasMany(StoryView, {
+  foreignKey: 'story_id',
+  as: 'views',
+});
 
 module.exports = StoryView;
 

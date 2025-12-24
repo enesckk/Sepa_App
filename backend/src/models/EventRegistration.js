@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./User');
+const Event = require('./Event');
 
 const EventRegistration = sequelize.define(
   'EventRegistration',
@@ -48,43 +50,6 @@ const EventRegistration = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
-    // Kişisel bilgiler (etkinlik başvurusu için)
-    first_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: 'Başvuru sahibinin adı',
-    },
-    last_name: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-      comment: 'Başvuru sahibinin soyadı',
-    },
-    tc_no: {
-      type: DataTypes.STRING(11),
-      allowNull: true,
-      comment: 'TC Kimlik Numarası',
-      validate: {
-        len: [11, 11],
-      },
-    },
-    phone: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-      comment: 'Telefon numarası',
-    },
-    email: {
-      type: DataTypes.STRING(255),
-      allowNull: true,
-      comment: 'E-posta adresi',
-      validate: {
-        isEmail: true,
-      },
-    },
-    notes: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      comment: 'Ek notlar veya özel istekler',
-    },
   },
   {
     tableName: 'event_registrations',
@@ -117,7 +82,26 @@ const EventRegistration = sequelize.define(
   }
 );
 
-// Associations will be set up in models/index.js to avoid circular dependencies
+// Associations
+EventRegistration.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
+
+EventRegistration.belongsTo(Event, {
+  foreignKey: 'event_id',
+  as: 'event',
+});
+
+User.hasMany(EventRegistration, {
+  foreignKey: 'user_id',
+  as: 'eventRegistrations',
+});
+
+Event.hasMany(EventRegistration, {
+  foreignKey: 'event_id',
+  as: 'registrations',
+});
 
 module.exports = EventRegistration;
 

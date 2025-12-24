@@ -1,5 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./User');
+const Reward = require('./Reward');
 
 const UserReward = sequelize.define(
   'UserReward',
@@ -66,7 +68,26 @@ const UserReward = sequelize.define(
   }
 );
 
-// Associations will be set up in models/index.js to avoid circular dependencies
+// Associations
+UserReward.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
+
+UserReward.belongsTo(Reward, {
+  foreignKey: 'reward_id',
+  as: 'reward',
+});
+
+User.hasMany(UserReward, {
+  foreignKey: 'user_id',
+  as: 'userRewards',
+});
+
+Reward.hasMany(UserReward, {
+  foreignKey: 'reward_id',
+  as: 'userRewards',
+});
 
 module.exports = UserReward;
 

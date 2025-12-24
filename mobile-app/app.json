@@ -32,6 +32,13 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Uygulamanın konumunuzu kullanmasına izin verin."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Uygulamanın fotoğraflarınıza erişmesine izin verin.",
+          "cameraPermission": "Uygulamanın kameraya erişmesine izin verin."
+        }
       ]
     ]
   }

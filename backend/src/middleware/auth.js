@@ -68,6 +68,17 @@ const authenticate = async (req, res, next) => {
       });
     }
 
+    // Handle database connection errors
+    if (error.name === 'SequelizeConnectionRefusedError' || 
+        error.name === 'SequelizeConnectionError' ||
+        error.name === 'SequelizeHostNotFoundError') {
+      console.error('Database connection error in auth middleware:', error.message);
+      return res.status(503).json({
+        error: 'Service Unavailable',
+        message: 'Veritabanı bağlantısı kurulamadı. Lütfen veritabanının çalıştığından emin olun.',
+      });
+    }
+
     console.error('Auth middleware error:', error);
     return res.status(500).json({
       error: 'Internal Server Error',

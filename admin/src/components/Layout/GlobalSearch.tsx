@@ -105,9 +105,9 @@ export function GlobalSearch() {
   };
 
   return (
-    <div ref={searchRef} className="relative w-full max-w-md">
+    <div ref={searchRef} className="relative w-full max-w-lg">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={20} />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 z-10" size={20} />
         <input
           ref={inputRef}
           type="text"
@@ -119,7 +119,7 @@ export function GlobalSearch() {
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          className="w-full pl-10 pr-4 py-2 border border-border rounded-input focus:outline-none focus:ring-2 focus:ring-primary bg-surface text-text"
+          className="w-full pl-12 pr-12 py-3.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white text-slate-900 placeholder:text-slate-400 text-base"
         />
         {query && (
           <button
@@ -127,28 +127,28 @@ export function GlobalSearch() {
               setQuery('');
               setIsOpen(false);
             }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-text"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 z-10"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         )}
       </div>
 
       {isOpen && results.length > 0 && (
-        <div className="absolute top-full mt-2 w-full bg-surface border border-border rounded-card shadow-lg z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
           {results.map((result, index) => (
             <button
               key={result.id}
               onClick={() => handleSelect(result)}
-              className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-background transition-colors ${
-                index === selectedIndex ? 'bg-background' : ''
+              className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-emerald-50 transition-colors ${
+                index === selectedIndex ? 'bg-emerald-50' : ''
               }`}
             >
-              <div className="text-text-secondary">{result.icon}</div>
+              <div className="text-emerald-600">{result.icon}</div>
               <div className="flex-1 text-left">
-                <div className="font-medium text-text">{result.title}</div>
+                <div className="font-medium text-slate-900">{result.title}</div>
                 {result.subtitle && (
-                  <div className="text-sm text-text-secondary">{result.subtitle}</div>
+                  <div className="text-sm text-slate-500">{result.subtitle}</div>
                 )}
               </div>
             </button>
@@ -157,7 +157,7 @@ export function GlobalSearch() {
       )}
 
       {isOpen && query && results.length === 0 && (
-        <div className="absolute top-full mt-2 w-full bg-surface border border-border rounded-card shadow-lg z-50 p-4 text-center text-text-secondary">
+        <div className="absolute top-full mt-2 w-full bg-white border border-slate-200 rounded-lg shadow-xl z-50 p-4 text-center text-slate-500">
           Sonuç bulunamadı
         </div>
       )}

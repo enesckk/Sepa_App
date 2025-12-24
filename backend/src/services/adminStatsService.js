@@ -24,8 +24,13 @@ const { Op } = require('sequelize');
 const getDashboardStats = async () => {
   try {
     const now = new Date();
-    const startOfToday = new Date(now.setHours(0, 0, 0, 0));
-    const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+    
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // User stats
@@ -53,9 +58,10 @@ const getDashboardStats = async () => {
     const totalRegistrations = await EventRegistration.count({
       where: { status: 'registered' },
     });
+    const todayDate = new Date().toISOString().split('T')[0];
     const eventsToday = await Event.count({
       where: {
-        date: new Date().toISOString().split('T')[0],
+        date: todayDate,
         is_active: true,
       },
     });
@@ -102,12 +108,12 @@ const getDashboardStats = async () => {
     // Story stats
     const totalStories = await Story.count();
     const activeStories = await Story.count({ where: { is_active: true } });
-    const totalStoryViews = await Story.sum('view_count') || 0;
+    const totalStoryViews = (await Story.sum('view_count')) || 0;
 
     // News stats
     const totalNews = await News.count();
     const activeNews = await News.count({ where: { is_active: true } });
-    const totalNewsViews = await News.sum('view_count') || 0;
+    const totalNewsViews = (await News.sum('view_count')) || 0;
 
     // Place stats
     const totalPlaces = await Place.count();
@@ -129,12 +135,12 @@ const getDashboardStats = async () => {
 
     // Golbucks stats
     const totalGolbucksTransactions = await GolbucksTransaction.count();
-    const totalGolbucksDistributed = await GolbucksTransaction.sum('amount', {
+    const totalGolbucksDistributed = (await GolbucksTransaction.sum('amount', {
       where: { amount: { [Op.gt]: 0 } },
-    }) || 0;
-    const totalGolbucksRedeemed = await GolbucksTransaction.sum('amount', {
+    })) || 0;
+    const totalGolbucksRedeemed = (await GolbucksTransaction.sum('amount', {
       where: { amount: { [Op.lt]: 0 } },
-    }) || 0;
+    })) || 0;
 
     return {
       users: {
@@ -191,12 +197,13 @@ const getDashboardStats = async () => {
         used: redeemedRewards,
       },
       golbucks: {
-        totalTransactions: totalGolbucksTransactions,
-        totalDistributed: totalGolbucksDistributed,
-        totalRedeemed: Math.abs(totalGolbucksRedeemed),
+        totalTransactions: totalGolbucksTransactions || 0,
+        totalDistributed: totalGolbucksDistributed || 0,
+        totalRedeemed: Math.abs(totalGolbucksRedeemed || 0),
       },
     };
   } catch (error) {
+    console.error('Error in getDashboardStats:', error);
     throw error;
   }
 };

@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./User');
 
 const DailyReward = sequelize.define(
   'DailyReward',
@@ -64,7 +65,16 @@ const DailyReward = sequelize.define(
   }
 );
 
-// Associations will be set up in models/index.js to avoid circular dependencies
+// Associations
+DailyReward.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
+
+User.hasOne(DailyReward, {
+  foreignKey: 'user_id',
+  as: 'dailyReward',
+});
 
 module.exports = DailyReward;
 

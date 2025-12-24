@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -16,6 +17,8 @@ import {
   Settings,
   LogOut,
   Image as ImageIcon,
+  Menu,
+  X,
 } from 'lucide-react';
 import { authService } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
@@ -36,7 +39,12 @@ const menuItems = [
   { icon: Settings, label: 'Ayarlar', href: '/settings' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean;
+  onToggle: () => void;
+}
+
+export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -46,56 +54,108 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-surface border-r border-border h-screen fixed left-0 top-0 flex flex-col z-30 hidden md:flex">
-      {/* Logo */}
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-            <span className="text-white font-bold">Ş</span>
-          </div>
-          <div>
-            <h1 className="font-bold text-text">Şehitkamil</h1>
-            <p className="text-xs text-text-secondary">Admin Panel</p>
+    <>
+      {/* Mobile Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 md:hidden ${
+          !isCollapsed ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={onToggle}
+      />
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          bg-gradient-to-b from-emerald-600 to-emerald-700 h-screen fixed left-0 top-0 flex flex-col z-50 shadow-xl
+          transition-all duration-300 ease-in-out
+          ${isCollapsed ? 'w-20' : 'w-80'}
+          ${isCollapsed ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}
+        `}
+      >
+        {/* Logo Section */}
+        <div className={`px-5 py-6 border-b border-emerald-500/30 flex-shrink-0 ${isCollapsed ? 'px-4' : ''}`}>
+          <div className={`flex items-center gap-4 ${isCollapsed ? 'justify-center' : ''}`}>
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <span className="text-white font-bold text-xl">Ş</span>
+            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col">
+                <h1 className="font-bold text-white text-lg leading-tight">Şehitkamil</h1>
+                <p className="text-xs text-emerald-100 leading-tight mt-0.5">Yönetici Paneli</p>
+              </div>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* Menu */}
-      <nav className="flex-1 overflow-y-auto p-4">
-        <ul className="space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = pathname === item.href;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-button transition-colors ${
-                    isActive
-                      ? 'bg-primary text-white'
-                      : 'text-text-secondary hover:bg-background hover:text-text'
-                  }`}
-                >
-                  <Icon size={20} />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+        {/* Toggle Button */}
+        <div className="px-5 py-4 border-b border-emerald-500/30 flex-shrink-0 md:block hidden">
+          <button
+            onClick={onToggle}
+            className="w-full flex items-center justify-center px-4 py-3 text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+            title={isCollapsed ? 'Menüyü Aç' : 'Menüyü Kapat'}
+          >
+            <Menu size={22} />
+          </button>
+        </div>
 
-      {/* Logout */}
-      <div className="p-4 border-t border-border">
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 text-error hover:bg-red-50 rounded-button transition-colors"
-        >
-          <LogOut size={20} />
-          <span className="font-medium">Çıkış Yap</span>
-        </button>
-      </div>
-    </div>
+        {/* Menu Section */}
+        <nav className="flex-1 overflow-y-auto px-5 py-6">
+          <ul className="space-y-3">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`
+                      flex items-center gap-4 px-6 py-4 rounded-xl transition-all duration-200
+                      ${isActive
+                        ? 'bg-white text-emerald-700 shadow-lg font-semibold'
+                        : 'text-emerald-50 hover:bg-white/10 hover:text-white'
+                      }
+                      ${isCollapsed ? 'justify-center px-4' : ''}
+                    `}
+                    title={isCollapsed ? item.label : ''}
+                  >
+                    <Icon size={22} className="flex-shrink-0" />
+                    {!isCollapsed && (
+                      <span className="text-base whitespace-nowrap">{item.label}</span>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* Logout Section */}
+        <div className="px-5 py-4 border-t border-emerald-500/30 flex-shrink-0">
+          <button
+            onClick={handleLogout}
+            className={`
+              w-full flex items-center gap-4 px-6 py-4 text-white hover:bg-white/10 rounded-xl 
+              transition-all duration-200
+              ${isCollapsed ? 'justify-center px-4' : ''}
+            `}
+            title={isCollapsed ? 'Çıkış Yap' : ''}
+          >
+            <LogOut size={22} className="flex-shrink-0" />
+            {!isCollapsed && <span className="text-base whitespace-nowrap">Çıkış Yap</span>}
+          </button>
+        </div>
+
+        {/* Mobile Close Button */}
+        <div className="px-5 py-3 border-t border-emerald-500/30 flex-shrink-0 md:hidden">
+          <button
+            onClick={onToggle}
+            className="w-full flex items-center justify-center px-4 py-2.5 text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
 

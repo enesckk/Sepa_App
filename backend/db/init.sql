@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20),
     mahalle VARCHAR(100),
     golbucks INTEGER DEFAULT 0,
+    role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin', 'super_admin')),
     is_active BOOLEAN DEFAULT true,
     fcm_token TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

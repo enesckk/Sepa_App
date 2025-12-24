@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
+const User = require('./User');
 
 const Application = sequelize.define(
   'Application',
@@ -116,7 +117,16 @@ const Application = sequelize.define(
   }
 );
 
-// Associations will be set up in models/index.js to avoid circular dependencies
+// Associations
+Application.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'user',
+});
+
+User.hasMany(Application, {
+  foreignKey: 'user_id',
+  as: 'applications',
+});
 
 module.exports = Application;
 

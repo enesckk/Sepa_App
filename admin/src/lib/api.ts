@@ -42,8 +42,12 @@ axiosInstance.interceptors.request.use(
 // Response interceptor - Handle errors and token refresh
 axiosInstance.interceptors.response.use(
   (response) => {
-    // Return data directly if wrapped in data property
-    return response.data?.data !== undefined ? response.data : response;
+    // Backend returns: { success: true, data: {...} }
+    // Return data.data if exists, otherwise return response.data
+    if (response.data?.data !== undefined) {
+      return response.data.data;
+    }
+    return response.data || response;
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };

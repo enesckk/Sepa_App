@@ -305,6 +305,33 @@ export default function EventsPage() {
     },
   ];
 
+  // Export functions
+  const handleExportCSV = () => {
+    const exportColumns = columns.filter((col) => col.key !== 'actions');
+    const { headers, rows } = prepareTableData(events, exportColumns);
+    exportToCSV({
+      filename: 'etkinlikler',
+      headers,
+      data: rows,
+    });
+    showToast('success', 'CSV dosyası indirildi.');
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const exportColumns = columns.filter((col) => col.key !== 'actions');
+      const { headers, rows } = prepareTableData(events, exportColumns);
+      await exportToExcel({
+        filename: 'etkinlikler',
+        headers,
+        data: rows,
+      });
+      showToast('success', 'Excel dosyası indirildi.');
+    } catch (error: any) {
+      showToast('error', 'Excel export hatası:', error.message);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">

@@ -30,6 +30,20 @@ const errorHandler = (err, req, res, next) => {
     error = new ValidationError(message);
   }
 
+  // Sequelize database connection error
+  if (err.name === 'SequelizeConnectionError' || err.name === 'SequelizeConnectionRefusedError') {
+    const message = 'Database connection failed. Please ensure the database is running.';
+    error = new AppError(message, 503);
+    error.name = 'DatabaseConnectionError';
+  }
+
+  // Sequelize host not found error
+  if (err.name === 'SequelizeHostNotFoundError' || err.name === 'SequelizeHostNotReachableError') {
+    const message = 'Cannot reach database server. Please check your database configuration.';
+    error = new AppError(message, 503);
+    error.name = 'DatabaseConnectionError';
+  }
+
   // JWT errors
   if (err.name === 'JsonWebTokenError') {
     const message = 'Invalid token';
