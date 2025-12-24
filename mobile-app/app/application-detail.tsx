@@ -17,6 +17,7 @@ import { ArrowLeft, MapPin, Calendar, MessageSquare } from 'lucide-react-native'
 import { Colors } from '../src/constants/colors';
 import { getApplicationById, addApplicationComment, Application, API_CONFIG } from '../src/services/api';
 import { parseApiError } from '../src/utils/errorHandler';
+import { OptimizedImage } from '../src/components/OptimizedImage';
 
 const getStatusDisplay = (status: string): { text: string; color: string } => {
   switch (status) {
@@ -187,14 +188,15 @@ export default function ApplicationDetailScreen() {
         {/* Image */}
         {application.image_url && (
           <View style={styles.section}>
-            <Image
-              source={{
-                uri: application.image_url.startsWith('http')
+            <OptimizedImage
+              source={
+                application.image_url.startsWith('http')
                   ? application.image_url
-                  : `${API_CONFIG.BASE_URL.replace('/api', '')}${application.image_url}`,
-              }}
+                  : `${API_CONFIG.BASE_URL.replace('/api', '')}${application.image_url}`
+              }
               style={styles.image}
-              resizeMode="cover"
+              contentFit="cover"
+              showLoading={true}
             />
           </View>
         )}

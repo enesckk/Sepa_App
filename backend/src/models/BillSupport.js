@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
-const { User } = require('./User');
 
 const BillSupport = sequelize.define(
   'BillSupport',
@@ -68,6 +67,30 @@ const BillSupport = sequelize.define(
       allowNull: true,
       unique: true,
     },
+    supported_amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      defaultValue: 0,
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+      comment: 'Total amount supported by other users',
+    },
+    supported_by_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+      comment: 'Number of users who supported this bill',
+    },
+    is_public: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      allowNull: false,
+      comment: 'Whether this bill is visible to other users for support',
+    },
   },
   {
     tableName: 'bill_supports',
@@ -95,16 +118,7 @@ const BillSupport = sequelize.define(
   }
 );
 
-// Associations
-BillSupport.belongsTo(User, {
-  foreignKey: 'user_id',
-  as: 'user',
-});
-
-User.hasMany(BillSupport, {
-  foreignKey: 'user_id',
-  as: 'billSupports',
-});
+// Associations will be set up in models/index.js to avoid circular dependencies
 
 module.exports = BillSupport;
 

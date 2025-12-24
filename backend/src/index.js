@@ -8,6 +8,7 @@ require('dotenv').config();
 const { testConnection } = require('./config/database');
 const { connectRedis } = require('./config/redis');
 const { initializeFirebase } = require('./config/firebase');
+const { swaggerSpec, swaggerUi, swaggerOptions } = require('./config/swagger');
 
 // Import routes
 const apiRoutes = require('./routes');

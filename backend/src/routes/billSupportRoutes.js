@@ -4,6 +4,8 @@ const {
   createBillSupport,
   getUserBillSupports,
   getBillSupportById,
+  getPublicBillSupports,
+  supportBillSupport,
 } = require('../controllers/billSupportController');
 const { authenticate } = require('../middleware/auth');
 const { uploadSingle } = require('../config/multer');
@@ -29,6 +31,22 @@ router.post(
  * @query   bill_type, status, search, limit, offset, sort, order
  */
 router.get('/', authenticate, getUserBillSupports);
+
+/**
+ * @route   GET /api/bill-supports/public
+ * @desc    Get public bill supports (for support tab)
+ * @access  Public (but authenticated users can see more details)
+ * @query   bill_type, status, search, limit, offset, sort, order
+ */
+router.get('/public', authenticate, getPublicBillSupports);
+
+/**
+ * @route   POST /api/bill-supports/:id/support
+ * @desc    Support a bill (contribute money)
+ * @access  Private
+ * @body    amount, payment_method (golbucks|direct), notes (optional)
+ */
+router.post('/:id/support', authenticate, supportBillSupport);
 
 /**
  * @route   GET /api/bill-supports/:id

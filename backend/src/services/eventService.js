@@ -9,9 +9,16 @@ const { sequelize } = require('../config/database');
  * Register user for an event
  * @param {string} userId - User ID
  * @param {string} eventId - Event ID
+ * @param {Object} personalInfo - Personal information (optional)
+ * @param {string} personalInfo.first_name - First name
+ * @param {string} personalInfo.last_name - Last name
+ * @param {string} personalInfo.tc_no - TC Kimlik No
+ * @param {string} personalInfo.phone - Phone number
+ * @param {string} personalInfo.email - Email address
+ * @param {string} personalInfo.notes - Additional notes
  * @returns {Promise<Object>} Registration result
  */
-const registerForEvent = async (userId, eventId) => {
+const registerForEvent = async (userId, eventId, personalInfo = {}) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -62,7 +69,7 @@ const registerForEvent = async (userId, eventId) => {
     const qrCode = `EVENT-${uuidv4()}`;
     const referenceCode = `REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
-    // Create registration
+    // Create registration with personal information
     const registration = await EventRegistration.create(
       {
         user_id: userId,
@@ -70,6 +77,12 @@ const registerForEvent = async (userId, eventId) => {
         qr_code: qrCode,
         reference_code: referenceCode,
         status: 'registered',
+        first_name: personalInfo.first_name || null,
+        last_name: personalInfo.last_name || null,
+        tc_no: personalInfo.tc_no || null,
+        phone: personalInfo.phone || null,
+        email: personalInfo.email || null,
+        notes: personalInfo.notes || null,
       },
       { transaction }
     );

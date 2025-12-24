@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { initializeTokenManager } from '../src/services/api';
+import { AppProvider } from '../src/contexts/AppContext';
 
 // NativeWind CSS import'u kaldırıldı - mobil uygulama StyleSheet kullanıyor
 
@@ -27,28 +28,30 @@ export default function RootLayout() {
     : { flex: 1 };
 
   return (
-    <Wrapper style={wrapperStyle}>
-      <SafeAreaProvider>
-        <StatusBar style="dark" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            presentation: 'card',
-            animation: 'slide_from_right',
-            contentStyle: {
-              backgroundColor: 'transparent',
-            },
-          }}
-        >
-          <Stack.Screen
-            name="(tabs)"
-            options={{
+    <AppProvider>
+      <Wrapper style={wrapperStyle}>
+        <SafeAreaProvider>
+          <StatusBar style="dark" />
+          <Stack
+            screenOptions={{
               headerShown: false,
+              presentation: 'card',
+              animation: 'slide_from_right',
+              contentStyle: {
+                backgroundColor: 'transparent',
+              },
             }}
-          />
-        </Stack>
-      </SafeAreaProvider>
-    </Wrapper>
+          >
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerShown: false,
+              }}
+            />
+          </Stack>
+        </SafeAreaProvider>
+      </Wrapper>
+    </AppProvider>
   );
 }
 

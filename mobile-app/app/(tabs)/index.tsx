@@ -23,6 +23,7 @@ import {
   claimDailyReward,
   getDailyRewardAmount,
 } from '../../src/services/dailyRewardService';
+import { useGolbucks } from '../../src/contexts';
 
 // Şehitkamil Belediyesi Destek Programları ve Hizmetler
 // Carousel görselleri - Şehitkamil Belediyesi'nin sosyal destek programları
@@ -110,7 +111,8 @@ const NEWS_DATA = [
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [userPoints, setUserPoints] = useState(320);
+  const { golbucks, addGolbucks } = useGolbucks();
+  const [userPoints, setUserPoints] = useState(golbucks);
   const [dailyRewardVisible, setDailyRewardVisible] = useState(false);
   const [dailyRewardAmount, setDailyRewardAmount] = useState(0);
 

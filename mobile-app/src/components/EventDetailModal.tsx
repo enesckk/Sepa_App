@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -19,6 +21,8 @@ import Animated, {
 import { X, MapPin, Calendar, Clock, Users, QrCode } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
 import { Event } from '../services/mockEventsData';
+import { EventRegistrationForm, EventRegistrationData } from './EventRegistrationForm';
+import { SubmitButton } from './SubmitButton';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MODAL_HEIGHT = SCREEN_HEIGHT * 0.85;
@@ -27,7 +31,7 @@ interface EventDetailModalProps {
   visible: boolean;
   event: Event | null;
   onClose: () => void;
-  onRegister: (eventId: string) => void;
+  onRegister: (eventId: string, personalInfo?: EventRegistrationData) => void;
   isRegistered?: boolean;
   showQRCode?: boolean;
 }
@@ -40,6 +44,9 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
   isRegistered = false,
   showQRCode = false,
 }) => {
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [registrationData, setRegistrationData] = useState<EventRegistrationData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const translateY = useSharedValue(MODAL_HEIGHT);
   const opacity = useSharedValue(0);
   const qrScale = useSharedValue(0);
@@ -92,11 +99,45 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
     return labels[category] || category;
   };
 
+  // Check if event requires personal information (trips usually do)
+  const requiresPersonalInfo = event?.title?.toLowerCase().includes('gezi') || 
+                                event?.title?.toLowerCase().includes('gezisi') ||
+                                event?.category === 'kultur';
+
   const handleRegister = () => {
     if (!isRegistered) {
-      onRegister(event.id);
+      if (requiresPersonalInfo) {
+        setShowRegistrationForm(true);
+      } else {
+        onRegister(event.id);
+      }
     }
   };
+
+  const handleFormSubmit = async (data: EventRegistrationData) => {
+    setIsSubmitting(true);
+    try {
+      setRegistrationData(data);
+      onRegister(event.id, data);
+      setShowRegistrationForm(false);
+    } catch (error) {
+      Alert.alert('Hata', 'Başvuru yapılırken bir hata oluştu');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFormCancel = () => {
+    setShowRegistrationForm(false);
+    setRegistrationData(null);
+  };
+
+  useEffect(() => {
+    if (!visible) {
+      setShowRegistrationForm(false);
+      setRegistrationData(null);
+    }
+  }, [visible]);
 
   return (
     <Modal
@@ -118,14 +159,41 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
           </Pressable>
         </View>
 
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <Image source={{ uri: event.image }} style={styles.image} />
+        {showRegistrationForm ? (
+          <View style={styles.formContainer}>
+            <View style={styles.formHeader}>
+              <Pressable onPress={handleFormCancel} style={styles.backButton}>
+                <X size={24} color={Colors.text} />
+              </Pressable>
+              <Text style={styles.formTitle}>Başvuru Formu</Text>
+            </View>
+            <EventRegistrationForm
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+              isLoading={isSubmitting}
+              requiresPersonalInfo={requiresPersonalInfo}
+            />
+            <View style={styles.formFooter}>
+              <SubmitButton
+                onPress={() => {
+                  // Form will handle submission via onSubmit
+                }}
+                disabled={isSubmitting}
+                title={isSubmitting ? 'Gönderiliyor...' : 'Başvuruyu Tamamla'}
+              />
+            </View>
+          </View>
+        ) : (
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {event.image_url && (
+              <Image source={{ uri: event.image_url }} style={styles.image} />
+            )}
 
-          <View style={styles.content}>
+            <View style={styles.content}>
             <View style={styles.badges}>
               <View style={styles.categoryBadge}>
                 <Text style={styles.categoryText}>
@@ -199,8 +267,10 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
             </View>
           </View>
         </ScrollView>
+        )}
 
-        <View style={styles.footer}>
+        {!showRegistrationForm && (
+          <View style={styles.footer}>
           {!isRegistered && (
             <TouchableOpacity
               style={styles.registerButton}
@@ -219,6 +289,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({
             </View>
           )}
         </View>
+        )}
       </Animated.View>
     </Modal>
   );
@@ -441,6 +512,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: Colors.surface,
+  },
+  formContainer: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+  },
+  formHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  formTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  formFooter: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: Colors.border,
+    backgroundColor: Colors.surface,
   },
 });
 

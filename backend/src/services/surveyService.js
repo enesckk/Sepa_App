@@ -28,8 +28,9 @@ const getActiveSurveys = async (userId = null) => {
         model: Question,
         as: 'questions',
         attributes: ['id', 'text', 'type', 'options', 'is_required', 'order'],
-        order: [['order', 'ASC']],
         required: false,
+        separate: true,
+        order: [['order', 'ASC']],
       },
     ],
     order: [['created_at', 'DESC']],
@@ -97,8 +98,9 @@ const getSurveyById = async (surveyId, userId = null) => {
       {
         model: Question,
         as: 'questions',
-        order: [['order', 'ASC']],
         required: false,
+        separate: true,
+        order: [['order', 'ASC']],
       },
     ],
   });
@@ -148,6 +150,7 @@ const submitSurveyAnswers = async (userId, surveyId, answers) => {
         {
           model: Question,
           as: 'questions',
+          separate: true,
           order: [['order', 'ASC']],
         },
       ],

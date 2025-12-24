@@ -1,0 +1,22 @@
+{
+  "name": "sehitkamil-super-app",
+  "version": "1.0.0",
+  "description": "Şehitkamil Belediyesi Süper Uygulama - Tüm Sistem",
+  "scripts": {
+    "start": "./start-all.sh",
+    "stop": "./stop-all.sh",
+    "start:backend": "cd backend && npm start",
+    "start:mobile": "cd mobile-app && npx expo start",
+    "install:all": "cd backend && npm install && cd ../mobile-app && npm install"
+  },
+  "keywords": [
+    "belediye",
+    "mobile",
+    "api",
+    "expo",
+    "react-native"
+  ],
+  "author": "Şehitkamil Belediyesi",
+  "license": "ISC"
+}
+

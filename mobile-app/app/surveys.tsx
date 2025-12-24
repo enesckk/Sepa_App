@@ -27,13 +27,28 @@ export default function SurveyScreen() {
     try {
       setError(null);
       const response = await getSurveys();
-      setSurveys(response.surveys);
+      const surveysList = response?.surveys || [];
+      setSurveys(surveysList);
+      
+      if (__DEV__) {
+        console.log('[SurveyScreen] Loaded surveys:', surveysList.length);
+      }
     } catch (err) {
       const apiError = parseApiError(err);
-      setError(apiError.message || 'Anketler yüklenirken bir hata oluştu');
+      const errorMessage = apiError.message || 'Anketler yüklenirken bir hata oluştu';
+      setError(errorMessage);
+      
+      // In dev mode, show more details
       if (__DEV__) {
-        console.error('[SurveyScreen] Load error:', apiError);
+        console.error('[SurveyScreen] Load error:', {
+          message: errorMessage,
+          error: apiError,
+          fullError: err,
+        });
       }
+      
+      // Set empty array on error so UI doesn't break
+      setSurveys([]);
     } finally {
       setLoading(false);
       setRefreshing(false);

@@ -1,87 +1,140 @@
-// Mock emergency gathering areas data
+/**
+ * Mock emergency gathering areas data
+ * This file contains sample emergency gathering area data for development and testing
+ */
+
 export interface EmergencyGatheringArea {
   id: string;
   name: string;
-  description: string;
+  description?: string;
+  address: string;
   latitude: number;
   longitude: number;
-  address: string;
-  capacity?: number; // Maximum capacity
-  features?: string[];
-  distance?: number; // in km
-  isFavorite?: boolean;
-  images?: string[];
+  capacity?: number;
+  features?: string[]; // Facilities/features available
   contactPhone?: string;
-  status?: 'active' | 'temporary' | 'closed'; // Status of the area
+  image_url?: string;
+  images?: string[];
+  distance?: number; // in kilometers (computed)
+  isFavorite?: boolean; // computed
 }
 
 export const mockEmergencyGatheringAreas: EmergencyGatheringArea[] = [
   {
     id: '1',
-    name: 'Şehitkamil Belediye Binası',
-    description: 'Ana toplanma alanı, geniş park alanı mevcut',
+    name: 'Şehitkamil Merkez Toplanma Alanı',
+    description:
+      'Merkez mahalle toplanma alanı. Geniş açık alan, acil durumlarda binlerce kişiyi ağırlayabilir. Su, tuvalet ve ilk yardım hizmetleri mevcuttur.',
+    address: 'Merkez Mahalle, Atatürk Bulvarı, Şehitkamil/Gaziantep',
     latitude: 37.0662,
     longitude: 37.3833,
-    address: 'Merkez Mahallesi, Şehitkamil Belediye Binası, Gaziantep',
     capacity: 5000,
-    features: ['Geniş Alan', 'Park Yeri', 'Tuvalet', 'İlk Yardım', 'Su'],
-    distance: 0.5,
-    status: 'active',
-    contactPhone: '+90 342 XXX XX XX',
-    images: ['https://picsum.photos/400/300?random=emergency1'],
+    features: ['Su', 'Tuvalet', 'İlk Yardım', 'Park Yeri', 'Açık Alan'],
+    contactPhone: '+90 342 111 22 33',
+    image_url: 'https://picsum.photos/400/300?random=31',
+    images: [
+      'https://picsum.photos/400/300?random=31',
+      'https://picsum.photos/400/300?random=32',
+    ],
   },
   {
     id: '2',
-    name: 'Yenişehir Spor Kompleksi',
-    description: 'Kapalı ve açık alan, acil durum için hazır',
-    latitude: 37.0700,
-    longitude: 37.3900,
-    address: 'Yenişehir Mahallesi, Spor Kompleksi, Gaziantep',
+    name: 'Şehitkamil Spor Kompleksi',
+    description:
+      'Kapalı spor salonu. Kötü hava koşullarında sığınak olarak kullanılabilir. Geniş kapasite ve modern tesisler.',
+    address: 'Spor Mahallesi, Spor Caddesi No:20, Şehitkamil/Gaziantep',
+    latitude: 37.0630,
+    longitude: 37.3800,
     capacity: 3000,
-    features: ['Kapalı Alan', 'Açık Alan', 'Park Yeri', 'Tuvalet', 'Su'],
-    distance: 1.2,
-    status: 'active',
-    images: ['https://picsum.photos/400/300?random=emergency2'],
+    features: ['Su', 'Tuvalet', 'İlk Yardım', 'Sığınak', 'Park Yeri', 'Kapalı Alan'],
+    contactPhone: '+90 342 222 33 44',
+    image_url: 'https://picsum.photos/400/300?random=33',
+    images: [
+      'https://picsum.photos/400/300?random=33',
+      'https://picsum.photos/400/300?random=34',
+    ],
   },
   {
     id: '3',
-    name: 'Güney Mahalle Parkı',
-    description: 'Açık hava toplanma alanı',
-    latitude: 37.0600,
-    longitude: 37.3700,
-    address: 'Güney Mahallesi, Park Alanı, Gaziantep',
+    name: 'Atatürk Parkı Toplanma Alanı',
+    description:
+      'Park alanı, açık hava toplanma noktası. Geniş yeşil alan ve temel ihtiyaçlar için tesisler mevcuttur.',
+    address: 'Merkez Mahalle, Atatürk Parkı, Şehitkamil/Gaziantep',
+    latitude: 37.0650,
+    longitude: 37.3820,
     capacity: 2000,
-    features: ['Açık Alan', 'Park Yeri', 'Tuvalet'],
-    distance: 1.8,
-    status: 'active',
-    images: ['https://picsum.photos/400/300?random=emergency3'],
+    features: ['Su', 'Tuvalet', 'Park Yeri', 'Açık Alan', 'Yeşil Alan'],
+    contactPhone: '+90 342 333 44 55',
+    image_url: 'https://picsum.photos/400/300?random=35',
   },
   {
     id: '4',
-    name: 'Kuzey Mahalle Kültür Merkezi',
-    description: 'Kapalı toplanma alanı, acil durum için kullanılabilir',
-    latitude: 37.0750,
-    longitude: 37.3950,
-    address: 'Kuzey Mahallesi, Kültür Merkezi, Gaziantep',
+    name: 'Yenişehir İlkokulu',
+    description:
+      'Okul binası, acil durumlarda toplanma ve sığınma alanı olarak kullanılabilir. Geniş bahçe ve kapalı alanlar.',
+    address: 'Yenişehir Mahallesi, Eğitim Caddesi No:15, Şehitkamil/Gaziantep',
+    latitude: 37.0670,
+    longitude: 37.3840,
     capacity: 1500,
-    features: ['Kapalı Alan', 'Park Yeri', 'Tuvalet', 'İlk Yardım'],
-    distance: 2.1,
-    status: 'active',
-    contactPhone: '+90 342 XXX XX XX',
-    images: ['https://picsum.photos/400/300?random=emergency4'],
+    features: ['Su', 'Tuvalet', 'İlk Yardım', 'Sığınak', 'Park Yeri', 'Kapalı Alan'],
+    contactPhone: '+90 342 444 55 66',
+    image_url: 'https://picsum.photos/400/300?random=36',
   },
   {
     id: '5',
-    name: 'Doğu Mahalle Okul Bahçesi',
-    description: 'Geçici toplanma alanı, okul bahçesi',
-    latitude: 37.0550,
-    longitude: 37.3750,
-    address: 'Doğu Mahallesi, İlkokul Bahçesi, Gaziantep',
+    name: 'Fatih Mahallesi Toplanma Alanı',
+    description:
+      'Mahalle toplanma alanı. Açık alan ve temel ihtiyaçlar için tesisler.',
+    address: 'Fatih Mahallesi, Fatih Caddesi, Şehitkamil/Gaziantep',
+    latitude: 37.0610,
+    longitude: 37.3840,
     capacity: 1000,
-    features: ['Açık Alan', 'Park Yeri', 'Tuvalet'],
-    distance: 2.5,
-    status: 'temporary',
-    images: ['https://picsum.photos/400/300?random=emergency5'],
+    features: ['Su', 'Tuvalet', 'Park Yeri', 'Açık Alan'],
+    contactPhone: '+90 342 555 66 77',
+    image_url: 'https://picsum.photos/400/300?random=37',
+  },
+  {
+    id: '6',
+    name: 'Şehitkamil Kültür Merkezi',
+    description:
+      'Kültür merkezi binası. Kapalı alan ve geniş salonlar. Kötü hava koşullarında ideal sığınak.',
+    address: 'Kültür Mahallesi, Sanat Caddesi No:1, Şehitkamil/Gaziantep',
+    latitude: 37.0630,
+    longitude: 37.3860,
+    capacity: 2500,
+    features: ['Su', 'Tuvalet', 'İlk Yardım', 'Sığınak', 'Park Yeri', 'Kapalı Alan', 'Geniş Salon'],
+    contactPhone: '+90 342 666 77 88',
+    image_url: 'https://picsum.photos/400/300?random=38',
+    images: [
+      'https://picsum.photos/400/300?random=38',
+      'https://picsum.photos/400/300?random=39',
+    ],
+  },
+  {
+    id: '7',
+    name: 'Belediye Meydanı Toplanma Alanı',
+    description:
+      'Belediye binası önü geniş meydan. Merkezi konum ve kolay erişim.',
+    address: 'Belediye Mahallesi, Belediye Caddesi, Şehitkamil/Gaziantep',
+    latitude: 37.0594,
+    longitude: 37.3825,
+    capacity: 3000,
+    features: ['Su', 'Tuvalet', 'İlk Yardım', 'Park Yeri', 'Açık Alan', 'Merkezi Konum'],
+    contactPhone: '+90 342 777 88 99',
+    image_url: 'https://picsum.photos/400/300?random=40',
+  },
+  {
+    id: '8',
+    name: 'Güvenlik Mahallesi Toplanma Alanı',
+    description:
+      'Mahalle toplanma alanı. Açık alan ve temel ihtiyaçlar.',
+    address: 'Güvenlik Mahallesi, Güvenlik Caddesi, Şehitkamil/Gaziantep',
+    latitude: 37.0580,
+    longitude: 37.3810,
+    capacity: 1200,
+    features: ['Su', 'Tuvalet', 'Park Yeri', 'Açık Alan'],
+    contactPhone: '+90 342 888 99 00',
+    image_url: 'https://picsum.photos/400/300?random=41',
   },
 ];
 

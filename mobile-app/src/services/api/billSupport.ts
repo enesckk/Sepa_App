@@ -4,7 +4,7 @@
  */
 
 import { apiClient, API_ENDPOINTS } from './index';
-import { BillSupport, CreateBillSupportRequest, PaginationParams } from './types';
+import { BillSupport, CreateBillSupportRequest, SupportBillRequest, BillSupportTransaction, PaginationParams } from './types';
 import { parseApiError } from '../../utils/errorHandler';
 
 /**
@@ -172,6 +172,93 @@ export const getMyBillSupports = async (params?: GetBillSupportsParams): Promise
 };
 
 /**
+ * Get public bill supports (for support tab)
+ * @param params Query parameters
+ * @returns Public bill supports list with pagination info
+ * @throws ApiError if request fails
+ */
+export const getPublicBillSupports = async (params?: GetBillSupportsParams): Promise<GetBillSupportsResponse> => {
+  try {
+    const queryParams: Record<string, string> = {};
+    
+    if (params?.bill_type) {
+      queryParams.bill_type = params.bill_type;
+    }
+    if (params?.status) {
+      queryParams.status = params.status;
+    }
+    if (params?.search) {
+      queryParams.search = params.search;
+    }
+    if (params?.limit) {
+      queryParams.limit = params.limit.toString();
+    }
+    if (params?.offset) {
+      queryParams.offset = params.offset.toString();
+    }
+    if (params?.sort) {
+      queryParams.sort = params.sort;
+    }
+    if (params?.order) {
+      queryParams.order = params.order;
+    }
+
+    const response = await apiClient.get<GetBillSupportsResponse>(
+      API_ENDPOINTS.BILLS.PUBLIC,
+      { params: queryParams }
+    );
+
+    if (__DEV__) {
+      console.log('[BillSupportService] Public bill supports fetched:', response.billSupports?.length || 0);
+    }
+
+    return {
+      billSupports: response.billSupports || [],
+      total: response.total || 0,
+      limit: response.limit || 50,
+      offset: response.offset || 0,
+    };
+  } catch (error) {
+    const apiError = parseApiError(error);
+    if (__DEV__) {
+      console.error('[BillSupportService] Get public bill supports error:', apiError);
+    }
+    throw apiError;
+  }
+};
+
+/**
+ * Support a bill (contribute money)
+ * @param billSupportId Bill support ID
+ * @param data Support data (amount, payment_method, notes)
+ * @returns Created transaction
+ * @throws ApiError if request fails
+ */
+export const supportBill = async (
+  billSupportId: string,
+  data: SupportBillRequest
+): Promise<BillSupportTransaction> => {
+  try {
+    const response = await apiClient.post<{ transaction: BillSupportTransaction }>(
+      API_ENDPOINTS.BILLS.SUPPORT(billSupportId),
+      data
+    );
+
+    if (__DEV__) {
+      console.log('[BillSupportService] Bill supported:', response.transaction?.id);
+    }
+
+    return response.transaction;
+  } catch (error) {
+    const apiError = parseApiError(error);
+    if (__DEV__) {
+      console.error('[BillSupportService] Support bill error:', apiError);
+    }
+    throw apiError;
+  }
+};
+
+/**
  * Bill support service object with all bill support functions
  */
 export const billSupportService = {
@@ -179,6 +266,8 @@ export const billSupportService = {
   getBillSupports,
   getBillSupportById,
   getMyBillSupports,
+  getPublicBillSupports,
+  supportBill,
 };
 
 export default billSupportService;

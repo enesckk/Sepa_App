@@ -224,6 +224,9 @@ export interface BillSupport {
   admin_response?: string;
   admin_response_date?: string;
   reference_number?: string;
+  supported_amount?: number;
+  supported_by_count?: number;
+  is_public?: boolean;
   created_at: string;
   updated_at?: string;
   user?: {
@@ -233,12 +236,34 @@ export interface BillSupport {
     phone?: string;
     mahalle?: string;
   };
+  transactions?: BillSupportTransaction[];
+}
+
+export interface BillSupportTransaction {
+  id: string;
+  bill_support_id: string;
+  supporter_id: string;
+  amount: number;
+  payment_method: 'golbucks' | 'direct' | 'other';
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  notes?: string;
+  created_at: string;
+  supporter?: {
+    id: string;
+    name: string;
+  };
 }
 
 export interface CreateBillSupportRequest {
   bill_type: 'electricity' | 'water' | 'gas' | 'internet' | 'phone' | 'other';
   amount: number;
   description?: string;
+}
+
+export interface SupportBillRequest {
+  amount: number;
+  payment_method?: 'golbucks' | 'direct' | 'other';
+  notes?: string;
 }
 
 /**

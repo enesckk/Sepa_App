@@ -148,8 +148,19 @@ const registerForEventEndpoint = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.userId;
+    const { first_name, last_name, tc_no, phone, email, notes } = req.body;
 
-    const result = await registerForEvent(userId, id);
+    // Personal information (optional for some events, required for trips)
+    const personalInfo = {
+      first_name: first_name || null,
+      last_name: last_name || null,
+      tc_no: tc_no || null,
+      phone: phone || null,
+      email: email || null,
+      notes: notes || null,
+    };
+
+    const result = await registerForEvent(userId, id, personalInfo);
 
     res.status(201).json({
       success: true,

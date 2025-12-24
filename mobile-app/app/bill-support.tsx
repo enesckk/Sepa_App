@@ -17,8 +17,9 @@ import { TabBar, TabType } from '../src/components/TabBar';
 import { SubmitButton } from '../src/components/SubmitButton';
 import { SuccessSnackbar } from '../src/components/SuccessSnackbar';
 import { Colors } from '../src/constants/colors';
-import { createBillSupport, getBillSupports, BillSupport } from '../src/services/api';
+import { createBillSupport, getPublicBillSupports, supportBill, BillSupport } from '../src/services/api';
 import { parseApiError } from '../src/utils/errorHandler';
+import { useGolbucks } from '../src/contexts';
 
 const getBillTypeDisplay = (type: string): string => {
   const typeMap: Record<string, string> = {
@@ -51,6 +52,7 @@ const getStatusDisplay = (status: string): { text: string; color: string } => {
 
 export default function BillSupportScreen() {
   const router = useRouter();
+  const { golbucks } = useGolbucks();
   const [activeTab, setActiveTab] = useState<TabType>('leave');
   const [bills, setBills] = useState<BillSupport[]>([]);
   const [loading, setLoading] = useState(false);
@@ -62,6 +64,7 @@ export default function BillSupportScreen() {
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [supportingBillId, setSupportingBillId] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab === 'support') {
@@ -72,7 +75,7 @@ export default function BillSupportScreen() {
   const loadBills = async () => {
     try {
       setLoading(true);
-      const response = await getBillSupports({
+      const response = await getPublicBillSupports({
         status: 'pending',
         limit: 50,
         offset: 0,
@@ -87,6 +90,86 @@ export default function BillSupportScreen() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const handleSupportBill = async (bill: BillSupport) => {
+    const remainingAmount = bill.amount - (bill.supported_amount || 0);
+    
+    if (remainingAmount <= 0) {
+      Alert.alert('Bilgi', 'Bu fatura zaten tamamen desteklenmiş');
+      return;
+    }
+
+    Alert.prompt(
+      'Faturayı Destekle',
+      `Kalan tutar: ${remainingAmount.toFixed(2)} ₺\n\nDesteklemek istediğiniz tutarı girin:`,
+      [
+        {
+          text: 'İptal',
+          style: 'cancel',
+        },
+        {
+          text: 'Gölbucks ile',
+          onPress: async (amountStr) => {
+            if (!amountStr) return;
+            const supportAmount = parseFloat(amountStr);
+            if (isNaN(supportAmount) || supportAmount <= 0) {
+              Alert.alert('Hata', 'Geçerli bir tutar girin');
+              return;
+            }
+            if (supportAmount > remainingAmount) {
+              Alert.alert('Hata', `Maksimum ${remainingAmount.toFixed(2)} ₺ destekleyebilirsiniz`);
+              return;
+            }
+            const golbucksNeeded = Math.ceil(supportAmount);
+            if (golbucks < golbucksNeeded) {
+              Alert.alert('Yetersiz Gölbucks', `${golbucksNeeded} Gölbucks gerekiyor, sizde ${golbucks} var`);
+              return;
+            }
+            await performSupport(bill.id, supportAmount, 'golbucks');
+          },
+        },
+        {
+          text: 'Destekle',
+          onPress: async (amountStr) => {
+            if (!amountStr) return;
+            const supportAmount = parseFloat(amountStr);
+            if (isNaN(supportAmount) || supportAmount <= 0) {
+              Alert.alert('Hata', 'Geçerli bir tutar girin');
+              return;
+            }
+            if (supportAmount > remainingAmount) {
+              Alert.alert('Hata', `Maksimum ${remainingAmount.toFixed(2)} ₺ destekleyebilirsiniz`);
+              return;
+            }
+            await performSupport(bill.id, supportAmount, 'direct');
+          },
+        },
+      ],
+      'plain-text',
+      remainingAmount.toFixed(2),
+      'decimal-pad'
+    );
+  };
+
+  const performSupport = async (billId: string, amount: number, paymentMethod: 'golbucks' | 'direct') => {
+    try {
+      setSupportingBillId(billId);
+      await supportBill(billId, {
+        amount,
+        payment_method: paymentMethod,
+      });
+      Alert.alert('Başarılı', `${amount.toFixed(2)} ₺ tutarında destek sağladınız. Teşekkürler!`);
+      loadBills();
+    } catch (err) {
+      const apiError = parseApiError(err);
+      Alert.alert('Hata', apiError.message || 'Destek sağlanırken bir hata oluştu');
+      if (__DEV__) {
+        console.error('[BillSupportScreen] Support error:', apiError);
+      }
+    } finally {
+      setSupportingBillId(null);
     }
   };
 
@@ -249,6 +332,9 @@ export default function BillSupportScreen() {
                   month: '2-digit',
                   year: 'numeric',
                 });
+                const remainingAmount = bill.amount - (bill.supported_amount || 0);
+                const isFullySupported = remainingAmount <= 0;
+                const isSupporting = supportingBillId === bill.id;
                 
                 return (
                   <View key={bill.id} style={styles.billCard}>
@@ -257,6 +343,9 @@ export default function BillSupportScreen() {
                         <Text style={styles.billType}>{getBillTypeDisplay(bill.bill_type)}</Text>
                         {bill.reference_number && (
                           <Text style={styles.billRef}>Ref: {bill.reference_number}</Text>
+                        )}
+                        {bill.user?.name && (
+                          <Text style={styles.billUser}>{bill.user.name}</Text>
                         )}
                       </View>
                       <View style={styles.amountContainer}>
@@ -268,13 +357,48 @@ export default function BillSupportScreen() {
                         {bill.description}
                       </Text>
                     )}
-                    <View style={styles.billFooter}>
-                      <View style={[styles.statusBadge, { backgroundColor: statusDisplay.color + '20' }]}>
-                        <Text style={[styles.statusText, { color: statusDisplay.color }]}>
-                          {statusDisplay.text}
+                    {bill.supported_amount && bill.supported_amount > 0 && (
+                      <View style={styles.supportInfo}>
+                        <View style={styles.progressBar}>
+                          <View 
+                            style={[
+                              styles.progressFill, 
+                              { width: `${(bill.supported_amount / bill.amount) * 100}%` }
+                            ]} 
+                          />
+                        </View>
+                        <Text style={styles.supportText}>
+                          {bill.supported_amount.toFixed(2)} ₺ desteklendi ({bill.supported_by_count || 0} kişi)
                         </Text>
+                        {remainingAmount > 0 && (
+                          <Text style={styles.remainingText}>
+                            Kalan: {remainingAmount.toFixed(2)} ₺
+                          </Text>
+                        )}
                       </View>
-                      <Text style={styles.billDate}>{formattedDate}</Text>
+                    )}
+                    <View style={styles.billFooter}>
+                      <View style={styles.footerLeft}>
+                        <View style={[styles.statusBadge, { backgroundColor: statusDisplay.color + '20' }]}>
+                          <Text style={[styles.statusText, { color: statusDisplay.color }]}>
+                            {statusDisplay.text}
+                          </Text>
+                        </View>
+                        <Text style={styles.billDate}>{formattedDate}</Text>
+                      </View>
+                      {!isFullySupported && (
+                        <Pressable
+                          style={[styles.supportButton, isSupporting && styles.supportButtonDisabled]}
+                          onPress={() => handleSupportBill(bill)}
+                          disabled={isSupporting}
+                        >
+                          {isSupporting ? (
+                            <ActivityIndicator size="small" color={Colors.surface} />
+                          ) : (
+                            <Text style={styles.supportButtonText}>Destekle</Text>
+                          )}
+                        </Pressable>
+                      )}
                     </View>
                   </View>
                 );
@@ -460,6 +584,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 12,
+  },
+  footerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  supportInfo: {
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: Colors.border,
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: Colors.green,
+    borderRadius: 3,
+  },
+  supportText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+  remainingText: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  billUser: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  supportButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+  supportButtonDisabled: {
+    opacity: 0.6,
+  },
+  supportButtonText: {
+    color: Colors.surface,
+    fontSize: 14,
+    fontWeight: '600',
   },
   statusBadge: {
     paddingHorizontal: 10,

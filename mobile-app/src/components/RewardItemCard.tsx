@@ -55,7 +55,7 @@ export const RewardItemCard: React.FC<RewardItemCardProps> = ({
   };
 
   const canAfford = userGolbucks >= reward.points;
-  const isOutOfStock = reward.stock !== undefined && reward.stock === 0;
+  const isOutOfStock = reward.stock !== undefined && reward.stock !== null && reward.stock <= 0;
 
   return (
     <Pressable

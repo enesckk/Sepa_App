@@ -68,7 +68,7 @@ export const RewardDetailModal: React.FC<RewardDetailModalProps> = ({
   }));
 
   const handleConfirm = () => {
-    if (reward && userGolbucks >= reward.price) {
+    if (reward && userGolbucks >= reward.points) {
       buttonScale.value = withSpring(0.95, { damping: 10, stiffness: 200 });
       setTimeout(() => {
         buttonScale.value = withSpring(1, { damping: 10, stiffness: 200 });

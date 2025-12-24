@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   StyleSheet,
-  ScrollView,
+  FlatList,
   Text,
   Platform,
 } from 'react-native';
@@ -58,7 +58,7 @@ export default function EventsScreen() {
     if (event && !registeredEvents.has(eventId)) {
       setRegisteredEvents((prev) => new Set([...prev, eventId]));
       setShowQRCode(true);
-      setRewardAmount(event.golbucksReward);
+      setRewardAmount(event.golbucksReward || event.golbucks_reward || 0);
       setShowRewardAnimation(true);
     }
   };
@@ -85,29 +85,37 @@ export default function EventsScreen() {
         onCategoryChange={setSelectedCategory}
       />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {filteredEvents.length === 0 ? (
+      <FlatList
+        data={filteredEvents}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <EventCard
+            event={item}
+            onPress={handleEventPress}
+            onRegister={handleRegister}
+            isRegistered={registeredEvents.has(item.id)}
+          />
+        )}
+        ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
               Bu kriterlere uygun etkinlik bulunamadı
             </Text>
           </View>
-        ) : (
-          filteredEvents.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              onPress={handleEventPress}
-              onRegister={handleRegister}
-              isRegistered={registeredEvents.has(event.id)}
-            />
-          ))
-        )}
-      </ScrollView>
+        }
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        initialNumToRender={10}
+        windowSize={10}
+        getItemLayout={(data, index) => ({
+          length: 200,
+          offset: 200 * index,
+          index,
+        })}
+      />
 
       <EventDetailModal
         visible={modalVisible}
@@ -131,9 +139,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-  },
-  scrollView: {
-    flex: 1,
   },
   scrollContent: {
     paddingVertical: 12,

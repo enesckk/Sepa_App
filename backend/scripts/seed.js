@@ -1,0 +1,36 @@
+/**
+ * Seed script to populate database with initial data
+ * Run with: node scripts/seed.js
+ */
+
+require('dotenv').config();
+const { sequelize } = require('../src/config/database');
+const { seedRewards } = require('../src/services/seedRewards');
+const { seedSurveys } = require('../src/services/seedSurveys');
+
+async function runSeeds() {
+  try {
+    console.log('🔄 Connecting to database...');
+    await sequelize.authenticate();
+    console.log('✅ Database connected');
+
+    console.log('\n🌱 Starting seed process...\n');
+
+    // Seed rewards
+    console.log('📦 Seeding rewards...');
+    await seedRewards();
+    
+    // Seed surveys
+    console.log('\n📋 Seeding surveys...');
+    await seedSurveys();
+
+    console.log('\n✅ All seeds completed successfully!');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error running seeds:', error);
+    process.exit(1);
+  }
+}
+
+runSeeds();
+

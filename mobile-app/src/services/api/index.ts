@@ -96,6 +96,8 @@ export {
   getBillSupports,
   getBillSupportById,
   getMyBillSupports,
+  getPublicBillSupports,
+  supportBill,
   billSupportService,
   type GetBillSupportsParams,
   type GetBillSupportsResponse,

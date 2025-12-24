@@ -56,11 +56,32 @@ export const getSurveys = async (): Promise<GetSurveysResponse> => {
     );
     // Backend returns { success: true, data: { surveys: [...] } }
     // apiClient.get unwraps to { surveys: [...] }
-    return { surveys: response.surveys || [] };
+    // Handle both response formats
+    if (response && typeof response === 'object') {
+      if ('surveys' in response) {
+        return { surveys: Array.isArray(response.surveys) ? response.surveys : [] };
+      }
+      // If response is already an array (shouldn't happen but handle it)
+      if (Array.isArray(response)) {
+        return { surveys: response };
+      }
+    }
+    return { surveys: [] };
   } catch (error) {
     const apiError = parseApiError(error);
     if (__DEV__) {
-      console.error('[SurveysService] Get surveys error:', apiError);
+      console.error('[SurveysService] Get surveys error:', {
+        message: apiError.message,
+        statusCode: apiError.statusCode,
+        error: apiError.error,
+        originalError: apiError.originalError?.message,
+      });
+    }
+    // In dev mode, return empty array for better UX (don't crash the app)
+    // In production, throw the error so user knows something went wrong
+    if (__DEV__) {
+      console.warn('[SurveysService] Returning empty surveys list due to error');
+      return { surveys: [] };
     }
     throw apiError;
   }
@@ -79,7 +100,17 @@ export const getSurveyById = async (id: string): Promise<Survey> => {
     );
     // Backend returns { success: true, data: { survey: {...} } }
     // apiClient.get unwraps to { survey: {...} }
-    return response.survey || response as any;
+    // Handle both response formats
+    if (response && typeof response === 'object') {
+      if ('survey' in response) {
+        return response.survey;
+      }
+      // If response is the survey itself
+      if ('id' in response && 'title' in response) {
+        return response as Survey;
+      }
+    }
+    throw new Error('Invalid survey response format');
   } catch (error) {
     const apiError = parseApiError(error);
     if (__DEV__) {

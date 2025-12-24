@@ -3,6 +3,7 @@ import {
   View,
   StyleSheet,
   ScrollView,
+  FlatList,
   Text,
   Pressable,
   Platform,
@@ -160,44 +161,30 @@ export default function MyApplicationsScreen() {
       </ScrollView>
 
       {/* Applications List */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-            <Text style={styles.loadingText}>Yükleniyor...</Text>
-          </View>
-        ) : error ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Hata</Text>
-            <Text style={styles.emptySubtext}>{error}</Text>
-            <Pressable
-              style={styles.retryButton}
-              onPress={() => {
-                setLoading(true);
-                loadApplications();
-              }}
-            >
-              <Text style={styles.retryButtonText}>Tekrar Dene</Text>
-            </Pressable>
-          </View>
-        ) : filteredApplications.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Başvuru bulunamadı</Text>
-            <Text style={styles.emptySubtext}>
-              {selectedFilter === 'all'
-                ? 'Henüz başvuru yapmadınız'
-                : 'Bu filtreye uygun başvuru bulunamadı'}
-            </Text>
-          </View>
-        ) : (
-          filteredApplications.map((app) => {
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={styles.loadingText}>Yükleniyor...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Hata</Text>
+          <Text style={styles.emptySubtext}>{error}</Text>
+          <Pressable
+            style={styles.retryButton}
+            onPress={() => {
+              setLoading(true);
+              loadApplications();
+            }}
+          >
+            <Text style={styles.retryButtonText}>Tekrar Dene</Text>
+          </Pressable>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredApplications}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item: app }) => {
             const statusDisplay = getStatusDisplay(app.status);
             const formattedDate = new Date(app.created_at).toLocaleDateString('tr-TR', {
               day: '2-digit',
@@ -207,7 +194,6 @@ export default function MyApplicationsScreen() {
             
             return (
               <Pressable
-                key={app.id}
                 style={styles.applicationCard}
                 onPress={() => handleApplicationPress(app)}
               >
@@ -249,9 +235,29 @@ export default function MyApplicationsScreen() {
                 </View>
               </Pressable>
             );
-          })
-        )}
-      </ScrollView>
+          }}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Başvuru bulunamadı</Text>
+              <Text style={styles.emptySubtext}>
+                {selectedFilter === 'all'
+                  ? 'Henüz başvuru yapmadınız'
+                  : 'Bu filtreye uygun başvuru bulunamadı'}
+              </Text>
+            </View>
+          }
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          updateCellsBatchingPeriod={50}
+          initialNumToRender={10}
+          windowSize={10}
+        />
+      )}
     </SafeAreaView>
   );
 }

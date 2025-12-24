@@ -11,13 +11,31 @@ import Constants from 'expo-constants';
 export const API_CONFIG = {
   /**
    * Base URL for API requests
-   * Development: http://localhost:3000/api
+   * Development: Uses Expo's debuggerHost or localhost
    * Production: https://api.sehitkamil.bel.tr/api
+   * 
+   * Note: For physical devices, use your computer's IP address instead of localhost
+   * Example: http://192.168.1.100:4000/api
    */
-  BASE_URL: 
-    __DEV__ 
-      ? Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000/api'
-      : Constants.expoConfig?.extra?.apiUrl || 'https://api.sehitkamil.bel.tr/api',
+  BASE_URL: (() => {
+    if (!__DEV__) {
+      return Constants.expoConfig?.extra?.apiUrl || 'https://api.sehitkamil.bel.tr/api';
+    }
+    
+    // Use configured API URL if available
+    if (Constants.expoConfig?.extra?.apiUrl) {
+      return Constants.expoConfig.extra.apiUrl;
+    }
+    
+    // Try to use Expo's debuggerHost for better device compatibility
+    const debuggerHost = Constants.expoConfig?.hostUri?.split(':').shift();
+    if (debuggerHost) {
+      return `http://${debuggerHost}:4000/api`;
+    }
+    
+    // Fallback to localhost (works for iOS simulator and Android emulator)
+    return 'http://localhost:4000/api';
+  })(),
 
   /**
    * Request timeout in milliseconds
@@ -112,6 +130,7 @@ export const API_ENDPOINTS = {
   BILLS: {
     LIST: '/bill-supports',
     CREATE: '/bill-supports',
+    PUBLIC: '/bill-supports/public',
     DETAIL: (id: string) => `/bill-supports/${id}`,
     SUPPORT: (id: string) => `/bill-supports/${id}/support`,
     MY_BILLS: '/bill-supports/my',

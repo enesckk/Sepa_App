@@ -46,11 +46,11 @@ export const createBillSupport = async (
     const formData = new FormData();
 
     // Add text fields
-    formData.append('first_name', data.first_name);
-    formData.append('last_name', data.last_name);
-    formData.append('subscriber_number', data.subscriber_number);
+    formData.append('bill_type', data.bill_type);
     formData.append('amount', data.amount.toString());
-    formData.append('type', data.type);
+    if (data.description) {
+      formData.append('description', data.description);
+    }
 
     // Add image if provided
     if (imageUri) {

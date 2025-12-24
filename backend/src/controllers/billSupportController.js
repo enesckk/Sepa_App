@@ -2,6 +2,8 @@ const {
   createBillSupport,
   getUserBillSupports,
   getBillSupportById,
+  getPublicBillSupports,
+  supportBillSupport,
 } = require('../services/billSupportService');
 const path = require('path');
 
@@ -100,9 +102,74 @@ const getBillSupportByIdEndpoint = async (req, res, next) => {
   }
 };
 
+/**
+ * Get public bill supports (for support tab)
+ * GET /api/bill-supports/public
+ */
+const getPublicBillSupportsEndpoint = async (req, res, next) => {
+  try {
+    const filters = {
+      bill_type: req.query.bill_type,
+      status: req.query.status || 'pending',
+      search: req.query.search,
+      limit: req.query.limit,
+      offset: req.query.offset,
+      sort: req.query.sort,
+      order: req.query.order,
+    };
+
+    const result = await getPublicBillSupports(filters);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Support a bill
+ * POST /api/bill-supports/:id/support
+ */
+const supportBillSupportEndpoint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const supporterId = req.userId;
+    const { amount, payment_method = 'direct', notes } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Support amount is required and must be greater than 0',
+      });
+    }
+
+    // supportBillSupport now handles golbucks deduction internally within a transaction
+    const transaction = await supportBillSupport(id, supporterId, {
+      amount,
+      payment_method,
+      notes,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Bill supported successfully',
+      data: {
+        transaction,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createBillSupport: createBillSupportEndpoint,
   getUserBillSupports: getUserBillSupportsEndpoint,
   getBillSupportById: getBillSupportByIdEndpoint,
+  getPublicBillSupports: getPublicBillSupportsEndpoint,
+  supportBillSupport: supportBillSupportEndpoint,
 };
 

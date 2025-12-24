@@ -80,6 +80,116 @@ const seedRewards = async () => {
         partner_name: 'Şehitkamil Belediyesi',
         is_active: true,
       },
+      {
+        title: 'Bisiklet',
+        description: 'Şehitkamil Belediyesi özel tasarım bisiklet',
+        category: 'physical',
+        points: 2000,
+        stock: 5,
+        validity_days: 180,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Kitap Seti',
+        description: 'Eğitici ve eğlenceli kitap seti (5 kitap)',
+        category: 'physical',
+        points: 300,
+        stock: 20,
+        validity_days: 90,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Futbol Topu',
+        description: 'Kaliteli futbol topu',
+        category: 'physical',
+        points: 250,
+        stock: 15,
+        validity_days: 90,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Spor Ayakkabısı',
+        description: 'Rahat ve dayanıklı spor ayakkabısı',
+        category: 'physical',
+        points: 800,
+        stock: 10,
+        validity_days: 120,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Basketbol Topu',
+        description: 'Kaliteli basketbol topu',
+        category: 'physical',
+        points: 200,
+        stock: 15,
+        validity_days: 90,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Voleybol Topu',
+        description: 'Kaliteli voleybol topu',
+        category: 'physical',
+        points: 180,
+        stock: 15,
+        validity_days: 90,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Çocuk Bisikleti',
+        description: 'Güvenli çocuk bisikleti',
+        category: 'physical',
+        points: 1200,
+        stock: 8,
+        validity_days: 180,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Spor Çantası',
+        description: 'Pratik ve dayanıklı spor çantası',
+        category: 'physical',
+        points: 150,
+        stock: 25,
+        validity_days: 90,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Su Matarası',
+        description: 'Çevre dostu su matarası',
+        category: 'physical',
+        points: 80,
+        stock: 50,
+        validity_days: 90,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Havlu Seti',
+        description: 'Kaliteli havlu seti (2 adet)',
+        category: 'physical',
+        points: 120,
+        stock: 30,
+        validity_days: 90,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
+      {
+        title: 'Powerbank',
+        description: '10000mAh güç bankası',
+        category: 'physical',
+        points: 400,
+        stock: 12,
+        validity_days: 90,
+        partner_name: 'Şehitkamil Belediyesi',
+        is_active: true,
+      },
       // Spor Salonu
       {
         title: '1 Aylık Spor Salonu Üyeliği',
@@ -117,7 +227,18 @@ const seedRewards = async () => {
     // Check if rewards already exist
     const existingCount = await Reward.count();
     if (existingCount > 0) {
-      console.log('ℹ️  Rewards already exist, skipping seed');
+      console.log('ℹ️  Rewards already exist, checking for missing rewards...');
+      
+      // Check which rewards are missing and add them
+      const existingTitles = (await Reward.findAll({ attributes: ['title'] })).map(r => r.title);
+      const newRewards = rewards.filter(r => !existingTitles.includes(r.title));
+      
+      if (newRewards.length > 0) {
+        await Reward.bulkCreate(newRewards);
+        console.log(`✅ ${newRewards.length} new rewards added successfully`);
+      } else {
+        console.log('ℹ️  All rewards already exist');
+      }
       return;
     }
 

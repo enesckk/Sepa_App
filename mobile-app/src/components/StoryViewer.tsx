@@ -26,7 +26,7 @@ import { Colors } from '../constants/colors';
 import { Story, mockStories } from '../services/mockData';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const STORY_DURATION = 5000; // 5 saniye
+const STORY_DURATION = 4000; // 4 saniye (daha hızlı geçiş)
 const SWIPE_DOWN_THRESHOLD = 100; // Swipe down için minimum mesafe
 
 interface StoryViewerProps {
@@ -51,6 +51,7 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const isLongPressingRef = useRef(false);
   const handleNextRef = useRef<(() => void) | null>(null);
   const handlePreviousRef = useRef<(() => void) | null>(null);
+  const autoNextTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // initialStoryIndex değiştiğinde currentIndex'i güncelle
   useEffect(() => {
@@ -67,6 +68,11 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   const currentStory = mockStories[currentIndex];
 
   const handleClose = useCallback(() => {
+    // Timer'ı temizle
+    if (autoNextTimerRef.current) {
+      clearTimeout(autoNextTimerRef.current);
+      autoNextTimerRef.current = null;
+    }
     cancelAnimation(progress);
     cancelAnimation(translateY);
     cancelAnimation(scale);
@@ -85,12 +91,13 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     progress.value = 0;
     
     if (currentIndex < mockStories.length - 1) {
-      // Fade out animasyonu
-      opacity.value = withTiming(0, { duration: 150 }, () => {
+      // Hızlı geçiş - fade animasyonu kısa
+      opacity.value = withTiming(0, { duration: 100 }, () => {
         runOnJS(setCurrentIndex)(prev => prev + 1);
-        opacity.value = withTiming(1, { duration: 150 });
+        opacity.value = withTiming(1, { duration: 100 });
       });
     } else {
+      // Son story bitince modal'ı kapat
       handleClose();
     }
   }, [currentIndex, handleClose, progress, opacity]);
@@ -122,6 +129,11 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     if (isLongPressingRef.current) return;
     setIsPaused(true);
     cancelAnimation(progress);
+    // Timer'ı durdur
+    if (autoNextTimerRef.current) {
+      clearTimeout(autoNextTimerRef.current);
+      autoNextTimerRef.current = null;
+    }
   }, [progress]);
 
   const handleResume = useCallback(() => {
@@ -129,18 +141,32 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     setIsPaused(false);
     const currentProgress = progress.value;
     const remaining = (1 - currentProgress) * STORY_DURATION;
-    progress.value = withTiming(1, { duration: remaining }, (finished) => {
-      if (finished) {
+    
+    // Progress animasyonunu devam ettir
+    progress.value = withTiming(1, { duration: remaining });
+    
+    // Timer'ı yeniden başlat
+    if (autoNextTimerRef.current) {
+      clearTimeout(autoNextTimerRef.current);
+    }
+    autoNextTimerRef.current = setTimeout(() => {
+      if (!isPaused && !isLongPressingRef.current && visible) {
         const nextHandler = handleNextRef.current;
         if (nextHandler) {
-          runOnJS(nextHandler)();
+          nextHandler();
         }
       }
-    });
-  }, [progress]);
+    }, remaining);
+  }, [progress, isPaused, visible]);
 
-  // Progress bar animasyonu
+  // Progress bar animasyonu ve otomatik geçiş
   useEffect(() => {
+    // Önceki timer'ı temizle
+    if (autoNextTimerRef.current) {
+      clearTimeout(autoNextTimerRef.current);
+      autoNextTimerRef.current = null;
+    }
+
     if (!visible || !currentStory) {
       progress.value = 0;
       return;
@@ -155,17 +181,25 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     cancelAnimation(progress);
     progress.value = 0;
     
-    progress.value = withTiming(1, { duration: STORY_DURATION }, (finished) => {
-      if (finished && !isPaused && !isLongPressingRef.current) {
+    // Progress bar animasyonu
+    progress.value = withTiming(1, { duration: STORY_DURATION });
+
+    // Otomatik geçiş timer'ı - kesin çalışması için
+    autoNextTimerRef.current = setTimeout(() => {
+      if (!isPaused && !isLongPressingRef.current && visible) {
         const nextHandler = handleNextRef.current;
         if (nextHandler) {
-          runOnJS(nextHandler)();
+          nextHandler();
         }
       }
-    });
+    }, STORY_DURATION);
 
     return () => {
       cancelAnimation(progress);
+      if (autoNextTimerRef.current) {
+        clearTimeout(autoNextTimerRef.current);
+        autoNextTimerRef.current = null;
+      }
     };
   }, [visible, currentIndex, isPaused, currentStory, progress]);
 

@@ -1,4 +1,8 @@
-// Mock application/issue types
+/**
+ * Mock application issue types data
+ * This file contains the issue types that can be selected when creating an application
+ */
+
 export interface IssueType {
   id: string;
   label: string;
@@ -6,25 +10,30 @@ export interface IssueType {
 }
 
 export const issueTypes: IssueType[] = [
-  { id: 'cleaning', label: 'Temizlik', icon: '🧹' },
-  { id: 'transport', label: 'Ulaşım', icon: '🚌' },
-  { id: 'infrastructure', label: 'Altyapı', icon: '🏗️' },
-  { id: 'parks', label: 'Parklar', icon: '🌳' },
-  { id: 'lighting', label: 'Aydınlatma', icon: '💡' },
-  { id: 'water', label: 'Su', icon: '💧' },
-  { id: 'waste', label: 'Çöp', icon: '🗑️' },
-  { id: 'other', label: 'Diğer', icon: '📋' },
+  {
+    id: 'complaint',
+    label: 'Şikayet',
+    icon: '⚠️',
+  },
+  {
+    id: 'request',
+    label: 'Talep',
+    icon: '📋',
+  },
+  {
+    id: 'marriage',
+    label: 'Nikah Başvurusu',
+    icon: '💍',
+  },
+  {
+    id: 'muhtar_message',
+    label: 'Muhtara Mesaj',
+    icon: '💬',
+  },
+  {
+    id: 'other',
+    label: 'Diğer',
+    icon: '📝',
+  },
 ];
-
-export interface Application {
-  id: string;
-  type: string;
-  description: string;
-  location: string;
-  latitude?: number;
-  longitude?: number;
-  photos: string[];
-  status: 'pending' | 'in_progress' | 'completed';
-  createdAt: string;
-}
 

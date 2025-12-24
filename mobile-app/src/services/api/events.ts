@@ -121,15 +121,32 @@ export const getEventById = async (id: string): Promise<EventDetail> => {
 };
 
 /**
+ * Personal information for event registration
+ */
+export interface EventRegistrationPersonalInfo {
+  first_name?: string;
+  last_name?: string;
+  tc_no?: string;
+  phone?: string;
+  email?: string;
+  notes?: string;
+}
+
+/**
  * Register for an event
  * @param eventId Event ID
+ * @param personalInfo Personal information (optional, required for trips)
  * @returns Registration data with QR code
  * @throws ApiError if request fails
  */
-export const registerForEvent = async (eventId: string): Promise<RegisterEventResponse> => {
+export const registerForEvent = async (
+  eventId: string,
+  personalInfo?: EventRegistrationPersonalInfo
+): Promise<RegisterEventResponse> => {
   try {
     const response = await apiClient.post<RegisterEventResponse>(
-      API_ENDPOINTS.EVENTS.REGISTER(eventId)
+      API_ENDPOINTS.EVENTS.REGISTER(eventId),
+      personalInfo || {}
     );
 
     if (__DEV__) {

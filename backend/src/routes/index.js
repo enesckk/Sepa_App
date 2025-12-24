@@ -73,7 +73,9 @@ router.get('/', (req, res) => {
       billSupports: {
         create: 'POST /api/bill-supports',
         list: 'GET /api/bill-supports',
+        public: 'GET /api/bill-supports/public',
         getById: 'GET /api/bill-supports/:id',
+        support: 'POST /api/bill-supports/:id/support',
       },
       stories: {
         list: 'GET /api/stories',

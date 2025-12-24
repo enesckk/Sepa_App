@@ -66,7 +66,7 @@ export default function RewardDetailScreen() {
       return;
     }
 
-    if (reward.stock !== null && reward.stock <= 0) {
+    if (reward.stock !== undefined && reward.stock !== null && reward.stock <= 0) {
       Alert.alert('Stokta Yok', 'Bu ödül stokta bulunmuyor');
       return;
     }
@@ -129,7 +129,7 @@ export default function RewardDetailScreen() {
   }
 
   const canAfford = golbucks >= reward.points;
-  const isOutOfStock = reward.stock !== null && reward.stock <= 0;
+  const isOutOfStock = reward.stock !== undefined && reward.stock !== null && reward.stock <= 0;
   const validityDate = reward.validity_days
     ? new Date(Date.now() + reward.validity_days * 24 * 60 * 60 * 1000)
     : null;

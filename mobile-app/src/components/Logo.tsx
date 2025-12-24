@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Image, StyleSheet, ImageStyle, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { Colors } from '../constants/colors';
 
 interface LogoProps {
   width?: number;
   height?: number;
   style?: ViewStyle;
-  imageStyle?: ImageStyle;
+  imageStyle?: ViewStyle;
 }
 
 export const Logo: React.FC<LogoProps> = ({
@@ -14,13 +15,13 @@ export const Logo: React.FC<LogoProps> = ({
   style,
   imageStyle,
 }) => {
+  // Logo dosyası henüz eklenmediği için text placeholder kullanıyoruz
+  // Logo dosyası eklendiğinde bu kısım güncellenebilir
   return (
     <View style={[styles.container, { width, height }, style]}>
-      <Image
-        source={require('../../assets/images/sehitkamil-logo.png')}
-        style={[styles.image, { width, height }, imageStyle]}
-        resizeMode="contain"
-      />
+      <View style={[styles.placeholder, { width, height }, imageStyle]}>
+        <Text style={styles.placeholderText}>Şehitkamil</Text>
+      </View>
     </View>
   );
 };
@@ -33,6 +34,20 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  placeholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.primaryLight,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  placeholderText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.primaryDark,
+    letterSpacing: 0.5,
   },
 });
 

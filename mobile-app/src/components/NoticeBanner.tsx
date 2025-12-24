@@ -42,7 +42,7 @@ export const NoticeBanner: React.FC = () => {
           >
             {mockNotices.map((notice, index) => (
               <Text key={index} style={styles.noticeText} numberOfLines={1}>
-                {notice}
+                {notice.message}
               </Text>
             ))}
           </Animated.View>

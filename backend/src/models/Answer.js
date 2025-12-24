@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
-const { User } = require('./User');
-const Question = require('./Question');
 
 const Answer = sequelize.define(
   'Answer',
@@ -58,26 +56,7 @@ const Answer = sequelize.define(
   }
 );
 
-// Associations
-Answer.belongsTo(User, {
-  foreignKey: 'user_id',
-  as: 'user',
-});
-
-Answer.belongsTo(Question, {
-  foreignKey: 'question_id',
-  as: 'question',
-});
-
-User.hasMany(Answer, {
-  foreignKey: 'user_id',
-  as: 'answers',
-});
-
-Question.hasMany(Answer, {
-  foreignKey: 'question_id',
-  as: 'answers',
-});
+// Associations will be set up in models/index.js to avoid circular dependencies
 
 module.exports = Answer;
 

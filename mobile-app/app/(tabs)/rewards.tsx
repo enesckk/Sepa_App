@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   StyleSheet,
-  ScrollView,
+  FlatList,
   Text,
   Platform,
   ActivityIndicator,
@@ -161,43 +161,48 @@ export default function RewardMarketScreen() {
         onCategoryChange={setSelectedCategory}
       />
 
-      <ScrollView
-        style={styles.scrollView}
+      <FlatList
+        data={filteredRewards}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        ListHeaderComponent={<InviteBanner onInvitePress={handleInvitePress} />}
+        renderItem={({ item }) => (
+          <View style={styles.rewardItemWrapper}>
+            <RewardItemCard
+              reward={item}
+              onPress={handleRewardPress}
+              onBuy={handleBuy}
+              userGolbucks={golbucks}
+            />
+          </View>
+        )}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-      >
-        <InviteBanner onInvitePress={handleInvitePress} />
-
-        {loading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={Colors.primary} />
-            <Text style={styles.loadingText}>Yükleniyor...</Text>
-          </View>
-        ) : filteredRewards.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {selectedCategory === 'all'
-                ? 'Henüz ödül bulunmuyor'
-                : 'Bu kategoride ödül bulunamadı'}
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.grid}>
-            {filteredRewards.map((reward) => (
-              <RewardItemCard
-                key={reward.id}
-                reward={reward}
-                onPress={handleRewardPress}
-                onBuy={handleBuy}
-                userGolbucks={golbucks}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={50}
+        initialNumToRender={10}
+        windowSize={10}
+        ListEmptyComponent={
+          loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+              <Text style={styles.loadingText}>Yükleniyor...</Text>
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {selectedCategory === 'all'
+                  ? 'Henüz ödül bulunmuyor'
+                  : 'Bu kategoride ödül bulunmuyor'}
+              </Text>
+            </View>
+          )
+        }
+      />
 
 
       <SuccessConfetti
@@ -219,17 +224,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  scrollView: {
-    flex: 1,
-  },
   scrollContent: {
     paddingBottom: Platform.OS === 'ios' ? 100 : 60,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
+  rewardItemWrapper: {
+    width: '48%',
+    marginBottom: 16,
+    marginHorizontal: '1%',
   },
   loadingContainer: {
     flex: 1,

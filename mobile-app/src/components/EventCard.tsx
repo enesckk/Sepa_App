@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import { OptimizedImage } from './OptimizedImage';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,7 +8,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react-native';
 import { Colors } from '../constants/colors';
-import { Event } from '../services/mockEventsData';
+import { Event } from '../services/api/types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 40;
@@ -80,7 +81,9 @@ export const EventCard: React.FC<EventCardProps> = ({
       onPressOut={handlePressOut}
     >
       <Animated.View style={[styles.card, cardAnimatedStyle]}>
-        <Image source={{ uri: event.image }} style={styles.image} />
+        {event.image_url && (
+          <OptimizedImage source={event.image_url} style={styles.image} contentFit="cover" />
+        )}
         
         <View style={styles.content}>
           <View style={styles.header}>
@@ -89,7 +92,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 {getCategoryLabel(event.category)}
               </Text>
             </View>
-            {event.isFree && (
+            {event.is_free && (
               <View style={styles.freeBadge}>
                 <Text style={styles.freeText}>ÜCRETSİZ</Text>
               </View>
