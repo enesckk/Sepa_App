@@ -257,69 +257,203 @@ export default function UsersPage() {
     {
       key: 'name',
       header: 'Kullanıcı',
+      render: (user) => {
+        const initials = user.name
+          .split(' ')
+          .map(n => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
+        
+        return (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{
+              width: '44px',
+              height: '44px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '12px',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.15)',
+              flexShrink: 0,
+            }}>
+              <span style={{
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 700,
+                letterSpacing: '0.5px',
+              }}>
+                {initials}
+              </span>
+            </div>
+            <div>
+              <div style={{
+                fontSize: '15px',
+                fontWeight: 600,
+                color: '#0f172a',
+                marginBottom: '4px',
+              }}>
+                {user.name}
+              </div>
+              {user.phone && (
+                <div style={{
+                  fontSize: '13px',
+                  color: '#64748b',
+                }}>
+                  {user.phone}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      key: 'email',
+      header: 'E-posta',
       render: (user) => (
-        <div className="flex items-center">
-          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center mr-3">
-            <span className="text-white font-medium">
-              {user.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <div>
-            <div className="text-sm font-medium text-text">{user.name}</div>
-            {user.phone && (
-              <div className="text-sm text-text-secondary">{user.phone}</div>
-            )}
-          </div>
-        </div>
+        <span style={{
+          fontSize: '14px',
+          color: '#475569',
+        }}>
+          {user.email}
+        </span>
       ),
     },
-    { key: 'email', header: 'E-posta' },
     {
       key: 'golbucks',
       header: 'Gölbucks',
       render: (user) => (
-        <span className="text-sm font-semibold text-green-600">
-          {user.golbucks} ₺
-        </span>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: '#ecfdf5',
+          borderRadius: '8px',
+          border: '1px solid #d1fae5',
+        }}>
+          <span style={{
+            fontSize: '15px',
+            fontWeight: 700,
+            color: '#059669',
+          }}>
+            {user.golbucks} ₺
+          </span>
+        </div>
       ),
     },
     {
       key: 'role',
       header: 'Rol',
-      render: (user) => (
-        <Badge
-          variant={
-            user.role === 'admin' || user.role === 'super_admin' ? 'purple' : 'blue'
-          }
-        >
-          {user.role === 'super_admin'
-            ? 'Süper Admin'
-            : user.role === 'admin'
-            ? 'Admin'
-            : 'Kullanıcı'}
-        </Badge>
-      ),
+      render: (user) => {
+        const roleConfig = {
+          super_admin: { label: 'Süper Admin', color: '#7c3aed', bg: '#f3e8ff', border: '#e9d5ff' },
+          admin: { label: 'Admin', color: '#8b5cf6', bg: '#f5f3ff', border: '#e9d5ff' },
+          user: { label: 'Kullanıcı', color: '#10b981', bg: '#ecfdf5', border: '#d1fae5' },
+        };
+        const config = roleConfig[user.role] || roleConfig.user;
+        return (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '6px 12px',
+            backgroundColor: config.bg,
+            borderRadius: '8px',
+            border: `1px solid ${config.border}`,
+          }}>
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: config.color,
+            }}>
+              {config.label}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'is_active',
       header: 'Durum',
       render: (user) => (
-        <Badge variant={user.is_active ? 'success' : 'error'}>
-          {user.is_active ? 'Aktif' : 'Pasif'}
-        </Badge>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '6px 12px',
+          backgroundColor: user.is_active ? '#ecfdf5' : '#fef2f2',
+          borderRadius: '8px',
+          border: `1px solid ${user.is_active ? '#d1fae5' : '#fecaca'}`,
+        }}>
+          <span style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: user.is_active ? '#059669' : '#dc2626',
+          }}>
+            {user.is_active ? 'Aktif' : 'Pasif'}
+          </span>
+        </div>
       ),
     },
     {
       key: 'actions',
       header: 'İşlemler',
       render: (user) => (
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(user)}>
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button variant="dangerGhost" size="sm" onClick={() => handleDelete(user)}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => handleOpenModal(user)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#ecfdf5',
+              border: '1px solid #d1fae5',
+              borderRadius: '8px',
+              color: '#10b981',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#d1fae5';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ecfdf5';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Edit size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(user)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              color: '#dc2626',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fee2e2';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fef2f2';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       ),
     },
@@ -330,32 +464,129 @@ export default function UsersPage() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-text">Kullanıcılar</h1>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={handleExportCSV} leftIcon={<Download size={16} />}>
-            CSV İndir
-          </Button>
-          <Button variant="secondary" onClick={handleExportExcel} leftIcon={<FileSpreadsheet size={16} />}>
-            Excel İndir
-          </Button>
-        </div>
+    <div style={{ width: '100%' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        marginBottom: '24px',
+        gap: '12px',
+      }}>
+        <button
+          onClick={handleExportCSV}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #10b981',
+            borderRadius: '10px',
+            color: '#10b981',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Download size={16} />
+          CSV İndir
+        </button>
+        <button
+          onClick={handleExportExcel}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          <FileSpreadsheet size={16} />
+          Excel İndir
+        </button>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-surface rounded-card shadow-card p-4 mb-6 space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" size={20} />
-          <input
-            type="text"
-            placeholder="Kullanıcı ara..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-border rounded-input focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #d1fae5',
+        padding: '24px',
+        marginBottom: '24px',
+        background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ position: 'relative' }}>
+            <Search style={{
+              position: 'absolute',
+              left: '14px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#10b981',
+            }} size={20} />
+            <input
+              type="text"
+              placeholder="Kullanıcı ara..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{
+                width: '100%',
+                paddingLeft: '46px',
+                paddingRight: '16px',
+                paddingTop: '14px',
+                paddingBottom: '14px',
+                border: '2px solid #d1fae5',
+                borderRadius: '12px',
+                outline: 'none',
+                fontSize: '14px',
+                transition: 'all 0.2s ease',
+                backgroundColor: '#ffffff',
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#10b981';
+                e.target.style.boxShadow = '0 0 0 4px rgba(16, 185, 129, 0.1)';
+                e.target.style.backgroundColor = '#f0fdf4';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = '#d1fae5';
+                e.target.style.boxShadow = 'none';
+                e.target.style.backgroundColor = '#ffffff';
+              }}
+            />
+          </div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '12px',
+          }}>
           <Select
             value={role}
             onValueChange={setRole}
@@ -376,10 +607,11 @@ export default function UsersPage() {
             ]}
           />
         </div>
+        </div>
       </div>
 
       {/* Advanced Filters */}
-      <div className="mb-6">
+      <div style={{ marginBottom: '24px' }}>
         <AdvancedFilters
           filters={filterOptions}
           values={advancedFilters}

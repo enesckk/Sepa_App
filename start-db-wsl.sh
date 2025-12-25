@@ -52,3 +52,4 @@ echo ""
 echo "📊 Logları görmek için:"
 echo "   docker-compose -f docker-compose.db.yml logs -f"
 
+

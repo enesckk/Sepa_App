@@ -185,10 +185,125 @@ const getPlaceCategories = async () => {
   }));
 };
 
+/**
+ * Create place (Admin)
+ * @param {object} data - Place data
+ * @returns {Promise<Object>} Created place
+ */
+const createPlace = async (data) => {
+  const {
+    name,
+    description,
+    type,
+    category,
+    address,
+    latitude,
+    longitude,
+    phone,
+    website,
+    email,
+    working_hours,
+    image_url,
+    is_active = true,
+  } = data;
+
+  if (!name || !address) {
+    throw new ValidationError('Name and address are required');
+  }
+
+  if (latitude === undefined || longitude === undefined) {
+    throw new ValidationError('Latitude and longitude are required');
+  }
+
+  const place = await Place.create({
+    name,
+    description,
+    type: type || 'other',
+    category,
+    address,
+    latitude: parseFloat(latitude),
+    longitude: parseFloat(longitude),
+    phone,
+    website,
+    email,
+    working_hours,
+    image_url,
+    is_active,
+  });
+
+  return place.toJSON();
+};
+
+/**
+ * Update place (Admin)
+ * @param {string} placeId - Place ID
+ * @param {object} data - Update data
+ * @returns {Promise<Object>} Updated place
+ */
+const updatePlace = async (placeId, data) => {
+  const place = await Place.findByPk(placeId);
+
+  if (!place) {
+    throw new NotFoundError('Place');
+  }
+
+  const {
+    name,
+    description,
+    type,
+    category,
+    address,
+    latitude,
+    longitude,
+    phone,
+    website,
+    email,
+    working_hours,
+    image_url,
+    is_active,
+  } = data;
+
+  if (name !== undefined) place.name = name;
+  if (description !== undefined) place.description = description;
+  if (type !== undefined) place.type = type;
+  if (category !== undefined) place.category = category;
+  if (address !== undefined) place.address = address;
+  if (latitude !== undefined) place.latitude = parseFloat(latitude);
+  if (longitude !== undefined) place.longitude = parseFloat(longitude);
+  if (phone !== undefined) place.phone = phone;
+  if (website !== undefined) place.website = website;
+  if (email !== undefined) place.email = email;
+  if (working_hours !== undefined) place.working_hours = working_hours;
+  if (image_url !== undefined) place.image_url = image_url;
+  if (is_active !== undefined) place.is_active = is_active;
+
+  await place.save();
+
+  return place.toJSON();
+};
+
+/**
+ * Delete place (Admin)
+ * @param {string} placeId - Place ID
+ * @returns {Promise<void>}
+ */
+const deletePlace = async (placeId) => {
+  const place = await Place.findByPk(placeId);
+
+  if (!place) {
+    throw new NotFoundError('Place');
+  }
+
+  await place.destroy();
+};
+
 module.exports = {
   getPlaces,
   getNearbyPlaces,
   getPlaceById,
   getPlaceCategories,
+  createPlace,
+  updatePlace,
+  deletePlace,
 };
 

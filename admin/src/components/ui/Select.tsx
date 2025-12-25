@@ -41,10 +41,34 @@ export const Select: React.FC<SelectProps> = ({
         <label className="block text-sm font-medium text-text mb-2">{label}</label>
       )}
       <select
-        className={`w-full px-4 py-2 border rounded-input focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
-          error ? 'border-error focus:ring-error' : 'border-border'
-        } ${className}`}
+        style={{
+          width: '100%',
+          paddingLeft: '14px',
+          paddingRight: '14px',
+          paddingTop: '12px',
+          paddingBottom: '12px',
+          border: error ? '1px solid #dc2626' : '1px solid #e2e8f0',
+          borderRadius: '10px',
+          outline: 'none',
+          fontSize: '14px',
+          transition: 'all 0.2s ease',
+          backgroundColor: '#ffffff',
+          cursor: 'pointer',
+        }}
+        onFocus={(e) => {
+          if (!error) {
+            e.target.style.borderColor = '#10b981';
+            e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+          }
+        }}
+        onBlur={(e) => {
+          if (!error) {
+            e.target.style.borderColor = '#e2e8f0';
+            e.target.style.boxShadow = 'none';
+          }
+        }}
         onChange={handleChange}
+        className={className}
         {...rest}
       >
         {options.map((opt) => (

@@ -13,7 +13,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Textarea } from '@/components/ui/Textarea';
 import { useToast } from '@/components/ui/ToastProvider';
 import { adminService, ApplicationsResponse } from '@/lib/services/admin';
-import { Edit } from 'lucide-react';
+import { exportToCSV, exportToExcel, prepareTableData } from '@/lib/utils/export';
+import { Edit, Download, FileSpreadsheet, FileText, Calendar, User, CheckCircle } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -143,9 +144,29 @@ export default function ApplicationsPage() {
       header: 'Konu',
       render: (row) => (
         <div>
-          <div className="font-medium">{row.subject}</div>
+          <div style={{
+            fontSize: '15px',
+            fontWeight: 600,
+            color: '#0f172a',
+            marginBottom: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <FileText style={{ color: '#10b981' }} size={18} />
+            {row.subject}
+          </div>
           {row.user && (
-            <div className="text-sm text-text-secondary">{row.user.name} ({row.user.email})</div>
+            <div style={{
+              fontSize: '13px',
+              color: '#64748b',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}>
+              <User size={14} />
+              {row.user.name} ({row.user.email})
+            </div>
           )}
         </div>
       ),
@@ -153,59 +174,126 @@ export default function ApplicationsPage() {
     {
       key: 'type',
       header: 'Tür',
-      render: (row) => (
-        <Badge variant="blue">
-          {row.type === 'complaint'
-            ? 'Şikayet'
-            : row.type === 'request'
-            ? 'Talep'
-            : row.type === 'marriage'
-            ? 'Nikah'
-            : row.type === 'muhtar_message'
-            ? 'Muhtar Mesaj'
-            : 'Diğer'}
-        </Badge>
-      ),
+      render: (row) => {
+        const typeLabels: Record<string, string> = {
+          complaint: 'Şikayet',
+          request: 'Talep',
+          marriage: 'Nikah',
+          muhtar_message: 'Muhtar Mesaj',
+        };
+        const typeColors: Record<string, { bg: string; border: string; color: string }> = {
+          complaint: { bg: '#fef2f2', border: '#fecaca', color: '#dc2626' },
+          request: { bg: '#eff6ff', border: '#bfdbfe', color: '#2563eb' },
+          marriage: { bg: '#f3e8ff', border: '#e9d5ff', color: '#7c3aed' },
+          muhtar_message: { bg: '#ecfdf5', border: '#d1fae5', color: '#059669' },
+        };
+        const label = typeLabels[row.type] || 'Diğer';
+        const colors = typeColors[row.type] || { bg: '#f1f5f9', border: '#e2e8f0', color: '#64748b' };
+        
+        return (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '6px 12px',
+            backgroundColor: colors.bg,
+            borderRadius: '8px',
+            border: `1px solid ${colors.border}`,
+          }}>
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: colors.color,
+            }}>
+              {label}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'created_at',
       header: 'Tarih',
-      render: (row) => <div>{new Date(row.created_at).toLocaleDateString('tr-TR')}</div>,
+      render: (row) => (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}>
+          <Calendar style={{ color: '#64748b' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            color: '#475569',
+          }}>
+            {new Date(row.created_at).toLocaleDateString('tr-TR')}
+          </span>
+        </div>
+      ),
     },
     {
       key: 'status',
       header: 'Durum',
-      render: (row) => (
-        <Badge
-          variant={
-            row.status === 'resolved'
-              ? 'success'
-              : row.status === 'in_progress'
-              ? 'info'
-              : row.status === 'rejected'
-              ? 'error'
-              : 'warning'
-          }
-        >
-          {row.status === 'resolved'
-            ? 'Tamamlandı'
-            : row.status === 'in_progress'
-            ? 'İşlemde'
-            : row.status === 'rejected'
-            ? 'Reddedildi'
-            : row.status === 'closed'
-            ? 'Kapandı'
-            : 'Beklemede'}
-        </Badge>
-      ),
+      render: (row) => {
+        const statusConfig: Record<string, { label: string; bg: string; border: string; color: string }> = {
+          resolved: { label: 'Tamamlandı', bg: '#ecfdf5', border: '#d1fae5', color: '#059669' },
+          in_progress: { label: 'İşlemde', bg: '#eff6ff', border: '#bfdbfe', color: '#2563eb' },
+          rejected: { label: 'Reddedildi', bg: '#fef2f2', border: '#fecaca', color: '#dc2626' },
+          closed: { label: 'Kapandı', bg: '#f1f5f9', border: '#e2e8f0', color: '#64748b' },
+          pending: { label: 'Beklemede', bg: '#fef3c7', border: '#fde68a', color: '#d97706' },
+        };
+        const config = statusConfig[row.status] || statusConfig.pending;
+        
+        return (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            backgroundColor: config.bg,
+            borderRadius: '8px',
+            border: `1px solid ${config.border}`,
+          }}>
+            {row.status === 'resolved' && <CheckCircle size={14} style={{ color: config.color }} />}
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: config.color,
+            }}>
+              {config.label}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'actions',
       header: 'İşlemler',
       render: (row) => (
-        <Button variant="ghost" size="sm" onClick={() => handleOpenModal(row)}>
-          <Edit className="w-4 h-4" />
-        </Button>
+        <button
+          onClick={() => handleOpenModal(row)}
+          style={{
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#ecfdf5',
+            border: '1px solid #d1fae5',
+            borderRadius: '8px',
+            color: '#10b981',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#d1fae5';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          <Edit size={16} />
+        </button>
       ),
     },
   ];
@@ -229,18 +317,87 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text">Başvurular</h1>
-          <p className="text-text-secondary text-sm mt-1">
-            Kullanıcı başvurularını görüntüleyin ve durum güncelleyin.
-          </p>
-        </div>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '12px',
+      }}>
+        <button
+          onClick={handleExportCSV}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #10b981',
+            borderRadius: '10px',
+            color: '#10b981',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Download size={16} />
+          CSV
+        </button>
+        <button
+          onClick={handleExportExcel}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          <FileSpreadsheet size={16} />
+          Excel
+        </button>
       </div>
 
-      <div className="bg-surface rounded-card shadow-card p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #d1fae5',
+        padding: '24px',
+        background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px',
+        }}>
           <Input
             placeholder="Ara..."
             value={search}
@@ -289,18 +446,74 @@ export default function ApplicationsPage() {
         onClose={handleCloseModal}
         title={`Başvuru Durumu Güncelle - ${selectedApplication?.reference_number || selectedApplication?.id}`}
         footer={
-          <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={handleCloseModal}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '12px',
+          }}>
+            <button
+              onClick={handleCloseModal}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                color: '#64748b',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.color = '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.color = '#64748b';
+              }}
+            >
               İptal
-            </Button>
-            <Button onClick={handleSubmit} loading={updateMutation.isPending}>
-              Kaydet
-            </Button>
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={updateMutation.isPending}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: updateMutation.isPending ? '#94a3b8' : '#10b981',
+                border: 'none',
+                borderRadius: '10px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: updateMutation.isPending ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+              }}
+              onMouseEnter={(e) => {
+                if (!updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#059669';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#10b981';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+                }
+              }}
+            >
+              {updateMutation.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+            </button>
           </div>
         }
       >
         {selectedApplication && (
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="p-3 bg-background rounded-lg">
               <div className="text-sm text-text-secondary mb-1">Konu</div>
               <div className="font-medium">{selectedApplication.subject}</div>

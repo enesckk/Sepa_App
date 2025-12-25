@@ -90,3 +90,15 @@ body {
     display: none;
   }
 }
+
+/* Sidebar scrollbar - completely hidden */
+aside nav::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+aside nav {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

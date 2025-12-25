@@ -2,6 +2,9 @@ const {
   getGatheringAreas,
   getNearbyGatheringAreas,
   getGatheringAreaById,
+  createGatheringArea,
+  updateGatheringArea,
+  deleteGatheringArea,
 } = require('../services/emergencyGatheringService');
 
 /**
@@ -95,9 +98,69 @@ const getGatheringAreaByIdEndpoint = async (req, res, next) => {
   }
 };
 
+/**
+ * Create emergency gathering area (Admin)
+ * POST /api/admin/emergency-gathering
+ */
+const createGatheringAreaEndpoint = async (req, res, next) => {
+  try {
+    const area = await createGatheringArea(req.body);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        area,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update emergency gathering area (Admin)
+ * PUT /api/admin/emergency-gathering/:id
+ */
+const updateGatheringAreaEndpoint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const area = await updateGatheringArea(id, req.body);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        area,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Delete emergency gathering area (Admin)
+ * DELETE /api/admin/emergency-gathering/:id
+ */
+const deleteGatheringAreaEndpoint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await deleteGatheringArea(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Emergency gathering area deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getGatheringAreas: getGatheringAreasEndpoint,
   getNearbyGatheringAreas: getNearbyGatheringAreasEndpoint,
   getGatheringAreaById: getGatheringAreaByIdEndpoint,
+  createGatheringArea: createGatheringAreaEndpoint,
+  updateGatheringArea: updateGatheringAreaEndpoint,
+  deleteGatheringArea: deleteGatheringAreaEndpoint,
 };
 

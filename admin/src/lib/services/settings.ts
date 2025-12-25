@@ -3,9 +3,6 @@
  */
 
 export interface AdminSettings {
-  apiUrl?: string;
-  cdnUrl?: string;
-  language: 'tr' | 'en';
   theme: 'light' | 'dark';
   notes?: string;
 }
@@ -13,7 +10,6 @@ export interface AdminSettings {
 const SETTINGS_KEY = 'admin_settings';
 
 const defaultSettings: AdminSettings = {
-  language: 'tr',
   theme: 'light',
 };
 

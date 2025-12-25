@@ -264,12 +264,28 @@ export const adminService = {
     api.get(`/places/${id}`),
   getPlaceCategories: () =>
     api.get('/places/categories'),
+  createPlace: (formData: FormData) =>
+    api.post('/admin/places', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  updatePlace: (id: string, formData: FormData) =>
+    api.put(`/admin/places/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  deletePlace: (id: string) =>
+    api.delete(`/admin/places/${id}`),
 
   // Emergency Gathering
   getEmergencyGatheringAreas: (params?: EmergencyGatheringParams) =>
     api.get<EmergencyGatheringResponse>('/emergency-gathering', { params }),
   getEmergencyGatheringById: (id: string) =>
     api.get(`/emergency-gathering/${id}`),
+  createEmergencyGathering: (data: any) =>
+    api.post('/admin/emergency-gathering', data),
+  updateEmergencyGathering: (id: string, data: any) =>
+    api.put(`/admin/emergency-gathering/${id}`, data),
+  deleteEmergencyGathering: (id: string) =>
+    api.delete(`/admin/emergency-gathering/${id}`),
 
   // Notifications
   createNotification: (data: {

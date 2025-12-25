@@ -24,22 +24,61 @@ export const Input: React.FC<InputProps> = ({
       {label && (
         <label className="block text-sm font-medium text-text mb-2">{label}</label>
       )}
-      <div className="relative">
+      <div style={{ position: 'relative' }}>
         {iconLeft && (
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-secondary">
+          <span style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            paddingLeft: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            color: '#64748b',
+          }}>
             {iconLeft}
           </span>
         )}
         <input
-          className={`w-full px-4 py-2 border rounded-input focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors ${
-            iconLeft ? 'pl-10' : ''
-          } ${iconRight ? 'pr-10' : ''} ${
-            error ? 'border-error focus:ring-error' : 'border-border'
-          } ${className}`}
+          style={{
+            width: '100%',
+            paddingLeft: iconLeft ? '40px' : '14px',
+            paddingRight: iconRight ? '40px' : '14px',
+            paddingTop: '12px',
+            paddingBottom: '12px',
+            border: error ? '1px solid #dc2626' : '1px solid #e2e8f0',
+            borderRadius: '10px',
+            outline: 'none',
+            fontSize: '14px',
+            transition: 'all 0.2s ease',
+            backgroundColor: '#ffffff',
+          }}
+          onFocus={(e) => {
+            if (!error) {
+              e.target.style.borderColor = '#10b981';
+              e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+            }
+          }}
+          onBlur={(e) => {
+            if (!error) {
+              e.target.style.borderColor = '#e2e8f0';
+              e.target.style.boxShadow = 'none';
+            }
+          }}
+          className={className}
           {...rest}
         />
         {iconRight && (
-          <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-secondary">
+          <span style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            right: 0,
+            paddingRight: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            color: '#64748b',
+          }}>
             {iconRight}
           </span>
         )}

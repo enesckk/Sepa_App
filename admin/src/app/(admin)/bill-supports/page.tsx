@@ -13,7 +13,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Textarea } from '@/components/ui/Textarea';
 import { useToast } from '@/components/ui/ToastProvider';
 import { adminService, BillSupportsResponse } from '@/lib/services/admin';
-import { Edit } from 'lucide-react';
+import { Edit, Download, FileSpreadsheet, Receipt, Calendar, User, DollarSign, CheckCircle } from 'lucide-react';
+import { exportToCSV, exportToExcel, prepareTableData } from '@/lib/utils/export';
 
 interface BillSupport {
   id: string;
@@ -110,13 +111,49 @@ export default function BillSupportsPage() {
     });
   };
 
+  // Export functions
+  const handleExportCSV = () => {
+    const exportColumns = columns.filter((col) => col.key !== 'actions');
+    const { headers, rows } = prepareTableData(billSupports, exportColumns);
+    exportToCSV({
+      filename: 'askida_fatura',
+      headers,
+      data: rows,
+    });
+    showToast('success', 'CSV dosyası indirildi.');
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const exportColumns = columns.filter((col) => col.key !== 'actions');
+      const { headers, rows } = prepareTableData(billSupports, exportColumns);
+      await exportToExcel({
+        filename: 'askida_fatura',
+        headers,
+        data: rows,
+      });
+      showToast('success', 'Excel dosyası indirildi.');
+    } catch (error: any) {
+      showToast('error', 'Excel export hatası:', error.message);
+    }
+  };
+
   const columns: TableColumn<BillSupport>[] = [
     {
       key: 'bill_type',
       header: 'Fatura',
       render: (row) => (
         <div>
-          <div className="font-medium">
+          <div style={{
+            fontSize: '15px',
+            fontWeight: 600,
+            color: '#0f172a',
+            marginBottom: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}>
+            <Receipt style={{ color: '#10b981' }} size={18} />
             {row.bill_type === 'electricity'
               ? 'Elektrik'
               : row.bill_type === 'water'
@@ -130,7 +167,16 @@ export default function BillSupportsPage() {
               : 'Diğer'}
           </div>
           {row.user && (
-            <div className="text-sm text-text-secondary">{row.user.name}</div>
+            <div style={{
+              fontSize: '13px',
+              color: '#64748b',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}>
+              <User size={14} />
+              {row.user.name}
+            </div>
           )}
         </div>
       ),
@@ -138,51 +184,111 @@ export default function BillSupportsPage() {
     {
       key: 'amount',
       header: 'Tutar',
-      render: (row) => <span className="font-semibold">{row.amount.toFixed(2)} ₺</span>,
+      render: (row) => (
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: '#ecfdf5',
+          borderRadius: '8px',
+          border: '1px solid #d1fae5',
+        }}>
+          <DollarSign style={{ color: '#10b981' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#059669',
+          }}>
+            {row.amount.toFixed(2)} ₺
+          </span>
+        </div>
+      ),
     },
     {
       key: 'created_at',
       header: 'Tarih',
-      render: (row) => <div>{new Date(row.created_at).toLocaleDateString('tr-TR')}</div>,
+      render: (row) => (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}>
+          <Calendar style={{ color: '#64748b' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            color: '#475569',
+          }}>
+            {new Date(row.created_at).toLocaleDateString('tr-TR')}
+          </span>
+        </div>
+      ),
     },
     {
       key: 'status',
       header: 'Durum',
-      render: (row) => (
-        <Badge
-          variant={
-            row.status === 'approved'
-              ? 'success'
-              : row.status === 'pending'
-              ? 'warning'
-              : row.status === 'rejected'
-              ? 'error'
-              : row.status === 'paid'
-              ? 'info'
-              : 'default'
-          }
-        >
-          {row.status === 'approved'
-            ? 'Onaylandı'
-            : row.status === 'pending'
-            ? 'Beklemede'
-            : row.status === 'rejected'
-            ? 'Reddedildi'
-            : row.status === 'paid'
-            ? 'Ödendi'
-            : row.status === 'cancelled'
-            ? 'İptal'
-            : 'Bilinmiyor'}
-        </Badge>
-      ),
+      render: (row) => {
+        const statusConfig: Record<string, { label: string; bg: string; border: string; color: string }> = {
+          approved: { label: 'Onaylandı', bg: '#ecfdf5', border: '#d1fae5', color: '#059669' },
+          pending: { label: 'Beklemede', bg: '#fef3c7', border: '#fde68a', color: '#d97706' },
+          rejected: { label: 'Reddedildi', bg: '#fef2f2', border: '#fecaca', color: '#dc2626' },
+          paid: { label: 'Ödendi', bg: '#eff6ff', border: '#bfdbfe', color: '#2563eb' },
+          cancelled: { label: 'İptal', bg: '#f1f5f9', border: '#e2e8f0', color: '#64748b' },
+        };
+        const config = statusConfig[row.status] || { label: 'Bilinmiyor', bg: '#f1f5f9', border: '#e2e8f0', color: '#64748b' };
+        
+        return (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            backgroundColor: config.bg,
+            borderRadius: '8px',
+            border: `1px solid ${config.border}`,
+          }}>
+            {(row.status === 'approved' || row.status === 'paid') && <CheckCircle size={14} style={{ color: config.color }} />}
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: config.color,
+            }}>
+              {config.label}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'actions',
       header: 'İşlemler',
       render: (row) => (
-        <Button variant="ghost" size="sm" onClick={() => handleOpenModal(row)}>
-          <Edit className="w-4 h-4" />
-        </Button>
+        <button
+          onClick={() => handleOpenModal(row)}
+          style={{
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#ecfdf5',
+            border: '1px solid #d1fae5',
+            borderRadius: '8px',
+            color: '#10b981',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#d1fae5';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          <Edit size={16} />
+        </button>
       ),
     },
   ];
@@ -206,18 +312,87 @@ export default function BillSupportsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text">Askıda Fatura</h1>
-          <p className="text-text-secondary text-sm mt-1">
-            Askıda fatura başvurularını görüntüleyin ve durum güncelleyin.
-          </p>
-        </div>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '12px',
+      }}>
+        <button
+          onClick={handleExportCSV}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #10b981',
+            borderRadius: '10px',
+            color: '#10b981',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Download size={16} />
+          CSV
+        </button>
+        <button
+          onClick={handleExportExcel}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          <FileSpreadsheet size={16} />
+          Excel
+        </button>
       </div>
 
-      <div className="bg-surface rounded-card shadow-card p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #d1fae5',
+        padding: '24px',
+        background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px',
+        }}>
           <Input
             placeholder="Ara..."
             value={search}
@@ -267,18 +442,74 @@ export default function BillSupportsPage() {
         onClose={handleCloseModal}
         title={`Askıda Fatura Durumu - ${selectedBillSupport?.reference_number || selectedBillSupport?.id}`}
         footer={
-          <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={handleCloseModal}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '12px',
+          }}>
+            <button
+              onClick={handleCloseModal}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                color: '#64748b',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.color = '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.color = '#64748b';
+              }}
+            >
               İptal
-            </Button>
-            <Button onClick={handleSubmit} loading={updateMutation.isPending}>
-              Kaydet
-            </Button>
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={updateMutation.isPending}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: updateMutation.isPending ? '#94a3b8' : '#10b981',
+                border: 'none',
+                borderRadius: '10px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: updateMutation.isPending ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+              }}
+              onMouseEnter={(e) => {
+                if (!updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#059669';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#10b981';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+                }
+              }}
+            >
+              {updateMutation.isPending ? 'Kaydediliyor...' : 'Kaydet'}
+            </button>
           </div>
         }
       >
         {selectedBillSupport && (
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="p-3 bg-background rounded-lg">
               <div className="text-sm text-text-secondary mb-1">Fatura Türü</div>
               <div className="font-medium">

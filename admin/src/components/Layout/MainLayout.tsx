@@ -5,59 +5,54 @@ import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from './Sidebar';
 import { GlobalSearch } from './GlobalSearch';
 import { authService } from '@/lib/auth';
-import { Menu } from 'lucide-react';
 
-export default function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+// Sayfa başlıkları mapping
+const pageTitles: Record<string, string> = {
+  '/dashboard': 'Dashboard',
+  '/users': 'Kullanıcılar',
+  '/events': 'Etkinlikler',
+  '/stories': 'Stories',
+  '/news': 'Haberler',
+  '/surveys': 'Anketler',
+  '/rewards': 'Ödüller',
+  '/applications': 'Başvurular',
+  '/bill-supports': 'Askıda Fatura',
+  '/places': 'Şehir Rehberi',
+  '/emergency-gathering': 'Afet Toplanma',
+  '/notifications': 'Bildirimler',
+  '/settings': 'Ayarlar',
+};
+
+export default function MainLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Load sidebar state from localStorage
-  useEffect(() => {
-    const savedState = localStorage.getItem('sidebarCollapsed');
-    if (savedState !== null) {
-      setSidebarCollapsed(JSON.parse(savedState));
-    }
-  }, []);
-
-  // Save sidebar state to localStorage
-  useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed));
-  }, [sidebarCollapsed]);
+  const [collapsed, setCollapsed] = useState(true);
+  
+  const pageTitle = pageTitles[pathname] || 'Dashboard';
 
   useEffect(() => {
     const checkAuth = async () => {
-      // Skip auth check for login page
       if (pathname === '/login') {
         setLoading(false);
         return;
       }
 
-      // Check if token exists
       if (!authService.isAuthenticated()) {
         router.push('/login');
         return;
       }
 
-      // Verify token and get user
       try {
         const user = await authService.getCurrentUser();
-        
-        // Check if user is admin
         if (user.role !== 'admin' && user.role !== 'super_admin') {
           await authService.logout();
           router.push('/login');
           return;
         }
-
         setLoading(false);
-      } catch (error) {
-        // Token invalid or expired
+      } catch {
         await authService.logout();
         router.push('/login');
       }
@@ -70,49 +65,66 @@ export default function MainLayout({
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           <div className="text-slate-600 font-medium">Yükleniyor...</div>
         </div>
       </div>
     );
   }
 
-  // Don't show sidebar on login page
-  if (pathname === '/login') {
-    return <>{children}</>;
-  }
+  if (pathname === '/login') return <>{children}</>;
 
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-  };
+  // ✅ width ile birebir aynı px değerleri
+  const sidebarWidth = collapsed ? 80 : 320;
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden">
-      <Sidebar isCollapsed={sidebarCollapsed} onToggle={toggleSidebar} />
-      
-      {/* Main Content Area */}
-      <main 
-        className={`
-          flex-1 flex flex-col overflow-hidden bg-slate-50
-          transition-all duration-300 ease-in-out
-          ${sidebarCollapsed ? 'md:ml-20 ml-0' : 'md:ml-80 ml-0'}
-        `}
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 overflow-hidden">
+      <Sidebar collapsed={collapsed} onToggleCollapsed={() => setCollapsed((v) => !v)} />
+
+      {/* ✅ Tailwind ml-* yerine inline style: kesin çalışır */}
+      <div
+        className="h-screen flex flex-col overflow-x-hidden"
+        style={{
+          marginLeft: `${sidebarWidth}px`,
+          transition: 'margin-left 200ms ease-in-out',
+        }}
       >
-        {/* Header Bar */}
-        <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
-          <div className="w-full px-4 md:px-8 py-4 md:py-6">
-            <div className="flex items-center gap-4">
-              {/* Mobile Menu Button */}
-              <button
-                onClick={toggleSidebar}
-                className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                aria-label="Menüyü Aç/Kapat"
-              >
-                <Menu size={24} />
-              </button>
+        {/* Modern Topbar */}
+        <header 
+          style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 40,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.05)',
+          }}
+        >
+          <div style={{ width: '100%', padding: '24px 32px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              gap: '32px' 
+            }}>
+              {/* Page Title */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h1 style={{
+                  fontSize: '28px',
+                  fontWeight: 700,
+                  color: '#0f172a',
+                  letterSpacing: '-0.025em',
+                  margin: 0,
+                  lineHeight: 1.2,
+                }}>
+                  {pageTitle}
+                </h1>
+              </div>
               
               {/* Search */}
-              <div className="flex-1">
+              <div style={{ width: '420px', flexShrink: 0 }}>
                 <GlobalSearch />
               </div>
             </div>
@@ -120,12 +132,20 @@ export default function MainLayout({
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-12">
+        <div 
+          className="flex-1 overflow-y-auto"
+          style={{ backgroundColor: 'transparent' }}
+        >
+          <div style={{ 
+            width: '100%', 
+            maxWidth: '1280px', 
+            margin: '0 auto', 
+            padding: '32px' 
+          }}>
             {children}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

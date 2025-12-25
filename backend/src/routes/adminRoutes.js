@@ -86,5 +86,25 @@ router.put('/bill-supports/:id/status', authenticate, requireAdmin, updateBillSu
 const { createNotificationAdmin } = require('../controllers/adminNotificationController');
 router.post('/notifications', authenticate, requireAdmin, createNotificationAdmin);
 
+// Emergency Gathering
+const {
+  createGatheringArea,
+  updateGatheringArea,
+  deleteGatheringArea,
+} = require('../controllers/emergencyGatheringController');
+router.post('/emergency-gathering', authenticate, requireAdmin, createGatheringArea);
+router.put('/emergency-gathering/:id', authenticate, requireAdmin, updateGatheringArea);
+router.delete('/emergency-gathering/:id', authenticate, requireAdmin, deleteGatheringArea);
+
+// Places
+const {
+  createPlace,
+  updatePlace,
+  deletePlace,
+} = require('../controllers/placeController');
+router.post('/places', authenticate, requireAdmin, uploadSingle('image'), createPlace);
+router.put('/places/:id', authenticate, requireAdmin, uploadSingle('image'), updatePlace);
+router.delete('/places/:id', authenticate, requireAdmin, deletePlace);
+
 module.exports = router;
 

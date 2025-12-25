@@ -159,18 +159,56 @@ export default function StoriesPage() {
       key: 'title',
       header: 'Story',
       render: (row) => (
-        <div className="flex items-center">
-          {row.image_url && (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {row.image_url ? (
             <img
               src={row.image_url}
               alt={row.title}
-              className="w-16 h-16 rounded-lg object-cover mr-3"
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '12px',
+                objectFit: 'cover',
+                marginRight: '12px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+              }}
             />
+          ) : (
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '12px',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.15)',
+            }}>
+              <Eye style={{ color: '#ffffff' }} size={24} />
+            </div>
           )}
           <div>
-            <div className="font-medium">{row.title}</div>
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: '#0f172a',
+              marginBottom: '4px',
+            }}>
+              {row.title}
+            </div>
             {row.description && (
-              <div className="text-sm text-text-secondary line-clamp-1">{row.description}</div>
+              <div style={{
+                fontSize: '13px',
+                color: '#64748b',
+                maxWidth: '300px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {row.description}
+              </div>
             )}
           </div>
         </div>
@@ -179,14 +217,46 @@ export default function StoriesPage() {
     {
       key: 'order',
       header: 'Sıra',
+      render: (row) => (
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '6px 12px',
+          backgroundColor: '#ecfdf5',
+          borderRadius: '8px',
+          border: '1px solid #d1fae5',
+        }}>
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#059669',
+          }}>
+            {row.order}
+          </span>
+        </div>
+      ),
     },
     {
       key: 'view_count',
       header: 'Görüntülenme',
       render: (row) => (
-        <div className="flex items-center">
-          <Eye className="w-4 h-4 mr-1" />
-          {row.view_count}
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: '#eff6ff',
+          borderRadius: '8px',
+          border: '1px solid #bfdbfe',
+        }}>
+          <Eye style={{ color: '#3b82f6' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#2563eb',
+          }}>
+            {row.view_count}
+          </span>
         </div>
       ),
     },
@@ -194,33 +264,95 @@ export default function StoriesPage() {
       key: 'expires_at',
       header: 'Bitiş Tarihi',
       render: (row) => (
-        <div>
+        <span style={{
+          fontSize: '14px',
+          color: '#475569',
+        }}>
           {row.expires_at
             ? new Date(row.expires_at).toLocaleDateString('tr-TR')
             : 'Süresiz'}
-        </div>
+        </span>
       ),
     },
     {
       key: 'is_active',
       header: 'Durum',
       render: (row) => (
-        <Badge variant={row.is_active ? 'success' : 'error'}>
-          {row.is_active ? 'Aktif' : 'Pasif'}
-        </Badge>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '6px 12px',
+          backgroundColor: row.is_active ? '#ecfdf5' : '#fef2f2',
+          borderRadius: '8px',
+          border: `1px solid ${row.is_active ? '#d1fae5' : '#fecaca'}`,
+        }}>
+          <span style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: row.is_active ? '#059669' : '#dc2626',
+          }}>
+            {row.is_active ? 'Aktif' : 'Pasif'}
+          </span>
+        </div>
       ),
     },
     {
       key: 'actions',
       header: 'İşlemler',
       render: (row) => (
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(row)}>
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button variant="dangerGhost" size="sm" onClick={() => handleDelete(row.id)}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => handleOpenModal(row)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#ecfdf5',
+              border: '1px solid #d1fae5',
+              borderRadius: '8px',
+              color: '#10b981',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#d1fae5';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ecfdf5';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Edit size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(row.id)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              color: '#dc2626',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fee2e2';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fef2f2';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       ),
     },
@@ -245,18 +377,49 @@ export default function StoriesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text">Stories</h1>
-          <p className="text-text-secondary text-sm mt-1">
-            Story ekleyin, sıralayın ve yönetin.
-          </p>
-        </div>
-        <Button onClick={() => handleOpenModal()}>Yeni Story</Button>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+      }}>
+        <button
+          onClick={() => handleOpenModal()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          Yeni Story
+        </button>
       </div>
 
-      <div className="bg-surface rounded-card shadow-card p-4">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #d1fae5',
+        padding: '24px',
+        background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
+      }}>
         <Input
           placeholder="Ara..."
           value={search}
@@ -276,20 +439,73 @@ export default function StoriesPage() {
         onClose={handleCloseModal}
         title={selectedStory ? 'Story Düzenle' : 'Yeni Story'}
         footer={
-          <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={handleCloseModal}>
-              İptal
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              loading={createMutation.isPending || updateMutation.isPending}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '12px',
+          }}>
+            <button
+              onClick={handleCloseModal}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                color: '#64748b',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.color = '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.color = '#64748b';
+              }}
             >
-              {selectedStory ? 'Güncelle' : 'Oluştur'}
-            </Button>
+              İptal
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={createMutation.isPending || updateMutation.isPending}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: createMutation.isPending || updateMutation.isPending ? '#94a3b8' : '#10b981',
+                border: 'none',
+                borderRadius: '10px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: createMutation.isPending || updateMutation.isPending ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+              }}
+              onMouseEnter={(e) => {
+                if (!createMutation.isPending && !updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#059669';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!createMutation.isPending && !updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#10b981';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+                }
+              }}
+            >
+              {createMutation.isPending || updateMutation.isPending ? 'Kaydediliyor...' : (selectedStory ? 'Güncelle' : 'Oluştur')}
+            </button>
           </div>
         }
       >
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <Input
             label="Başlık *"
             placeholder="Story başlığı"
@@ -303,7 +519,11 @@ export default function StoriesPage() {
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '16px',
+          }}>
             <Input
               label="Sıra"
               type="number"
@@ -332,7 +552,6 @@ export default function StoriesPage() {
               }
             }}
             helperText="Maks 5MB, JPG/PNG"
-            preview={imagePreview}
           />
         </div>
       </Modal>

@@ -13,7 +13,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/ToastProvider';
 import { adminService, SurveysResponse } from '@/lib/services/admin';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus, Download, FileSpreadsheet, Calendar, Gift, FileText } from 'lucide-react';
+import { exportToCSV, exportToExcel, prepareTableData } from '@/lib/utils/export';
 
 interface Question {
   id?: string;
@@ -275,6 +276,33 @@ export default function SurveysPage() {
     }
   };
 
+  // Export functions
+  const handleExportCSV = () => {
+    const exportColumns = columns.filter((col) => col.key !== 'actions');
+    const { headers, rows } = prepareTableData(surveys, exportColumns);
+    exportToCSV({
+      filename: 'anketler',
+      headers,
+      data: rows,
+    });
+    showToast('success', 'CSV dosyası indirildi.');
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const exportColumns = columns.filter((col) => col.key !== 'actions');
+      const { headers, rows } = prepareTableData(surveys, exportColumns);
+      await exportToExcel({
+        filename: 'anketler',
+        headers,
+        data: rows,
+      });
+      showToast('success', 'Excel dosyası indirildi.');
+    } catch (error: any) {
+      showToast('error', 'Excel export hatası:', error.message);
+    }
+  };
+
   const handleAddQuestion = () => {
     setEditingQuestion({
       text: '',
@@ -333,9 +361,25 @@ export default function SurveysPage() {
       header: 'Başlık',
       render: (row) => (
         <div>
-          <div className="font-medium">{row.title}</div>
+          <div style={{
+            fontSize: '15px',
+            fontWeight: 600,
+            color: '#0f172a',
+            marginBottom: '4px',
+          }}>
+            {row.title}
+          </div>
           {row.description && (
-            <div className="text-sm text-text-secondary line-clamp-1">{row.description}</div>
+            <div style={{
+              fontSize: '13px',
+              color: '#64748b',
+              maxWidth: '300px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}>
+              {row.description}
+            </div>
           )}
         </div>
       ),
@@ -343,41 +387,77 @@ export default function SurveysPage() {
     {
       key: 'status',
       header: 'Durum',
-      render: (row) => (
-        <Badge
-          variant={
-            row.status === 'active'
-              ? 'success'
-              : row.status === 'draft'
-              ? 'info'
-              : row.status === 'closed'
-              ? 'warning'
-              : 'default'
-          }
-        >
-          {row.status === 'active'
-            ? 'Aktif'
-            : row.status === 'draft'
-            ? 'Taslak'
-            : row.status === 'closed'
-            ? 'Kapalı'
-            : 'Arşiv'}
-        </Badge>
-      ),
+      render: (row) => {
+        const statusConfig: Record<string, { label: string; bg: string; border: string; color: string }> = {
+          active: { label: 'Aktif', bg: '#ecfdf5', border: '#d1fae5', color: '#059669' },
+          draft: { label: 'Taslak', bg: '#eff6ff', border: '#bfdbfe', color: '#2563eb' },
+          closed: { label: 'Kapalı', bg: '#fef3c7', border: '#fde68a', color: '#d97706' },
+          archived: { label: 'Arşiv', bg: '#f1f5f9', border: '#e2e8f0', color: '#64748b' },
+        };
+        const config = statusConfig[row.status] || statusConfig.draft;
+        
+        return (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '6px 12px',
+            backgroundColor: config.bg,
+            borderRadius: '8px',
+            border: `1px solid ${config.border}`,
+          }}>
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: config.color,
+            }}>
+              {config.label}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'golbucks_reward',
       header: 'Ödül',
-      render: (row) => <span className="font-semibold text-green-600">{row.golbucks_reward} ₺</span>,
+      render: (row) => (
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: '#ecfdf5',
+          borderRadius: '8px',
+          border: '1px solid #d1fae5',
+        }}>
+          <Gift style={{ color: '#10b981' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#059669',
+          }}>
+            {row.golbucks_reward} ₺
+          </span>
+        </div>
+      ),
     },
     {
       key: 'expires_at',
       header: 'Bitiş',
       render: (row) => (
-        <div>
-          {row.expires_at
-            ? new Date(row.expires_at).toLocaleDateString('tr-TR')
-            : 'Süresiz'}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}>
+          <Calendar style={{ color: '#64748b' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            color: '#475569',
+          }}>
+            {row.expires_at
+              ? new Date(row.expires_at).toLocaleDateString('tr-TR')
+              : 'Süresiz'}
+          </span>
         </div>
       ),
     },
@@ -385,8 +465,23 @@ export default function SurveysPage() {
       key: 'questions',
       header: 'Sorular',
       render: (row) => (
-        <div className="text-sm text-text-secondary">
-          {row.questions?.length || 0} soru
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: '#eff6ff',
+          borderRadius: '8px',
+          border: '1px solid #bfdbfe',
+        }}>
+          <FileText style={{ color: '#3b82f6' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#2563eb',
+          }}>
+            {row.questions?.length || 0} soru
+          </span>
         </div>
       ),
     },
@@ -394,21 +489,86 @@ export default function SurveysPage() {
       key: 'actions',
       header: 'İşlemler',
       render: (row) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
             onClick={() => handleOpenQuestionsModal(row)}
             title="Soruları Yönet"
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '8px',
+              color: '#3b82f6',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#dbeafe';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#eff6ff';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
-            <Plus className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(row)}>
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button variant="dangerGhost" size="sm" onClick={() => handleDelete(row.id)}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
+            <Plus size={16} />
+          </button>
+          <button
+            onClick={() => handleOpenModal(row)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#ecfdf5',
+              border: '1px solid #d1fae5',
+              borderRadius: '8px',
+              color: '#10b981',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#d1fae5';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ecfdf5';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Edit size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(row.id)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              color: '#dc2626',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fee2e2';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fef2f2';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       ),
     },
@@ -433,19 +593,114 @@ export default function SurveysPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text">Anketler</h1>
-          <p className="text-text-secondary text-sm mt-1">
-            Anketleri yönetin, soru ekleyin.
-          </p>
-        </div>
-        <Button onClick={() => handleOpenModal()}>Yeni Anket</Button>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '12px',
+      }}>
+        <button
+          onClick={handleExportCSV}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #10b981',
+            borderRadius: '10px',
+            color: '#10b981',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Download size={16} />
+          CSV
+        </button>
+        <button
+          onClick={handleExportExcel}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          <FileSpreadsheet size={16} />
+          Excel
+        </button>
+        <button
+          onClick={() => handleOpenModal()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          Yeni Anket
+        </button>
       </div>
 
-      <div className="bg-surface rounded-card shadow-card p-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #d1fae5',
+        padding: '24px',
+        background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px',
+        }}>
           <Input
             placeholder="Ara..."
             value={search}
@@ -478,20 +733,73 @@ export default function SurveysPage() {
         onClose={handleCloseModal}
         title={selectedSurvey ? 'Anket Düzenle' : 'Yeni Anket'}
         footer={
-          <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={handleCloseModal}>
-              İptal
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              loading={createMutation.isPending || updateMutation.isPending}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '12px',
+          }}>
+            <button
+              onClick={handleCloseModal}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                color: '#64748b',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.color = '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.color = '#64748b';
+              }}
             >
-              {selectedSurvey ? 'Güncelle' : 'Oluştur'}
-            </Button>
+              İptal
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={createMutation.isPending || updateMutation.isPending}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: createMutation.isPending || updateMutation.isPending ? '#94a3b8' : '#10b981',
+                border: 'none',
+                borderRadius: '10px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: createMutation.isPending || updateMutation.isPending ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+              }}
+              onMouseEnter={(e) => {
+                if (!createMutation.isPending && !updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#059669';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!createMutation.isPending && !updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#10b981';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+                }
+              }}
+            >
+              {createMutation.isPending || updateMutation.isPending ? 'Kaydediliyor...' : (selectedSurvey ? 'Güncelle' : 'Oluştur')}
+            </button>
           </div>
         }
       >
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <Input
             label="Başlık *"
             placeholder="Anket başlığı"
@@ -548,14 +856,68 @@ export default function SurveysPage() {
         title={`Sorular - ${selectedSurvey?.title}`}
         widthClass="max-w-4xl"
         footer={
-          <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={handleCloseQuestionsModal}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '12px',
+          }}>
+            <button
+              onClick={handleCloseQuestionsModal}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                color: '#64748b',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.color = '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.color = '#64748b';
+              }}
+            >
               Kapat
-            </Button>
-            <Button onClick={handleAddQuestion}>
-              <Plus className="w-4 h-4 mr-2" />
+            </button>
+            <button
+              onClick={handleAddQuestion}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 20px',
+                backgroundColor: '#10b981',
+                border: 'none',
+                borderRadius: '10px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#059669';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#10b981';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+              }}
+            >
+              <Plus size={16} />
               Yeni Soru
-            </Button>
+            </button>
           </div>
         }
       >

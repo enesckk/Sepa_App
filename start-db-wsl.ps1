@@ -55,3 +55,4 @@ Write-Host ""
 Write-Host "📊 Logları görmek için:" -ForegroundColor Cyan
 Write-Host "   wsl docker-compose -f docker-compose.db.yml logs -f" -ForegroundColor Gray
 
+

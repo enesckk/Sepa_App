@@ -34,21 +34,70 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <div className="w-full">
+    <div style={{ width: '100%' }}>
       {label && (
-        <label className="block text-sm font-medium text-text mb-2">{label}</label>
+        <label style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: 500,
+          color: '#0f172a',
+          marginBottom: '8px',
+        }}>
+          {label}
+        </label>
       )}
       <div
-        className="border-2 border-dashed border-border rounded-card p-4 bg-background hover:border-primary transition-colors cursor-pointer"
+        style={{
+          border: '2px dashed #d1fae5',
+          borderRadius: '12px',
+          padding: '24px',
+          backgroundColor: '#f0fdf4',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+        }}
         onClick={() => inputRef.current?.click()}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = '#10b981';
+          e.currentTarget.style.backgroundColor = '#ecfdf5';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = '#d1fae5';
+          e.currentTarget.style.backgroundColor = '#f0fdf4';
+        }}
       >
-        <div className="flex items-center gap-3 text-text-secondary">
-          <div className="w-10 h-10 rounded-full bg-surface shadow-sm flex items-center justify-center">
-            <Upload size={18} className="text-text-secondary" />
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          color: '#64748b',
+        }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '12px',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <Upload size={20} style={{ color: '#10b981' }} />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-text">Dosya yükle</p>
-            <p className="text-xs text-text-secondary">
+          <div style={{ flex: 1 }}>
+            <p style={{
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#0f172a',
+              margin: 0,
+              marginBottom: '4px',
+            }}>
+              Dosya yükle
+            </p>
+            <p style={{
+              fontSize: '12px',
+              color: '#64748b',
+              margin: 0,
+            }}>
               {multiple ? 'Birden çok dosya seçebilirsiniz' : 'Tek dosya seçebilirsiniz'}
             </p>
           </div>
@@ -56,28 +105,77 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         <input
           ref={inputRef}
           type="file"
-          className="hidden"
+          style={{ display: 'none' }}
           accept={accept}
           multiple={multiple}
           onChange={handleSelect}
         />
       </div>
       {helperText && (
-        <p className="mt-2 text-xs text-text-secondary">{helperText}</p>
+        <p style={{
+          marginTop: '8px',
+          fontSize: '12px',
+          color: '#64748b',
+        }}>
+          {helperText}
+        </p>
       )}
 
       {selectedFiles.length > 0 && (
-        <div className="mt-3 space-y-2">
+        <div style={{
+          marginTop: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+        }}>
           {selectedFiles.map((file, idx) => (
             <div
               key={`${file.name}-${idx}`}
-              className="flex items-center justify-between px-3 py-2 bg-surface border border-border rounded-input"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '10px 14px',
+                backgroundColor: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+              }}
             >
-              <div className="text-sm text-text truncate">{file.name}</div>
+              <div style={{
+                fontSize: '14px',
+                color: '#0f172a',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flex: 1,
+              }}>
+                {file.name}
+              </div>
               <button
                 type="button"
-                className="text-text-secondary hover:text-text"
                 onClick={() => handleRemove(idx)}
+                style={{
+                  marginLeft: '12px',
+                  width: '28px',
+                  height: '28px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#64748b',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#fef2f2';
+                  e.currentTarget.style.color = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = '#64748b';
+                }}
               >
                 <X size={16} />
               </button>

@@ -82,13 +82,22 @@ export function Table<T>({
   }
 
   return (
-    <div className="bg-surface rounded-card shadow-card overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-background border-b border-border">
+    <div style={{
+      backgroundColor: '#ffffff',
+      borderRadius: '16px',
+      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #e2e8f0',
+      overflow: 'hidden',
+    }}>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead style={{
+            backgroundColor: '#f8fafc',
+            borderBottom: '1px solid #e2e8f0',
+          }}>
             <tr>
               {selectable && (
-                <th className="px-6 py-3 w-12">
+                <th style={{ padding: '16px', width: '48px' }}>
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -96,45 +105,92 @@ export function Table<T>({
                       if (input) input.indeterminate = someSelected;
                     }}
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary"
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      cursor: 'pointer',
+                      accentColor: '#10b981',
+                    }}
                   />
                 </th>
               )}
               {columns.map((col) => (
                 <th
                   key={col.key.toString()}
-                  className={`px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider ${col.className || ''
-                    }`}
+                  style={{
+                    padding: '16px',
+                    textAlign: 'left',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    color: '#64748b',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}
                 >
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {data.map((row, idx) => {
               const rowId = getId(row);
               const isSelected = currentSelectedIds.includes(rowId);
               return (
                 <tr 
-                  key={idx} 
-                  className={`hover:bg-background ${isSelected ? 'bg-blue-50' : ''}`}
+                  key={idx}
+                  style={{
+                    borderBottom: '1px solid #f1f5f9',
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer',
+                    backgroundColor: isSelected ? '#ecfdf5' : 'transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = '#f8fafc';
+                      e.currentTarget.style.borderLeft = '3px solid #10b981';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.borderLeft = 'none';
+                    }
+                  }}
+                  onClick={() => {
+                    if (selectable && onSelectionChange) {
+                      handleSelectRow(rowId, !isSelected);
+                    }
+                  }}
                 >
                   {selectable && (
-                    <td className="px-6 py-4">
+                    <td style={{ padding: '16px' }}>
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={(e) => handleSelectRow(rowId, e.target.checked)}
-                        className="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary"
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          handleSelectRow(rowId, e.target.checked);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                          width: '16px',
+                          height: '16px',
+                          cursor: 'pointer',
+                          accentColor: '#10b981',
+                        }}
                       />
                     </td>
                   )}
                   {columns.map((col) => (
                     <td
                       key={col.key.toString()}
-                      className={`px-6 py-4 whitespace-nowrap text-sm text-text ${col.className || ''
-                        }`}
+                      style={{
+                        padding: '16px',
+                        whiteSpace: 'nowrap',
+                        fontSize: '14px',
+                        color: '#0f172a',
+                      }}
                     >
                       {col.render ? col.render(row) : (row as any)[col.key]}
                     </td>
@@ -146,22 +202,73 @@ export function Table<T>({
         </table>
       </div>
       {pagination && pagination.totalPages > 1 && (
-        <div className="px-6 py-4 border-t border-border flex items-center justify-between">
-          <div className="text-sm text-text-secondary">
+        <div style={{
+          padding: '16px 24px',
+          borderTop: '1px solid #e2e8f0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <div style={{
+            fontSize: '14px',
+            color: '#64748b',
+          }}>
             Sayfa {pagination.currentPage} / {pagination.totalPages}
           </div>
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
               disabled={pagination.currentPage === 1}
-              className="px-3 py-1 text-sm border border-border rounded-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-background"
+              style={{
+                padding: '8px 16px',
+                fontSize: '14px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                backgroundColor: pagination.currentPage === 1 ? '#f8fafc' : '#ffffff',
+                color: pagination.currentPage === 1 ? '#94a3b8' : '#0f172a',
+                cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (pagination.currentPage !== 1) {
+                  e.currentTarget.style.borderColor = '#10b981';
+                  e.currentTarget.style.backgroundColor = '#f0fdf4';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pagination.currentPage !== 1) {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.backgroundColor = '#ffffff';
+                }
+              }}
             >
               Önceki
             </button>
             <button
               onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
               disabled={pagination.currentPage === pagination.totalPages}
-              className="px-3 py-1 text-sm border border-border rounded-button disabled:opacity-50 disabled:cursor-not-allowed hover:bg-background"
+              style={{
+                padding: '8px 16px',
+                fontSize: '14px',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                backgroundColor: pagination.currentPage === pagination.totalPages ? '#f8fafc' : '#ffffff',
+                color: pagination.currentPage === pagination.totalPages ? '#94a3b8' : '#0f172a',
+                cursor: pagination.currentPage === pagination.totalPages ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                if (pagination.currentPage !== pagination.totalPages) {
+                  e.currentTarget.style.borderColor = '#10b981';
+                  e.currentTarget.style.backgroundColor = '#f0fdf4';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (pagination.currentPage !== pagination.totalPages) {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.backgroundColor = '#ffffff';
+                }
+              }}
             >
               Sonraki
             </button>

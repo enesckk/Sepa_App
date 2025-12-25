@@ -18,3 +18,4 @@ echo "   1. Docker Desktop'ı Windows'ta başlatın"
 echo "   2. Settings > Resources > WSL Integration"
 echo "   3. WSL distro'nuzu aktif edin"
 
+

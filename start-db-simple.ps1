@@ -59,3 +59,4 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "   wsl docker-compose -f docker-compose.db.yml up -d" -ForegroundColor Gray
 }
 
+

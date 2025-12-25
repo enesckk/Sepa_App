@@ -12,6 +12,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/ToastProvider';
 import { adminService } from '@/lib/services/admin';
+import { Download, FileSpreadsheet, Bell, Send, Calendar, CheckCircle, AlertCircle, Info, XCircle } from 'lucide-react';
+import { exportToCSV, exportToExcel, prepareTableData } from '@/lib/utils/export';
 
 interface Notification {
   id: string;
@@ -41,14 +43,44 @@ export default function NotificationsPage() {
     error,
   } = useQuery<{ notifications: Notification[]; total: number }, Error>({
     queryKey: ['adminNotifications'],
-    queryFn: () => adminService.getNotifications({ limit: 50 }),
+    queryFn: async () => {
+      const response = await adminService.getNotifications({ limit: 50 });
+      return response as { notifications: Notification[]; total: number };
+    },
   });
 
   const notifications = notificationsData?.notifications || [];
 
+  // Export functions
+  const handleExportCSV = () => {
+    const exportColumns = columns.filter((col) => col.key !== 'actions');
+    const { headers, rows } = prepareTableData(notifications, exportColumns);
+    exportToCSV({
+      filename: 'bildirimler',
+      headers,
+      data: rows,
+    });
+    showToast('success', 'CSV dosyası indirildi.');
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const exportColumns = columns.filter((col) => col.key !== 'actions');
+      const { headers, rows } = prepareTableData(notifications, exportColumns);
+      await exportToExcel({
+        filename: 'bildirimler',
+        headers,
+        data: rows,
+      });
+      showToast('success', 'Excel dosyası indirildi.');
+    } catch (error: any) {
+      showToast('error', 'Excel export hatası:', error.message);
+    }
+  };
+
   const createMutation = useMutation({
     mutationFn: (data: any) => adminService.createNotification(data),
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       queryClient.invalidateQueries({ queryKey: ['adminNotifications'] });
       showToast(
         'success',
@@ -105,59 +137,137 @@ export default function NotificationsPage() {
     {
       key: 'title',
       header: 'Başlık',
+      render: (row) => (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 6px rgba(59, 130, 246, 0.15)',
+            flexShrink: 0,
+          }}>
+            <Bell style={{ color: '#ffffff' }} size={20} />
+          </div>
+          <div>
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: '#0f172a',
+            }}>
+              {row.title}
+            </div>
+          </div>
+        </div>
+      ),
     },
     {
       key: 'message',
       header: 'Mesaj',
       render: (row) => (
-        <div className="max-w-md truncate">{row.message}</div>
+        <div style={{
+          maxWidth: '400px',
+          fontSize: '14px',
+          color: '#475569',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}>
+          {row.message}
+        </div>
       ),
     },
     {
       key: 'type',
       header: 'Tür',
-      render: (row) => (
-        <Badge
-          variant={
-            row.type === 'success'
-              ? 'success'
-              : row.type === 'error'
-              ? 'error'
-              : row.type === 'warning'
-              ? 'warning'
-              : 'info'
-          }
-        >
-          {row.type === 'success'
-            ? 'Başarı'
-            : row.type === 'error'
-            ? 'Hata'
-            : row.type === 'warning'
-            ? 'Uyarı'
-            : row.type === 'event'
-            ? 'Etkinlik'
-            : row.type === 'reward'
-            ? 'Ödül'
-            : row.type === 'system'
-            ? 'Sistem'
-            : 'Bilgi'}
-        </Badge>
-      ),
+      render: (row) => {
+        const typeConfig: Record<string, { label: string; bg: string; border: string; color: string; icon: any }> = {
+          success: { label: 'Başarı', bg: '#ecfdf5', border: '#d1fae5', color: '#059669', icon: CheckCircle },
+          error: { label: 'Hata', bg: '#fef2f2', border: '#fecaca', color: '#dc2626', icon: XCircle },
+          warning: { label: 'Uyarı', bg: '#fef3c7', border: '#fde68a', color: '#d97706', icon: AlertCircle },
+          event: { label: 'Etkinlik', bg: '#f3e8ff', border: '#e9d5ff', color: '#7c3aed', icon: Bell },
+          reward: { label: 'Ödül', bg: '#ecfdf5', border: '#d1fae5', color: '#059669', icon: CheckCircle },
+          system: { label: 'Sistem', bg: '#f1f5f9', border: '#e2e8f0', color: '#64748b', icon: Info },
+          info: { label: 'Bilgi', bg: '#eff6ff', border: '#bfdbfe', color: '#2563eb', icon: Info },
+        };
+        const config = typeConfig[row.type] || typeConfig.info;
+        const Icon = config.icon;
+        
+        return (
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            backgroundColor: config.bg,
+            borderRadius: '8px',
+            border: `1px solid ${config.border}`,
+          }}>
+            <Icon size={14} style={{ color: config.color }} />
+            <span style={{
+              fontSize: '13px',
+              fontWeight: 600,
+              color: config.color,
+            }}>
+              {config.label}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'created_at',
       header: 'Tarih',
       render: (row) => (
-        <div>{new Date(row.created_at).toLocaleString('tr-TR')}</div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}>
+          <Calendar style={{ color: '#64748b' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            color: '#475569',
+          }}>
+            {new Date(row.created_at).toLocaleString('tr-TR')}
+          </span>
+        </div>
       ),
     },
     {
       key: 'is_read',
       header: 'Durum',
       render: (row) => (
-        <Badge variant={row.is_read ? 'default' : 'info'}>
-          {row.is_read ? 'Okundu' : 'Yeni'}
-        </Badge>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: row.is_read ? '#f1f5f9' : '#eff6ff',
+          borderRadius: '8px',
+          border: `1px solid ${row.is_read ? '#e2e8f0' : '#bfdbfe'}`,
+        }}>
+          {!row.is_read && <div style={{
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            backgroundColor: '#3b82f6',
+          }} />}
+          <span style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: row.is_read ? '#64748b' : '#2563eb',
+          }}>
+            {row.is_read ? 'Okundu' : 'Yeni'}
+          </span>
+        </div>
       ),
     },
   ];
@@ -175,19 +285,31 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text">Bildirimler</h1>
-          <p className="text-text-secondary text-sm mt-1">
-            Kullanıcılara bildirim gönderin ve geçmişi görün.
-          </p>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #d1fae5',
+        padding: '24px',
+        background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
+      }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}>
+          <Bell style={{ color: '#10b981' }} size={24} />
+          <h2 style={{
+            fontSize: '20px',
+            fontWeight: 700,
+            color: '#0f172a',
+          }}>
+            Yeni Bildirim Gönder
+          </h2>
         </div>
-      </div>
-
-      <div className="bg-surface rounded-card shadow-card p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-text">Yeni Bildirim Gönder</h2>
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <Input
             label="Başlık *"
             placeholder="Bildirim başlığı"
@@ -215,21 +337,58 @@ export default function NotificationsPage() {
               { label: 'Sistem', value: 'system' },
             ]}
           />
-          <div className="space-y-2">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={formData.send_to_all}
-                onChange={(e) =>
-                  setFormData({ ...formData, send_to_all: e.target.checked })
-                }
-                className="w-4 h-4"
-              />
-              <span className="text-sm text-text">Tüm Kullanıcılara Gönder</span>
-            </label>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '12px',
+            backgroundColor: formData.send_to_all ? '#ecfdf5' : '#f8fafc',
+            borderRadius: '10px',
+            border: `1px solid ${formData.send_to_all ? '#d1fae5' : '#e2e8f0'}`,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onClick={() => setFormData({ ...formData, send_to_all: !formData.send_to_all })}
+          onMouseEnter={(e) => {
+            if (!formData.send_to_all) {
+              e.currentTarget.style.backgroundColor = '#f1f5f9';
+              e.currentTarget.style.borderColor = '#cbd5e1';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!formData.send_to_all) {
+              e.currentTarget.style.backgroundColor = '#f8fafc';
+              e.currentTarget.style.borderColor = '#e2e8f0';
+            }
+          }}
+          >
+            <input
+              type="checkbox"
+              checked={formData.send_to_all}
+              onChange={(e) =>
+                setFormData({ ...formData, send_to_all: e.target.checked })
+              }
+              style={{
+                width: '18px',
+                height: '18px',
+                cursor: 'pointer',
+                accentColor: '#10b981',
+              }}
+            />
+            <span style={{
+              fontSize: '14px',
+              fontWeight: 600,
+              color: formData.send_to_all ? '#059669' : '#64748b',
+            }}>
+              Tüm Kullanıcılara Gönder
+            </span>
           </div>
           {!formData.send_to_all && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '16px',
+            }}>
               <Input
                 label="Hedef Kullanıcı ID (tek kullanıcı)"
                 placeholder="user-id"
@@ -245,19 +404,133 @@ export default function NotificationsPage() {
             </div>
           )}
         </div>
-        <div className="flex justify-end">
-          <Button
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
             onClick={handleSubmit}
-            loading={createMutation.isPending}
-            disabled={!formData.title || !formData.message}
+            disabled={!formData.title || !formData.message || createMutation.isPending}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 20px',
+              backgroundColor: (!formData.title || !formData.message || createMutation.isPending) ? '#94a3b8' : '#10b981',
+              border: 'none',
+              borderRadius: '10px',
+              color: '#ffffff',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: (!formData.title || !formData.message || createMutation.isPending) ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+            }}
+            onMouseEnter={(e) => {
+              if (formData.title && formData.message && !createMutation.isPending) {
+                e.currentTarget.style.backgroundColor = '#059669';
+                e.currentTarget.style.transform = 'translateY(-1px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (formData.title && formData.message && !createMutation.isPending) {
+                e.currentTarget.style.backgroundColor = '#10b981';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+              }
+            }}
           >
-            Gönder
-          </Button>
+            <Send size={16} />
+            {createMutation.isPending ? 'Gönderiliyor...' : 'Gönder'}
+          </button>
+        </div>
         </div>
       </div>
 
-      <div>
-        <h2 className="text-xl font-semibold text-text mb-4">Bildirim Geçmişi</h2>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '12px',
+      }}>
+        <button
+          onClick={handleExportCSV}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #10b981',
+            borderRadius: '10px',
+            color: '#10b981',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Download size={16} />
+          CSV
+        </button>
+        <button
+          onClick={handleExportExcel}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          <FileSpreadsheet size={16} />
+          Excel
+        </button>
+      </div>
+
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #e2e8f0',
+        padding: '24px',
+      }}>
+        <h2 style={{
+          fontSize: '20px',
+          fontWeight: 700,
+          color: '#0f172a',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        }}>
+          <Bell style={{ color: '#10b981' }} size={24} />
+          Bildirim Geçmişi
+        </h2>
         <Table<Notification>
           columns={columns}
           data={notifications}

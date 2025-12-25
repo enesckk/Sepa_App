@@ -3,6 +3,9 @@ const {
   getNearbyPlaces,
   getPlaceById,
   getPlaceCategories,
+  createPlace,
+  updatePlace,
+  deletePlace,
 } = require('../services/placeService');
 
 /**
@@ -117,10 +120,70 @@ const getPlaceCategoriesEndpoint = async (req, res, next) => {
   }
 };
 
+/**
+ * Create place (Admin)
+ * POST /api/admin/places
+ */
+const createPlaceEndpoint = async (req, res, next) => {
+  try {
+    const place = await createPlace(req.body);
+
+    res.status(201).json({
+      success: true,
+      data: {
+        place,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Update place (Admin)
+ * PUT /api/admin/places/:id
+ */
+const updatePlaceEndpoint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const place = await updatePlace(id, req.body);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        place,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Delete place (Admin)
+ * DELETE /api/admin/places/:id
+ */
+const deletePlaceEndpoint = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await deletePlace(id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Place deleted successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getPlaces: getPlacesEndpoint,
   getNearbyPlaces: getNearbyPlacesEndpoint,
   getPlaceById: getPlaceByIdEndpoint,
   getPlaceCategories: getPlaceCategoriesEndpoint,
+  createPlace: createPlaceEndpoint,
+  updatePlace: updatePlaceEndpoint,
+  deletePlace: deletePlaceEndpoint,
 };
 

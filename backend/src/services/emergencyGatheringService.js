@@ -158,9 +158,112 @@ const getGatheringAreaById = async (areaId, latitude = null, longitude = null) =
   return areaData;
 };
 
+/**
+ * Create emergency gathering area (Admin)
+ * @param {object} data - Area data
+ * @returns {Promise<Object>} Created area
+ */
+const createGatheringArea = async (data) => {
+  const {
+    name,
+    description,
+    address,
+    latitude,
+    longitude,
+    type,
+    capacity,
+    contact_phone,
+    facilities = [],
+    is_active = true,
+  } = data;
+
+  if (!name || !address) {
+    throw new ValidationError('Name and address are required');
+  }
+
+  if (latitude === undefined || longitude === undefined) {
+    throw new ValidationError('Latitude and longitude are required');
+  }
+
+  const area = await EmergencyGathering.create({
+    name,
+    description,
+    address,
+    latitude: parseFloat(latitude),
+    longitude: parseFloat(longitude),
+    type: type || 'open_area',
+    capacity: capacity ? parseInt(capacity) : null,
+    contact_phone,
+    facilities: Array.isArray(facilities) ? facilities : [],
+    is_active,
+  });
+
+  return area.toJSON();
+};
+
+/**
+ * Update emergency gathering area (Admin)
+ * @param {string} areaId - Area ID
+ * @param {object} data - Update data
+ * @returns {Promise<Object>} Updated area
+ */
+const updateGatheringArea = async (areaId, data) => {
+  const area = await EmergencyGathering.findByPk(areaId);
+
+  if (!area) {
+    throw new NotFoundError('Emergency gathering area');
+  }
+
+  const {
+    name,
+    description,
+    address,
+    latitude,
+    longitude,
+    type,
+    capacity,
+    contact_phone,
+    facilities,
+    is_active,
+  } = data;
+
+  if (name !== undefined) area.name = name;
+  if (description !== undefined) area.description = description;
+  if (address !== undefined) area.address = address;
+  if (latitude !== undefined) area.latitude = parseFloat(latitude);
+  if (longitude !== undefined) area.longitude = parseFloat(longitude);
+  if (type !== undefined) area.type = type;
+  if (capacity !== undefined) area.capacity = capacity ? parseInt(capacity) : null;
+  if (contact_phone !== undefined) area.contact_phone = contact_phone;
+  if (facilities !== undefined) area.facilities = Array.isArray(facilities) ? facilities : [];
+  if (is_active !== undefined) area.is_active = is_active;
+
+  await area.save();
+
+  return area.toJSON();
+};
+
+/**
+ * Delete emergency gathering area (Admin)
+ * @param {string} areaId - Area ID
+ * @returns {Promise<void>}
+ */
+const deleteGatheringArea = async (areaId) => {
+  const area = await EmergencyGathering.findByPk(areaId);
+
+  if (!area) {
+    throw new NotFoundError('Emergency gathering area');
+  }
+
+  await area.destroy();
+};
+
 module.exports = {
   getGatheringAreas,
   getNearbyGatheringAreas,
   getGatheringAreaById,
+  createGatheringArea,
+  updateGatheringArea,
+  deleteGatheringArea,
 };
 

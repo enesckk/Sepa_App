@@ -14,7 +14,8 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useToast } from '@/components/ui/ToastProvider';
 import { adminService, RewardsResponse } from '@/lib/services/admin';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Download, FileSpreadsheet, Gift, Package, Trophy } from 'lucide-react';
+import { exportToCSV, exportToExcel, prepareTableData } from '@/lib/utils/export';
 
 interface Reward {
   id: string;
@@ -164,23 +165,88 @@ export default function RewardsPage() {
     }
   };
 
+  // Export functions
+  const handleExportCSV = () => {
+    const exportColumns = columns.filter((col) => col.key !== 'actions');
+    const { headers, rows } = prepareTableData(rewards, exportColumns);
+    exportToCSV({
+      filename: 'oduller',
+      headers,
+      data: rows,
+    });
+    showToast('success', 'CSV dosyası indirildi.');
+  };
+
+  const handleExportExcel = async () => {
+    try {
+      const exportColumns = columns.filter((col) => col.key !== 'actions');
+      const { headers, rows } = prepareTableData(rewards, exportColumns);
+      await exportToExcel({
+        filename: 'oduller',
+        headers,
+        data: rows,
+      });
+      showToast('success', 'Excel dosyası indirildi.');
+    } catch (error: any) {
+      showToast('error', 'Excel export hatası:', error.message);
+    }
+  };
+
   const columns: TableColumn<Reward>[] = [
     {
       key: 'title',
       header: 'Ödül',
       render: (row) => (
-        <div className="flex items-center">
-          {row.image_url && (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {row.image_url ? (
             <img
               src={row.image_url}
               alt={row.title}
-              className="w-12 h-12 rounded-lg object-cover mr-3"
+              style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '12px',
+                objectFit: 'cover',
+                marginRight: '12px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+              }}
             />
+          ) : (
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '12px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '12px',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.15)',
+            }}>
+              <Trophy style={{ color: '#ffffff' }} size={24} />
+            </div>
           )}
           <div>
-            <div className="font-medium">{row.title}</div>
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: '#0f172a',
+              marginBottom: '4px',
+            }}>
+              {row.title}
+            </div>
             {row.description && (
-              <div className="text-sm text-text-secondary line-clamp-1">{row.description}</div>
+              <div style={{
+                fontSize: '13px',
+                color: '#64748b',
+                maxWidth: '300px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {row.description}
+              </div>
             )}
           </div>
         </div>
@@ -189,33 +255,130 @@ export default function RewardsPage() {
     {
       key: 'points',
       header: 'Puan',
-      render: (row) => <span className="font-semibold text-green-600">{row.points} ₺</span>,
+      render: (row) => (
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: '#ecfdf5',
+          borderRadius: '8px',
+          border: '1px solid #d1fae5',
+        }}>
+          <Gift style={{ color: '#10b981' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#059669',
+          }}>
+            {row.points} ₺
+          </span>
+        </div>
+      ),
     },
     {
       key: 'stock',
       header: 'Stok',
-      render: (row) => (row.stock === null ? 'Sınırsız' : row.stock),
+      render: (row) => (
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: row.stock === null ? '#eff6ff' : '#fef3c7',
+          borderRadius: '8px',
+          border: `1px solid ${row.stock === null ? '#bfdbfe' : '#fde68a'}`,
+        }}>
+          <Package style={{ color: row.stock === null ? '#3b82f6' : '#d97706' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: row.stock === null ? '#2563eb' : '#d97706',
+          }}>
+            {row.stock === null ? 'Sınırsız' : row.stock}
+          </span>
+        </div>
+      ),
     },
     {
       key: 'is_active',
       header: 'Durum',
       render: (row) => (
-        <Badge variant={row.is_active ? 'success' : 'error'}>
-          {row.is_active ? 'Aktif' : 'Pasif'}
-        </Badge>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '6px 12px',
+          backgroundColor: row.is_active ? '#ecfdf5' : '#fef2f2',
+          borderRadius: '8px',
+          border: `1px solid ${row.is_active ? '#d1fae5' : '#fecaca'}`,
+        }}>
+          <span style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: row.is_active ? '#059669' : '#dc2626',
+          }}>
+            {row.is_active ? 'Aktif' : 'Pasif'}
+          </span>
+        </div>
       ),
     },
     {
       key: 'actions',
       header: 'İşlemler',
       render: (row) => (
-        <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(row)}>
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button variant="dangerGhost" size="sm" onClick={() => handleDelete(row.id)}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => handleOpenModal(row)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#ecfdf5',
+              border: '1px solid #d1fae5',
+              borderRadius: '8px',
+              color: '#10b981',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#d1fae5';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ecfdf5';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Edit size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(row.id)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              color: '#dc2626',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fee2e2';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fef2f2';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       ),
     },
@@ -240,18 +403,109 @@ export default function RewardsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text">Ödüller</h1>
-          <p className="text-text-secondary text-sm mt-1">
-            Ödül ve stok yönetimi.
-          </p>
-        </div>
-        <Button onClick={() => handleOpenModal()}>Yeni Ödül</Button>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '12px',
+      }}>
+        <button
+          onClick={handleExportCSV}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #10b981',
+            borderRadius: '10px',
+            color: '#10b981',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Download size={16} />
+          CSV
+        </button>
+        <button
+          onClick={handleExportExcel}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          <FileSpreadsheet size={16} />
+          Excel
+        </button>
+        <button
+          onClick={() => handleOpenModal()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          Yeni Ödül
+        </button>
       </div>
 
-      <div className="bg-surface rounded-card shadow-card p-4">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #d1fae5',
+        padding: '24px',
+        background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
+      }}>
         <Input
           placeholder="Ara..."
           value={search}
@@ -271,20 +525,73 @@ export default function RewardsPage() {
         onClose={handleCloseModal}
         title={selectedReward ? 'Ödül Düzenle' : 'Yeni Ödül'}
         footer={
-          <div className="flex justify-end gap-3">
-            <Button variant="secondary" onClick={handleCloseModal}>
-              İptal
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              loading={createMutation.isPending || updateMutation.isPending}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: '12px',
+          }}>
+            <button
+              onClick={handleCloseModal}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                color: '#64748b',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+                e.currentTarget.style.color = '#475569';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+                e.currentTarget.style.color = '#64748b';
+              }}
             >
-              {selectedReward ? 'Güncelle' : 'Oluştur'}
-            </Button>
+              İptal
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={createMutation.isPending || updateMutation.isPending}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: createMutation.isPending || updateMutation.isPending ? '#94a3b8' : '#10b981',
+                border: 'none',
+                borderRadius: '10px',
+                color: '#ffffff',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: createMutation.isPending || updateMutation.isPending ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+              }}
+              onMouseEnter={(e) => {
+                if (!createMutation.isPending && !updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#059669';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!createMutation.isPending && !updateMutation.isPending) {
+                  e.currentTarget.style.backgroundColor = '#10b981';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+                }
+              }}
+            >
+              {createMutation.isPending || updateMutation.isPending ? 'Kaydediliyor...' : (selectedReward ? 'Güncelle' : 'Oluştur')}
+            </button>
           </div>
         }
       >
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <Input
             label="Başlık *"
             placeholder="Ödül adı"
@@ -348,7 +655,6 @@ export default function RewardsPage() {
               }
             }}
             helperText="Maks 5MB, JPG/PNG"
-            preview={imagePreview}
           />
         </div>
       </Modal>

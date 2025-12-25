@@ -127,9 +127,12 @@ export default function EventsPage() {
   });
 
   // Fetch event registrations
-  const { data: registrationsData, isLoading: isLoadingRegistrations } = useQuery({
+  const { data: registrationsData, isLoading: isLoadingRegistrations } = useQuery<{ registrations: any[] }>({
     queryKey: ['eventRegistrations', selectedEvent?.id],
-    queryFn: () => adminService.getEventRegistrations(selectedEvent!.id),
+    queryFn: async () => {
+      const response = await adminService.getEventRegistrations(selectedEvent!.id);
+      return response as { registrations: any[] };
+    },
     enabled: !!selectedEvent && viewRegistrationsOpen,
   });
 
@@ -226,18 +229,51 @@ export default function EventsPage() {
       key: 'title',
       header: 'Başlık',
       render: (row) => (
-        <div className="flex items-center">
-          {row.image_url && (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {row.image_url ? (
             <img
               src={row.image_url}
               alt={row.title}
-              className="w-12 h-12 rounded-lg object-cover mr-3"
+              style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '10px',
+                objectFit: 'cover',
+                marginRight: '12px',
+                border: '1px solid #e2e8f0',
+              }}
             />
+          ) : (
+            <div style={{
+              width: '48px',
+              height: '48px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '12px',
+              boxShadow: '0 2px 6px rgba(16, 185, 129, 0.15)',
+            }}>
+              <Calendar style={{ color: '#ffffff' }} size={20} />
+            </div>
           )}
           <div>
-            <div className="font-medium">{row.title}</div>
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: '#0f172a',
+              marginBottom: '4px',
+            }}>
+              {row.title}
+            </div>
             {row.category && (
-              <div className="text-sm text-text-secondary">{row.category}</div>
+              <div style={{
+                fontSize: '13px',
+                color: '#64748b',
+              }}>
+                {row.category}
+              </div>
             )}
           </div>
         </div>
@@ -248,25 +284,58 @@ export default function EventsPage() {
       header: 'Tarih',
       render: (row) => (
         <div>
-          <div className="flex items-center text-sm">
-            <Calendar className="w-4 h-4 mr-1" />
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: '14px',
+            color: '#0f172a',
+            marginBottom: '4px',
+          }}>
+            <Calendar style={{ color: '#10b981', marginRight: '6px' }} size={16} />
             {new Date(row.date).toLocaleDateString('tr-TR')}
           </div>
-          {row.time && <div className="text-xs text-text-secondary">{row.time}</div>}
+          {row.time && (
+            <div style={{
+              fontSize: '12px',
+              color: '#64748b',
+            }}>
+              {row.time}
+            </div>
+          )}
         </div>
       ),
     },
     {
       key: 'location',
       header: 'Konum',
+      render: (row) => (
+        <span style={{
+          fontSize: '14px',
+          color: '#475569',
+        }}>
+          {row.location}
+        </span>
+      ),
     },
     {
       key: 'registered',
       header: 'Kayıt',
       render: (row) => (
-        <div className="flex items-center">
-          <Users className="w-4 h-4 mr-1" />
-          <span>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          backgroundColor: '#ecfdf5',
+          borderRadius: '8px',
+          border: '1px solid #d1fae5',
+        }}>
+          <Users style={{ color: '#10b981' }} size={16} />
+          <span style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#059669',
+          }}>
             {row.registered} / {row.capacity || '∞'}
           </span>
         </div>
@@ -276,30 +345,108 @@ export default function EventsPage() {
       key: 'is_active',
       header: 'Durum',
       render: (row) => (
-        <Badge variant={row.is_active ? 'success' : 'error'}>
-          {row.is_active ? 'Aktif' : 'Pasif'}
-        </Badge>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '6px 12px',
+          backgroundColor: row.is_active ? '#ecfdf5' : '#fef2f2',
+          borderRadius: '8px',
+          border: `1px solid ${row.is_active ? '#d1fae5' : '#fecaca'}`,
+        }}>
+          <span style={{
+            fontSize: '13px',
+            fontWeight: 600,
+            color: row.is_active ? '#059669' : '#dc2626',
+          }}>
+            {row.is_active ? 'Aktif' : 'Pasif'}
+          </span>
+        </div>
       ),
     },
     {
       key: 'actions',
       header: 'İşlemler',
       render: (row) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
             onClick={() => handleViewRegistrations(row)}
             title="Kayıtları Görüntüle"
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '8px',
+              color: '#3b82f6',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#dbeafe';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#eff6ff';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
           >
-            <Eye className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => handleOpenModal(row)}>
-            <Edit className="w-4 h-4" />
-          </Button>
-          <Button variant="dangerGhost" size="sm" onClick={() => handleDelete(row.id)}>
-            <Trash2 className="w-4 h-4" />
-          </Button>
+            <Eye size={16} />
+          </button>
+          <button
+            onClick={() => handleOpenModal(row)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#ecfdf5',
+              border: '1px solid #d1fae5',
+              borderRadius: '8px',
+              color: '#10b981',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#d1fae5';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#ecfdf5';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Edit size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(row.id)}
+            style={{
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              color: '#dc2626',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#fee2e2';
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#fef2f2';
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       ),
     },
@@ -351,28 +498,115 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-text">Etkinlikler</h1>
-          <p className="text-text-secondary text-sm mt-1">
-            Etkinlikleri yönetin, yeni etkinlik ekleyin.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={handleExportCSV} leftIcon={<Download size={16} />}>
-            CSV
-          </Button>
-          <Button variant="secondary" onClick={handleExportExcel} leftIcon={<FileSpreadsheet size={16} />}>
-            Excel
-          </Button>
-          <Button onClick={() => handleOpenModal()}>Yeni Etkinlik</Button>
-        </div>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        gap: '12px',
+      }}>
+        <button
+          onClick={handleExportCSV}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#ffffff',
+            border: '1px solid #10b981',
+            borderRadius: '10px',
+            color: '#10b981',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ecfdf5';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ffffff';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <Download size={16} />
+          CSV
+        </button>
+        <button
+          onClick={handleExportExcel}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          <FileSpreadsheet size={16} />
+          Excel
+        </button>
+        <button
+          onClick={() => handleOpenModal()}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#10b981',
+            border: 'none',
+            borderRadius: '10px',
+            color: '#ffffff',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.2)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#059669';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#10b981';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(16, 185, 129, 0.2)';
+          }}
+        >
+          Yeni Etkinlik
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-surface rounded-card shadow-card p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '16px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        border: '1px solid #d1fae5',
+        padding: '24px',
+        background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '16px',
+        }}>
           <Input
             placeholder="Ara..."
             value={search}
@@ -542,7 +776,6 @@ export default function EventsPage() {
               }
             }}
             helperText="Maks 5MB, JPG/PNG"
-            preview={imagePreview}
           />
         </div>
       </Modal>
@@ -565,7 +798,7 @@ export default function EventsPage() {
           <LoadingSpinner />
         ) : (
           <div className="space-y-2">
-            {registrationsData?.registrations?.length > 0 ? (
+            {registrationsData?.registrations && registrationsData.registrations.length > 0 ? (
               registrationsData.registrations.map((reg: any) => (
                 <div
                   key={reg.id}

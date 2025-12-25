@@ -37,32 +37,111 @@ export function AdvancedFilters({ filters, values, onChange, onReset }: Advanced
   const activeFiltersCount = Object.keys(values).filter((key) => values[key] !== '' && values[key] !== null && values[key] !== undefined).length;
 
   return (
-    <div className="bg-surface rounded-card shadow-card p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Filter size={20} className="text-text-secondary" />
-          <h3 className="font-medium text-text">Gelişmiş Filtreler</h3>
+    <div style={{
+      backgroundColor: '#ffffff',
+      borderRadius: '16px',
+      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)',
+      border: '1px solid #e2e8f0',
+      padding: '20px',
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '16px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Filter size={20} style={{ color: '#10b981' }} />
+          <h3 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: '#0f172a',
+            margin: 0,
+          }}>
+            Gelişmiş Filtreler
+          </h3>
           {activeFiltersCount > 0 && (
-            <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+            <span style={{
+              backgroundColor: '#10b981',
+              color: '#ffffff',
+              fontSize: '12px',
+              padding: '4px 10px',
+              borderRadius: '12px',
+              fontWeight: 600,
+            }}>
               {activeFiltersCount}
             </span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div style={{ display: 'flex', gap: '8px' }}>
           {activeFiltersCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={onReset}>
-              <X size={16} className="mr-1" />
+            <button
+              onClick={onReset}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                color: '#64748b',
+                fontSize: '14px',
+                fontWeight: 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.borderColor = '#cbd5e1';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8fafc';
+                e.currentTarget.style.borderColor = '#e2e8f0';
+              }}
+            >
+              <X size={16} />
               Temizle
-            </Button>
+            </button>
           )}
-          <Button variant="secondary" size="sm" onClick={() => setIsOpen(!isOpen)}>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: isOpen ? '#10b981' : '#ffffff',
+              border: '1px solid #10b981',
+              borderRadius: '8px',
+              color: isOpen ? '#ffffff' : '#10b981',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              if (!isOpen) {
+                e.currentTarget.style.backgroundColor = '#f0fdf4';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isOpen) {
+                e.currentTarget.style.backgroundColor = '#ffffff';
+              }
+            }}
+          >
             {isOpen ? 'Gizle' : 'Göster'}
-          </Button>
+          </button>
         </div>
       </div>
 
       {isOpen && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '16px',
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: '1px solid #f1f5f9',
+        }}>
           {filters.map((filter) => {
             if (filter.type === 'text') {
               return (
@@ -118,7 +197,11 @@ export function AdvancedFilters({ filters, values, onChange, onReset }: Advanced
 
             if (filter.type === 'dateRange') {
               return (
-                <div key={filter.key} className="grid grid-cols-2 gap-2">
+                <div key={filter.key} style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '8px',
+                }}>
                   <Input
                     label={`${filter.label} (Başlangıç)`}
                     type="date"
@@ -137,7 +220,11 @@ export function AdvancedFilters({ filters, values, onChange, onReset }: Advanced
 
             if (filter.type === 'numberRange') {
               return (
-                <div key={filter.key} className="grid grid-cols-2 gap-2">
+                <div key={filter.key} style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '8px',
+                }}>
                   <Input
                     label={`${filter.label} (Min)`}
                     type="number"
@@ -163,7 +250,14 @@ export function AdvancedFilters({ filters, values, onChange, onReset }: Advanced
 
       {/* Active Filters Tags */}
       {activeFiltersCount > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div style={{
+          marginTop: '16px',
+          paddingTop: '16px',
+          borderTop: '1px solid #f1f5f9',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '8px',
+        }}>
           {Object.entries(values).map(([key, value]) => {
             if (!value || value === '') return null;
             const filter = filters.find((f) => f.key === key || f.key === key.replace('_start', '').replace('_end', '').replace('_min', '').replace('_max', ''));
@@ -178,13 +272,43 @@ export function AdvancedFilters({ filters, values, onChange, onReset }: Advanced
             return (
               <div
                 key={key}
-                className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: '#ecfdf5',
+                  border: '1px solid #d1fae5',
+                  color: '#059669',
+                  padding: '6px 12px',
+                  borderRadius: '20px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                }}
               >
-                <span className="font-medium">{filter.label}:</span>
+                <span style={{ fontWeight: 600 }}>{filter.label}:</span>
                 <span>{displayValue}</span>
                 <button
                   onClick={() => handleRemoveFilter(key)}
-                  className="ml-1 hover:bg-primary/20 rounded-full p-0.5"
+                  style={{
+                    marginLeft: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: '#059669',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#d1fae5';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                 >
                   <X size={14} />
                 </button>
