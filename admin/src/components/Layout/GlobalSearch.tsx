@@ -117,8 +117,13 @@ export function GlobalSearch() {
           placeholder="Ara... (⌘K)"
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
+            const newValue = e.target.value;
+            setQuery(newValue);
             setIsOpen(true);
+            // Focus'u koru
+            if (inputRef.current && document.activeElement !== inputRef.current) {
+              inputRef.current.focus();
+            }
           }}
           onKeyDown={handleKeyDown}
           style={{
@@ -143,8 +148,12 @@ export function GlobalSearch() {
             setIsOpen(true);
           }}
           onBlur={(e) => {
-            e.target.style.borderColor = '#e2e8f0';
-            e.target.style.boxShadow = 'none';
+            // Sadece başka bir elemente tıklandığında blur olsun
+            const relatedTarget = e.relatedTarget as HTMLElement;
+            if (!searchRef.current?.contains(relatedTarget)) {
+              e.target.style.borderColor = '#e2e8f0';
+              e.target.style.boxShadow = 'none';
+            }
           }}
           onMouseEnter={(e) => {
             if (document.activeElement !== e.target) {

@@ -556,7 +556,17 @@ export default function UsersPage() {
               type="text"
               placeholder="Kullanıcı ara..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                const cursorPosition = e.target.selectionStart || 0;
+                setSearch(e.target.value);
+                // Focus'u ve cursor pozisyonunu koru
+                setTimeout(() => {
+                  if (e.target && document.activeElement === e.target) {
+                    e.target.focus();
+                    e.target.setSelectionRange(cursorPosition, cursorPosition);
+                  }
+                }, 0);
+              }}
               style={{
                 width: '100%',
                 paddingLeft: '46px',

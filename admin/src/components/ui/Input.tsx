@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback, useLayoutEffect } from 'react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -9,7 +9,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   fullWidth?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({
+const InputComponent: React.FC<InputProps> = ({
   label,
   error,
   helperText,
@@ -17,8 +17,43 @@ export const Input: React.FC<InputProps> = ({
   iconRight,
   fullWidth = true,
   className = '',
+  onChange,
+  value,
   ...rest
 }) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cursorPositionRef = useRef<number | null>(null);
+  const wasFocusedRef = useRef(false);
+  const previousValueRef = useRef<string | number | readonly string[] | undefined>(value);
+
+  // Value değiştiğinde cursor pozisyonunu koru
+  useLayoutEffect(() => {
+    if (inputRef.current && wasFocusedRef.current && cursorPositionRef.current !== null && previousValueRef.current !== value) {
+      const input = inputRef.current;
+      // Focus'u geri ver
+      if (document.activeElement !== input) {
+        input.focus();
+      }
+      // Cursor pozisyonunu ayarla
+      const newLength = input.value.length;
+      const newPosition = Math.min(cursorPositionRef.current + 1, newLength);
+      input.setSelectionRange(newPosition, newPosition);
+      cursorPositionRef.current = null;
+    }
+    previousValueRef.current = value;
+  }, [value]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // Cursor pozisyonunu ve focus durumunu kaydet
+    cursorPositionRef.current = e.target.selectionStart || 0;
+    wasFocusedRef.current = document.activeElement === e.target;
+    
+    // onChange'i çağır
+    if (onChange) {
+      onChange(e);
+    }
+  }, [onChange]);
+
   return (
     <div className={fullWidth ? 'w-full' : ''}>
       {label && (
@@ -40,6 +75,8 @@ export const Input: React.FC<InputProps> = ({
           </span>
         )}
         <input
+          ref={inputRef}
+          value={value}
           style={{
             width: '100%',
             paddingLeft: iconLeft ? '40px' : '14px',
@@ -54,17 +91,21 @@ export const Input: React.FC<InputProps> = ({
             backgroundColor: '#ffffff',
           }}
           onFocus={(e) => {
+            wasFocusedRef.current = true;
             if (!error) {
               e.target.style.borderColor = '#10b981';
               e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
             }
           }}
           onBlur={(e) => {
+            wasFocusedRef.current = false;
+            cursorPositionRef.current = null;
             if (!error) {
               e.target.style.borderColor = '#e2e8f0';
               e.target.style.boxShadow = 'none';
             }
           }}
+          onChange={handleChange}
           className={className}
           {...rest}
         />
@@ -90,6 +131,8 @@ export const Input: React.FC<InputProps> = ({
     </div>
   );
 };
+
+export const Input = React.memo(InputComponent);
 
 export default Input;
 
