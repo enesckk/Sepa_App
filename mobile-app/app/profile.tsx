@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import {
   ArrowLeft,
   User,
@@ -23,26 +23,107 @@ import {
   ChevronRight,
   FileText,
   Gift,
+  LogOut,
 } from 'lucide-react-native';
 import { Colors } from '../src/constants/colors';
-
-// Mock user data
-const mockUserData = {
-  name: 'Ahmet Yılmaz',
-  email: 'ahmet.yilmaz@example.com',
-  phone: '+90 532 123 45 67',
-  address: 'Şehitkamil, Gaziantep',
-  memberSince: '2023-01-15',
-  totalPoints: 1250,
-  level: 5,
-  completedApplications: 12,
-  participatedEvents: 8,
-  earnedRewards: 5,
-  avatar: 'https://via.placeholder.com/120/2E7D32/FFFFFF?text=AY',
-};
+import { useApp } from '../src/contexts';
+import { Alert } from 'react-native';
+import { getMyApplications, getMyRegistrations, getMyRewards } from '../src/services/api';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { user, logout, golbucks } = useApp();
+  const [stats, setStats] = useState({
+    applications: 0,
+    events: 0,
+    rewards: 0,
+  });
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  // Load stats when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadStats = async () => {
+        try {
+          setLoadingStats(true);
+          // Load stats individually with better error handling
+          let applicationsCount = 0;
+          let eventsCount = 0;
+          let rewardsCount = 0;
+
+          try {
+            const applicationsResponse = await getMyApplications({ limit: 1, offset: 0 });
+            applicationsCount = applicationsResponse.total || 0;
+          } catch (error) {
+            if (__DEV__) {
+              console.error('[ProfileScreen] Error loading applications:', error);
+            }
+          }
+
+          try {
+            const eventsResponse = await getMyRegistrations({ limit: 1, offset: 0 });
+            eventsCount = eventsResponse.total || 0;
+          } catch (error) {
+            if (__DEV__) {
+              console.error('[ProfileScreen] Error loading events:', error);
+            }
+            // Set to 0 on error
+            eventsCount = 0;
+          }
+
+          try {
+            const rewardsResponse = await getMyRewards({ limit: 1, offset: 0 });
+            rewardsCount = rewardsResponse.total || 0;
+          } catch (error) {
+            if (__DEV__) {
+              console.error('[ProfileScreen] Error loading rewards:', error);
+            }
+          }
+
+          setStats({
+            applications: applicationsCount,
+            events: eventsCount,
+            rewards: rewardsCount,
+          });
+        } catch (error) {
+          if (__DEV__) {
+            console.error('[ProfileScreen] Error loading stats:', error);
+          }
+        } finally {
+          setLoadingStats(false);
+        }
+      };
+
+      loadStats();
+    }, [])
+  );
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Çıkış Yap',
+      'Hesabınızdan çıkmak istediğinize emin misiniz?',
+      [
+        { text: 'İptal', style: 'cancel' },
+        {
+          text: 'Çıkış Yap',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+              // Navigate to login screen
+              router.replace('/login');
+            } catch (error) {
+              if (__DEV__) {
+                console.error('Logout error:', error);
+              }
+              // Even if logout fails, navigate to login
+              router.replace('/login');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const ProfileSection: React.FC<{ title: string; children: React.ReactNode }> = ({
     title,
@@ -113,72 +194,87 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
-            <Image
-              source={{ uri: mockUserData.avatar }}
-              style={styles.avatar}
-            />
-            <View style={styles.levelBadge}>
-              <Text style={styles.levelText}>Lv.{mockUserData.level}</Text>
+        {user ? (
+          <>
+            <View style={styles.profileHeader}>
+              <View style={styles.avatarContainer}>
+                <View style={[styles.avatar, { backgroundColor: Colors.primary }]}>
+                  <Text style={styles.avatarText}>
+                    {user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.userName}>{user.name}</Text>
+              <View style={styles.pointsContainer}>
+                <Coins size={20} color={Colors.secondary} />
+                <Text style={styles.pointsText}>{golbucks || user.golbucks || 0} Golbucks</Text>
+              </View>
             </View>
-          </View>
-          <Text style={styles.userName}>{mockUserData.name}</Text>
-          <View style={styles.pointsContainer}>
-            <Coins size={20} color={Colors.secondary} />
-            <Text style={styles.pointsText}>{mockUserData.totalPoints} Golbucks</Text>
-          </View>
-        </View>
 
-        {/* Stats */}
-        <View style={styles.statsContainer}>
-          <StatCard
-            icon={<Award size={24} color={Colors.primary} />}
-            label="Başvurular"
-            value={mockUserData.completedApplications}
-            color={Colors.primary}
-          />
-          <StatCard
-            icon={<Calendar size={24} color={Colors.secondary} />}
-            label="Etkinlikler"
-            value={mockUserData.participatedEvents}
-            color={Colors.secondary}
-          />
-          <StatCard
-            icon={<Coins size={24} color={Colors.orange} />}
-            label="Ödüller"
-            value={mockUserData.earnedRewards}
-            color={Colors.orange}
-          />
-        </View>
+            {/* Stats */}
+            <View style={styles.statsContainer}>
+              <StatCard
+                icon={<Award size={24} color={Colors.primary} />}
+                label="Başvurular"
+                value={loadingStats ? '...' : stats.applications.toString()}
+                color={Colors.primary}
+              />
+              <StatCard
+                icon={<Calendar size={24} color={Colors.secondary} />}
+                label="Etkinlikler"
+                value={loadingStats ? '...' : stats.events.toString()}
+                color={Colors.secondary}
+              />
+              <StatCard
+                icon={<Coins size={24} color={Colors.orange} />}
+                label="Ödüller"
+                value={loadingStats ? '...' : stats.rewards.toString()}
+                color={Colors.orange}
+              />
+            </View>
 
-        {/* Personal Information */}
-        <ProfileSection title="Kişisel Bilgiler">
-          <ProfileItem
-            icon={<Mail size={18} color={Colors.textSecondary} />}
-            title="E-posta"
-            value={mockUserData.email}
-          />
-          <ProfileItem
-            icon={<Phone size={18} color={Colors.textSecondary} />}
-            title="Telefon"
-            value={mockUserData.phone}
-          />
-          <ProfileItem
-            icon={<MapPin size={18} color={Colors.textSecondary} />}
-            title="Adres"
-            value={mockUserData.address}
-          />
-          <ProfileItem
-            icon={<Calendar size={18} color={Colors.textSecondary} />}
-            title="Üyelik Tarihi"
-            value={new Date(mockUserData.memberSince).toLocaleDateString('tr-TR', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          />
-        </ProfileSection>
+            {/* Personal Information */}
+            <ProfileSection title="Kişisel Bilgiler">
+              <ProfileItem
+                icon={<Mail size={18} color={Colors.textSecondary} />}
+                title="E-posta"
+                value={user.email}
+              />
+              {user.phone && (
+                <ProfileItem
+                  icon={<Phone size={18} color={Colors.textSecondary} />}
+                  title="Telefon"
+                  value={user.phone}
+                />
+              )}
+              {user.mahalle && (
+                <ProfileItem
+                  icon={<MapPin size={18} color={Colors.textSecondary} />}
+                  title="Mahalle"
+                  value={user.mahalle}
+                />
+              )}
+              <ProfileItem
+                icon={<Calendar size={18} color={Colors.textSecondary} />}
+                title="Üyelik Tarihi"
+                value={new Date(user.created_at).toLocaleDateString('tr-TR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              />
+            </ProfileSection>
+          </>
+        ) : (
+          <View style={styles.profileHeader}>
+            <Text style={styles.userName}>Kullanıcı bilgileri yükleniyor...</Text>
+          </View>
+        )}
 
         {/* Quick Actions */}
         <ProfileSection title="Hızlı İşlemler">
@@ -199,7 +295,7 @@ export default function ProfileScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => router.push('/rewards')}
+            onPress={() => router.push('/(tabs)/rewards')}
             style={({ pressed }) => [
               styles.actionItem,
               pressed && styles.actionItemPressed,
@@ -214,6 +310,20 @@ export default function ProfileScreen() {
             <ChevronRight size={20} color={Colors.textSecondary} />
           </Pressable>
         </ProfileSection>
+
+        {/* Logout */}
+        <View style={styles.logoutSection}>
+          <Pressable
+            onPress={handleLogout}
+            style={({ pressed }) => [
+              styles.logoutButton,
+              pressed && styles.logoutButtonPressed,
+            ]}
+          >
+            <LogOut size={20} color={Colors.error} />
+            <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+          </Pressable>
+        </View>
 
         {/* Bottom Spacer */}
         <View style={styles.bottomSpacer} />
@@ -288,22 +398,13 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderWidth: 4,
     borderColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  levelBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: Colors.primary,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderWidth: 2,
-    borderColor: Colors.surface,
-  },
-  levelText: {
-    color: Colors.surface,
-    fontSize: 12,
+  avatarText: {
+    fontSize: 48,
     fontWeight: '700',
+    color: Colors.surface,
   },
   userName: {
     fontSize: 24,
@@ -430,6 +531,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.text,
     fontWeight: '600',
+  },
+  logoutSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    marginTop: 12,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    paddingVertical: 16,
+    borderWidth: 1,
+    borderColor: Colors.error + '30',
+    gap: 12,
+  },
+  logoutButtonPressed: {
+    opacity: 0.7,
+  },
+  logoutButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.error,
   },
   bottomSpacer: {
     height: Platform.OS === 'ios' ? 20 : 16,

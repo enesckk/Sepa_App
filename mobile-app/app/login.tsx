@@ -45,6 +45,7 @@ export default function LoginScreen() {
       // API response format: { success: true, data: { user, tokens } }
       // apiClient returns response.data, so we get { user, tokens }
       if (response.user && response.tokens) {
+        // Login endpoint already returns the user with latest golbucks, so just set it
         setUser(response.user);
         
         // Navigate to home

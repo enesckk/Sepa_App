@@ -90,6 +90,14 @@ export {
   type GetNewsCategoriesResponse,
 } from './news';
 
+// Export daily reward service
+export {
+  claimDailyReward,
+  getDailyRewardStatus,
+  dailyRewardService,
+  type ClaimDailyRewardResponse,
+} from './dailyReward';
+
 // Export bill support service
 export {
   createBillSupport,
@@ -107,10 +115,12 @@ export {
 export {
   getProfile,
   updateProfile,
+  updatePassword,
   getGolbucksBalance,
   getGolbucksHistory,
   usersService,
   type UpdateProfileRequest,
+  type UpdatePasswordRequest,
   type GetGolbucksHistoryParams,
   type GetGolbucksHistoryResponse,
 } from './users';

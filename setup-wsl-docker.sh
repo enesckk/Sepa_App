@@ -19,3 +19,4 @@ echo "   2. Settings > Resources > WSL Integration"
 echo "   3. WSL distro'nuzu aktif edin"
 
 
+

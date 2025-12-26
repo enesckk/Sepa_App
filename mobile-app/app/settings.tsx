@@ -22,9 +22,11 @@ import {
   ChevronRight,
 } from 'lucide-react-native';
 import { Colors } from '../src/constants/colors';
+import { useApp } from '../src/contexts';
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { logout } = useApp();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [language, setLanguage] = useState<'tr' | 'en'>('tr');
 
@@ -37,11 +39,18 @@ export default function SettingsScreen() {
         {
           text: 'Çıkış Yap',
           style: 'destructive',
-          onPress: () => {
-            if (__DEV__) {
-              console.log('Logout');
+          onPress: async () => {
+            try {
+              await logout();
+              // Navigate to login screen
+              router.replace('/login');
+            } catch (error) {
+              if (__DEV__) {
+                console.error('Logout error:', error);
+              }
+              // Even if logout fails, navigate to login
+              router.replace('/login');
             }
-            // Navigate to login screen
           },
         },
       ]

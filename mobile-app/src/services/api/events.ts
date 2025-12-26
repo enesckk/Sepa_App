@@ -211,6 +211,7 @@ export const getMyRegistrations = async (
       queryParams.offset = params.offset.toString();
     }
 
+    // Backend returns { items, total, page, limit, totalPages }
     const response = await apiClient.get<PaginatedResponse<EventRegistration>>(
       API_ENDPOINTS.EVENTS.MY_REGISTRATIONS,
       { params: queryParams }

@@ -237,11 +237,15 @@ const getUserRegistrations = async (userId, status = null, limit = 50, offset = 
     offset: parseInt(offset),
   });
 
+  const totalPages = Math.ceil(registrations.count / parseInt(limit));
+  const page = Math.floor(parseInt(offset) / parseInt(limit)) + 1;
+
   return {
-    registrations: registrations.rows,
+    items: registrations.rows,
     total: registrations.count,
+    page: page,
     limit: parseInt(limit),
-    offset: parseInt(offset),
+    totalPages: totalPages,
   };
 };
 

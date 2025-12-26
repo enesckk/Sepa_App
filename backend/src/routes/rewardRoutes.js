@@ -17,6 +17,13 @@ const { authenticate } = require('../middleware/auth');
 router.get('/', getRewards);
 
 /**
+ * @route   GET /api/rewards/my
+ * @desc    Get user's redeemed rewards
+ * @access  Private
+ */
+router.get('/my', authenticate, getMyRewards);
+
+/**
  * @route   GET /api/rewards/:id
  * @desc    Get reward by ID (public)
  * @access  Public
@@ -29,13 +36,6 @@ router.get('/:id', getRewardById);
  * @access  Private
  */
 router.post('/:id/redeem', authenticate, redeemReward);
-
-/**
- * @route   GET /api/rewards/my
- * @desc    Get user's redeemed rewards
- * @access  Private
- */
-router.get('/my', authenticate, getMyRewards);
 
 /**
  * @route   PUT /api/rewards/my/:id/use

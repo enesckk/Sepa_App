@@ -87,6 +87,7 @@ export const API_ENDPOINTS = {
   USERS: {
     PROFILE: '/users/profile',
     UPDATE_PROFILE: '/users/profile',
+    UPDATE_PASSWORD: '/users/password',
     GOLBUCKS: '/users/golbucks',
     TRANSACTIONS: '/users/golbucks/transactions',
   },
@@ -176,8 +177,8 @@ export const API_ENDPOINTS = {
 
   // Daily Reward
   DAILY_REWARD: {
-    CLAIM: '/daily-reward/claim',
-    STATUS: '/daily-reward/status',
+    CLAIM: '/rewards/daily',
+    STATUS: '/rewards/daily/status',
   },
 } as const;
 

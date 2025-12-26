@@ -18,6 +18,14 @@ const { authenticate } = require('../middleware/auth');
 router.get('/', getEvents);
 
 /**
+ * @route   GET /api/events/my-registrations
+ * @desc    Get user's event registrations
+ * @access  Private
+ * @query   status, limit, offset
+ */
+router.get('/my-registrations', authenticate, getMyRegistrations);
+
+/**
  * @route   GET /api/events/:id
  * @desc    Get event by ID
  * @access  Public
@@ -37,14 +45,6 @@ router.post('/:id/register', authenticate, registerForEvent);
  * @access  Private
  */
 router.delete('/:id/register', authenticate, cancelEventRegistration);
-
-/**
- * @route   GET /api/events/my-registrations
- * @desc    Get user's event registrations
- * @access  Private
- * @query   status, limit, offset
- */
-router.get('/my-registrations', authenticate, getMyRegistrations);
 
 module.exports = router;
 

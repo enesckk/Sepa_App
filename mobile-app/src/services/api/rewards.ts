@@ -150,6 +150,8 @@ export const getMyRewards = async (params?: PaginationParams): Promise<{
   total: number;
   limit: number;
   offset: number;
+  page?: number;
+  totalPages?: number;
 }> => {
   try {
     const queryParams: Record<string, string> = {};
@@ -161,11 +163,14 @@ export const getMyRewards = async (params?: PaginationParams): Promise<{
       queryParams.offset = params.offset.toString();
     }
 
+    // Backend returns { rewards, total, limit, offset, page, totalPages }
     const response = await apiClient.get<{
       rewards: UserReward[];
       total: number;
       limit: number;
       offset: number;
+      page?: number;
+      totalPages?: number;
     }>(API_ENDPOINTS.REWARDS.MY_REWARDS, { params: queryParams });
 
     return response;

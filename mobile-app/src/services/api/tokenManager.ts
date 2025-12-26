@@ -7,12 +7,10 @@ import { storage, stringStorage, StorageKeys } from '../../utils/storage';
 import { AuthResponse } from './types';
 
 /**
- * Token data structure
+ * Token metadata structure (for expiration time only)
  */
-interface TokenData {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt?: number; // Timestamp when token expires
+interface TokenMetadata {
+  expiresAt: number; // Timestamp when token expires
 }
 
 /**
@@ -36,7 +34,7 @@ class TokenManager {
         this.refreshToken = refreshToken;
         
         // Try to get expiration time from storage
-        const tokenData = await storage.get<TokenData>(StorageKeys.ACCESS_TOKEN);
+        const tokenData = await storage.get<{ expiresAt: number }>(StorageKeys.TOKEN_METADATA);
         if (tokenData?.expiresAt) {
           this.expiresAt = tokenData.expiresAt;
         }
@@ -74,9 +72,7 @@ class TokenManager {
 
       // Store expiration time if available
       if (this.expiresAt) {
-        await storage.set(StorageKeys.ACCESS_TOKEN, {
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+        await storage.set(StorageKeys.TOKEN_METADATA, {
           expiresAt: this.expiresAt,
         });
       }
@@ -138,6 +134,7 @@ class TokenManager {
       await Promise.all([
         stringStorage.remove(StorageKeys.ACCESS_TOKEN),
         stringStorage.remove(StorageKeys.REFRESH_TOKEN),
+        storage.remove(StorageKeys.TOKEN_METADATA),
       ]);
     } catch (error) {
       if (__DEV__) {
@@ -163,10 +160,7 @@ class TokenManager {
       await stringStorage.set(StorageKeys.ACCESS_TOKEN, accessToken);
 
       if (this.expiresAt) {
-        const tokenData = await storage.get<TokenData>(StorageKeys.ACCESS_TOKEN) || {};
-        await storage.set(StorageKeys.ACCESS_TOKEN, {
-          ...tokenData,
-          accessToken,
+        await storage.set(StorageKeys.TOKEN_METADATA, {
           expiresAt: this.expiresAt,
         });
       }

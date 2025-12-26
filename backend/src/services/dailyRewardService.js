@@ -57,13 +57,7 @@ const claimDailyReward = async (userId) => {
   const transaction = await sequelize.transaction();
 
   try {
-    // Check if can claim
-    const status = await checkDailyRewardStatus(userId);
-    if (!status.canClaim) {
-      throw new Error('Daily reward already claimed today');
-    }
-
-    // Get or create daily reward record
+    // Get or create daily reward record with lock (in transaction)
     let dailyReward = await DailyReward.findOne({
       where: { user_id: userId },
       lock: transaction.LOCK.UPDATE,
@@ -83,10 +77,16 @@ const claimDailyReward = async (userId) => {
       );
     }
 
+    // Check if can claim (after getting record in transaction)
     const today = new Date().toISOString().split('T')[0];
     const lastRewardDate = dailyReward.last_reward_date
       ? new Date(dailyReward.last_reward_date).toISOString().split('T')[0]
       : null;
+
+    if (lastRewardDate === today) {
+      await transaction.rollback();
+      throw new Error('Daily reward already claimed today');
+    }
 
     // Calculate streak
     let newStreak = 1;

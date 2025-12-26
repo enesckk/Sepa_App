@@ -174,6 +174,7 @@ const getMyRewards = async (req, res, next) => {
         {
           model: Reward,
           as: 'reward',
+          required: false, // Left join - include even if reward is deleted
         },
       ],
       order: [['created_at', 'DESC']],
@@ -181,13 +182,18 @@ const getMyRewards = async (req, res, next) => {
       offset: parseInt(offset),
     });
 
+    const totalPages = Math.ceil(userRewards.count / parseInt(limit));
+    const page = Math.floor(parseInt(offset) / parseInt(limit)) + 1;
+
     res.status(200).json({
       success: true,
       data: {
         rewards: userRewards.rows,
         total: userRewards.count,
+        page: page,
         limit: parseInt(limit),
         offset: parseInt(offset),
+        totalPages: totalPages,
       },
     });
   } catch (error) {

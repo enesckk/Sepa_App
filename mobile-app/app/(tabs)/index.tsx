@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -18,12 +18,8 @@ import { QuickAccessCards } from '../../src/components/QuickAccessCards';
 import { NewsSection } from '../../src/components/NewsSection';
 import { DailyRewardModal } from '../../src/components/DailyRewardModal';
 import { Colors } from '../../src/constants/colors';
-import {
-  hasClaimedDailyRewardToday,
-  claimDailyReward,
-  getDailyRewardAmount,
-} from '../../src/services/dailyRewardService';
-import { useGolbucks } from '../../src/contexts';
+import { getDailyRewardStatus, claimDailyReward as claimDailyRewardAPI } from '../../src/services/api/dailyReward';
+import { useApp } from '../../src/contexts';
 
 // Şehitkamil Belediyesi Destek Programları ve Hizmetler
 // Carousel görselleri - Şehitkamil Belediyesi'nin sosyal destek programları
@@ -111,37 +107,51 @@ const NEWS_DATA = [
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { golbucks, addGolbucks } = useGolbucks();
-  const [userPoints, setUserPoints] = useState(golbucks);
+  const { golbucks, addGolbucks, refreshUser } = useApp();
   const [dailyRewardVisible, setDailyRewardVisible] = useState(false);
   const [dailyRewardAmount, setDailyRewardAmount] = useState(0);
+  const isClaimingRef = useRef(false);
 
   // Günlük ödül kontrolü - sayfa her açıldığında kontrol et
   useFocusEffect(
     React.useCallback(() => {
       const checkDailyReward = async () => {
+        // Prevent multiple simultaneous claims
+        if (isClaimingRef.current) {
+          return;
+        }
+
         try {
-          const hasClaimed = await hasClaimedDailyRewardToday();
-          if (!hasClaimed) {
-            // Bugün ödül alınmamış, otomatik ödül ver
-            const amount = getDailyRewardAmount();
-            await claimDailyReward();
-            setDailyRewardAmount(amount);
-            setUserPoints((prev) => prev + amount);
-            // Kısa bir gecikme ile modal göster (sayfa yüklenmesi için)
-            setTimeout(() => {
-              setDailyRewardVisible(true);
-            }, 500);
+          const status = await getDailyRewardStatus();
+          if (status.canClaim) {
+            isClaimingRef.current = true;
+            try {
+              // Bugün ödül alınmamış, backend'den ödül ver
+              const response = await claimDailyRewardAPI();
+              setDailyRewardAmount(response.totalReward);
+              // Backend'den gelen yeni balance'ı kullan
+              addGolbucks(response.totalReward);
+              // Kullanıcı bilgilerini backend'den güncelle
+              await refreshUser();
+              // Kısa bir gecikme ile modal göster (sayfa yüklenmesi için)
+              setTimeout(() => {
+                setDailyRewardVisible(true);
+              }, 500);
+            } finally {
+              isClaimingRef.current = false;
+            }
           }
         } catch (error) {
+          isClaimingRef.current = false;
           if (__DEV__) {
             console.error('Error checking daily reward:', error);
           }
+          // Hata durumunda sessizce devam et
         }
       };
 
       checkDailyReward();
-    }, [])
+    }, [addGolbucks, refreshUser])
   );
 
   const handleProfilePress = () => {
@@ -159,10 +169,7 @@ export default function HomeScreen() {
   };
 
   const handleSearchPress = () => {
-    if (__DEV__) {
-      console.log('[v0] Search pressed');
-    }
-    // TODO: Navigate to search screen when created
+    router.push('/search');
   };
 
   const handleViewAllNews = () => {
@@ -197,7 +204,7 @@ export default function HomeScreen() {
       
       {/* Header */}
       <Header
-        points={userPoints}
+        points={golbucks}
         onProfilePress={handleProfilePress}
         onSettingsPress={handleSettingsPress}
       />

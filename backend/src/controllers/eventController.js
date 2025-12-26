@@ -44,12 +44,13 @@ const getEvents = async (req, res, next) => {
       if (date_to) {
         where.date[Op.lte] = date_to;
       }
-    } else {
-      // Default: only future events
+    } else if (!search) {
+      // Default: only future events (unless searching, then include past events)
       where.date = {
         [Op.gte]: new Date().toISOString().split('T')[0],
       };
     }
+    // If search is provided without date filters, search all events (past and future)
 
     // Free events filter
     if (is_free !== undefined) {

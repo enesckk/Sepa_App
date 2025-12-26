@@ -354,11 +354,16 @@ export interface Notification {
  * Daily Reward types
  */
 export interface DailyRewardStatus {
-  has_claimed: boolean;
-  last_claim_date?: string;
-  streak: number;
-  next_claim_date: string;
-  reward_amount: number;
+  canClaim: boolean;
+  lastRewardDate?: string;
+  currentStreak: number;
+  longestStreak: number;
+  totalRewards: number;
+  isStreak: boolean;
+  willGetStreakBonus: boolean;
+  dailyRewardAmount: number;
+  streakBonusDays: number;
+  streakBonusAmount: number;
 }
 
 /**

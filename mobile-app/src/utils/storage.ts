@@ -12,6 +12,7 @@ export const StorageKeys = {
   // Authentication
   ACCESS_TOKEN: '@auth_access_token',
   REFRESH_TOKEN: '@auth_refresh_token',
+  TOKEN_METADATA: '@auth_token_metadata',
   USER_DATA: '@auth_user_data',
   
   // App Settings
@@ -60,7 +61,18 @@ export const storage = {
       if (jsonValue === null) {
         return null;
       }
-      return JSON.parse(jsonValue) as T;
+      // Try to parse as JSON, but handle cases where value might be a plain string
+      // This handles legacy data or corrupted storage entries
+      try {
+        return JSON.parse(jsonValue) as T;
+      } catch (parseError) {
+        // If parsing fails, the value might be stored as plain string (legacy format)
+        // Return null to indicate the value is not in expected format
+        if (__DEV__) {
+          console.warn(`[Storage] Value at ${key} is not valid JSON, returning null`);
+        }
+        return null;
+      }
     } catch (error) {
       if (__DEV__) {
         console.error(`[Storage] Error getting ${key}:`, error);

@@ -74,6 +74,7 @@ export default function RegisterScreen() {
       // API response format: { success: true, data: { user, tokens } }
       // apiClient returns response.data, so we get { user, tokens }
       if (response.user && response.tokens) {
+        // Register endpoint already returns the user with latest golbucks, so just set it
         setUser(response.user);
         
         Alert.alert('Başarılı', 'Kayıt işlemi tamamlandı!', [

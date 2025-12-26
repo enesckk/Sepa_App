@@ -7,6 +7,8 @@ require('dotenv').config();
 const { sequelize } = require('../src/config/database');
 const { seedRewards } = require('../src/services/seedRewards');
 const { seedSurveys } = require('../src/services/seedSurveys');
+const seedEvents = require('../src/services/seedEvents');
+const { seedNews } = require('../src/services/seedNews');
 
 async function runSeeds() {
   try {
@@ -16,8 +18,16 @@ async function runSeeds() {
 
     console.log('\n🌱 Starting seed process...\n');
 
+    // Seed news
+    console.log('📰 Seeding news...');
+    await seedNews();
+    
+    // Seed events
+    console.log('\n🎉 Seeding events...');
+    await seedEvents();
+
     // Seed rewards
-    console.log('📦 Seeding rewards...');
+    console.log('\n📦 Seeding rewards...');
     await seedRewards();
     
     // Seed surveys

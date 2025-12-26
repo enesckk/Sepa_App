@@ -28,7 +28,7 @@ const getProfile = async (req, res, next) => {
 const updateProfile = async (req, res, next) => {
   try {
     const user = req.user;
-    const { name, phone, mahalle } = req.body;
+    const { name, email, phone, mahalle } = req.body;
 
     // Validation
     const errors = validationResult(req);
@@ -45,6 +45,18 @@ const updateProfile = async (req, res, next) => {
     if (name !== undefined) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
     if (mahalle !== undefined) updateData.mahalle = mahalle;
+    
+    // Handle email update - check if email is already taken by another user
+    if (email !== undefined && email !== user.email) {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser && existingUser.id !== user.id) {
+        return res.status(400).json({
+          error: 'Validation Error',
+          message: 'Email already in use by another user',
+        });
+      }
+      updateData.email = email;
+    }
 
     // Update user
     await user.update(updateData);
@@ -128,6 +140,12 @@ const validateUpdateProfile = [
     .trim()
     .isLength({ min: 2, max: 255 })
     .withMessage('Name must be between 2 and 255 characters'),
+  body('email')
+    .optional()
+    .trim()
+    .isEmail()
+    .withMessage('Email must be a valid email address')
+    .normalizeEmail(),
   body('phone')
     .optional()
     .trim()

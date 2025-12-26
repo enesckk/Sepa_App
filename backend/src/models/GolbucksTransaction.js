@@ -22,7 +22,11 @@ const GolbucksTransaction = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       validate: {
-        notZero: true,
+        isNotZero(value) {
+          if (value === 0) {
+            throw new Error('Amount cannot be zero');
+          }
+        },
       },
     },
     type: {

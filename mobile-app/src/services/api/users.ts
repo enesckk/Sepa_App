@@ -35,8 +35,14 @@ export const getProfile = async (): Promise<User> => {
  */
 export interface UpdateProfileRequest {
   name?: string;
+  email?: string;
   phone?: string;
   mahalle?: string;
+}
+
+export interface UpdatePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export const updateProfile = async (data: UpdateProfileRequest): Promise<User> => {
@@ -131,11 +137,32 @@ export const getGolbucksHistory = async (
 };
 
 /**
+ * Update user password
+ * @param data Password update data
+ * @throws ApiError if request fails
+ */
+export const updatePassword = async (data: UpdatePasswordRequest): Promise<void> => {
+  try {
+    await apiClient.put<void>(
+      API_ENDPOINTS.USERS.UPDATE_PASSWORD,
+      data
+    );
+  } catch (error) {
+    const apiError = parseApiError(error);
+    if (__DEV__) {
+      console.error('[UsersService] Update password error:', apiError);
+    }
+    throw apiError;
+  }
+};
+
+/**
  * Users service object with all user functions
  */
 export const usersService = {
   getProfile,
   updateProfile,
+  updatePassword,
   getGolbucksBalance,
   getGolbucksHistory,
 };

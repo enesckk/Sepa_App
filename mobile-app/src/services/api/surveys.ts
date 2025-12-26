@@ -3,7 +3,8 @@
  * Handles all survey-related API calls
  */
 
-import { apiClient, API_ENDPOINTS } from './index';
+import { apiClient } from './client';
+import { API_ENDPOINTS } from './config';
 import { Survey, SurveyAnswer, PaginationParams } from './types';
 import { parseApiError } from '../../utils/errorHandler';
 
